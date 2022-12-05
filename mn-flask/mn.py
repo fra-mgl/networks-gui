@@ -18,8 +18,8 @@ class SDNetwork:
 
     # Adds an host to the network topology. Giving it the name `h<ID>`
 
-    def addHost(self):
-        hostName = f"h{self.nHosts()}"
+    def addHost(self, name=None):
+        hostName = f"h{self.nHosts()}" if name is None else name
         host = self.net.addHost(hostName)
         self.hosts[hostName] = host
 
@@ -27,8 +27,8 @@ class SDNetwork:
 
     # Adds a switch to the network topology. Giving it the name `s<ID>`
 
-    def addSwitch(self):
-        switchName = f"s{self.nSwitches()}"
+    def addSwitch(self, name=None):
+        switchName = f"s{self.nSwitches()}" if name is None else name
         switch = self.net.addSwitch(switchName)
         self.hosts[switchName] = switch
 
