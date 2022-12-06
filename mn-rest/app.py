@@ -25,11 +25,13 @@ def addSwitch():
 
 # Endpoint to add a link between two nodes in the network
 
-@app.route('/addlink', methods=['GET'])
+@app.route('/addlink', methods=['POST'])
 def addLink():
-    node1 = request.args.get('node1')
-    node2 = request.args.get('node2')
-    if node1 is None or node2 is None:
+    data = json.loads(request.data)
+    try:
+        node1 = data['node1']
+        node2 = data['node2']
+    except KeyError:
         return "invalid request format", 400
 
     res = net.addLink(node1, node2)
