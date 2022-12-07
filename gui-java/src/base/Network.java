@@ -74,14 +74,14 @@ public class Network {
 //        System.out.println("Host radius: " + hostRadius);
     }
 
-    public boolean addHost(Host i, Router r){
+    public boolean addHost(Host i){
         // gli passo una stringa, creo metodo da stringa (json) a host e poi lo aggiungo
 //        itemsAnchor.getChildren().add(i);
 //        AnchorPane.setTopAnchor(i, i.getAnchorY());
 //        AnchorPane.setLeftAnchor(i, i.getAnchorX());
-        assert(routerList.contains(r));
+//        assert(routerList.contains(r));
         hostList.add(i);
-        r.addHostLink(i);
+//        r.addHostLink(i);
         return true;
     }
     public boolean addRouter(Router i){
@@ -146,6 +146,7 @@ public class Network {
 
         /* add all elements to corresponding stackpane */
         //connectionsAnchor.getChildren().addAll()
+//        System.out.println("SIZE: " + hostList.size());
         itemsAnchor.getChildren().addAll(hostList);
         itemsAnchor.getChildren().addAll(routerList);
 

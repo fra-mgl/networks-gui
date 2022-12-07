@@ -11,7 +11,7 @@ public class NetItem extends ImageView {
     static final int SIZE = 50;
     static final int HALF_SIZE = SIZE/2;
 
-    transient private String name;
+//    transient protected String name;
     transient private double angle;
 
 //    static public NetItem fromString(String json){
@@ -26,13 +26,12 @@ public class NetItem extends ImageView {
     private double anchorX;
     private double anchorY;
 
-    public NetItem(String name, Image icon) {
+    public NetItem(Image icon) {
         this.setImage(icon);
 //        Rectangle2D viewportRect = new Rectangle2D(50, 50, 50, 50);
 //        this.setViewport(viewportRect);
         this.setFitWidth(SIZE);
         this.setFitHeight(SIZE);
-        this.name = name;
         this.angle = 0.0;
     }
 
@@ -66,10 +65,6 @@ public class NetItem extends ImageView {
 
     public double getAnchorY() {
         return anchorY;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public double getAngle() {

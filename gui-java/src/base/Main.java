@@ -22,6 +22,7 @@ public class Main extends Application {
     private static final double windowWidth = 800.0;
     private static final int HBoxPadding = 20;
 
+
     public void addGuiElement(Pane pane, NetItem item){
         pane.getChildren().add((item));
     }
@@ -50,6 +51,7 @@ public class Main extends Application {
         buttonsBox.setPrefHeight(50.0);
 
 
+
         Network network = new Network(windowWidth, windowHeight - buttonsBox.getPrefHeight());
         layout.setCenter(network.netStack);
 //        prova.setCoordinates(100.0, 50.0);
@@ -68,31 +70,82 @@ public class Main extends Application {
 //                .create();
 //        Router r0 = gson.fromJson(s, Router.class);
 //        Router r0 = RestAPI.getRouter();
-        List<Router> list = Arrays.asList(RestAPI.getRouter());
-        Router r0 = list.get(0);
-        Router r1 = new Router();
-        Router r2 = new Router();
-        Router r3 = new Router();
-        System.out.println(r0);
+//        List<Router> listRouter = Arrays.asList(RestAPI.getRouter());
+//        if (listRouter != null) {
+//            for (int i = 0; i < listRouter.size(); i++) {
+//                network.addRouter(listRouter.get(i));
+//            }
+//        }else{
+//            return 1;
+//        }
+        /* retrieve routers information, add routers to network, clean listRouter to initialize for next request */
 
-        network.addRouter(r0);
-        network.addRouter(r1);
-        network.addRouter(r2);
-        network.addRouter(r3);
+        try{
+            network.routerList.addAll(Arrays.asList(RestAPI.getRouter()));
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        try{
+            network.hostList.addAll(Arrays.asList(RestAPI.getHosts()));
+        } catch (Exception e){
+            e.printStackTrace();
+        }
 
-        network.addHost(new Host("H1"), r0);
-        network.addHost(new Host("H1"), r1);
-        network.addHost(new Host("H1"), r2);
-        network.addHost(new Host("H1"), r2);
-        network.addHost(new Host("H1"), r3);
-        network.addHost(new Host("H1"), r3);
-        network.addHost(new Host("H1"), r3);
+//        System.out.println(network.routerList);
 
-        r0.addRouterLink(r1);
-        r1.addRouterLink(r2);
-        r1.addRouterLink(r3);
-        r2.addRouterLink(r3);
+//        Router r0 = list.get(0);
+//        Router r1 = new Router();
+//        Router r2 = new Router();
+//        Router r3 = new Router();
+//        System.out.println(r0);
+//
+//        network.addRouter(r0);
+//        network.addRouter(r1);
+//        network.addRouter(r2);
+//        network.addRouter(r3);
+//
+//        network.addHost(new Host("H1"), r0);
+//        network.addHost(new Host("H1"), r1);
+//        network.addHost(new Host("H1"), r2);
+//        network.addHost(new Host("H1"), r2);
+//        network.addHost(new Host("H1"), r3);
+//        network.addHost(new Host("H1"), r3);
+//        network.addHost(new Host("H1"), r3);
+//
+//        r0.addRouterLink(r1);
+//        r1.addRouterLink(r2);
+//        r1.addRouterLink(r3);
+//        r2.addRouterLink(r3);
 
+//        Router r0 = network.routerList.get(0);
+//        Router r1 = network.routerList.get(1);
+//        network.addHost(new Host("H1"), r0);
+//        r0.addRouterLink(r1);
+
+
+        for(int i=0;i< network.routerList.size(); i++){
+            network.routerList.get(i).setName();
+        }
+        int index;
+        for(int i=0;i< network.hostList.size(); i++){
+            network.hostList.get(i).setRouter();
+            /* add each host to its router */
+            index = network.routerList.indexOf(new Router(network.hostList.get(i).getRouter()));
+            network.routerList.get(index).addHostLink(network.hostList.get(i));
+        }
+
+
+
+
+
+        /* PRINT NETITEM */
+        for(int i=0;i< network.routerList.size(); i++){
+            System.out.println(network.routerList.get(i));
+        }
+        for(int i=0;i< network.hostList.size(); i++){
+            System.out.println(network.hostList.get(i));
+        }
+//        System.out.println(network.routerList.contains(new Router(network.hostList.get(1).getRouter())));
         network.displayAlgorithm();
 
         /* STAGE */

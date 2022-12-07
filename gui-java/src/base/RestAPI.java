@@ -2,6 +2,7 @@ package base;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.Expose;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -15,19 +16,69 @@ public class RestAPI {
             .excludeFieldsWithoutExposeAnnotation()
             .create();
 
+    static final String URL = "http://localhost:8080/topology/";
     static Router[] getRouter() throws Exception{
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI("http://localhost:8080/v1.0/topology/switches"))
+                    .uri(new URI(URL + "switches"))
                     .GET().build();
             HttpClient client = HttpClient.newHttpClient();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//            System.out.println(response.body());
+//            System.out.println(response.statusCode());
+            if(response.statusCode() != 200){
+                System.err.println("EXEP- RestAPI - ERROR: not 200");
+                throw new Exception("Error - not 200");
+            }
             String json = response.body();
+//            System.out.println(json);
             return gson.fromJson(json, Router[].class);
         } catch (Exception e){
+            System.err.println("EXEP- RestAPI");
             e.printStackTrace();
             return null;
         }
+    }
+    static Host[] getHosts() throws Exception{
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(URL + "hosts"))
+                    .GET().build();
+            HttpClient client = HttpClient.newHttpClient();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+//            System.out.println(response.statusCode());
+            if(response.statusCode() != 200){
+                System.err.println("EXEP- RestAPI - ERROR: not 200");
+                throw new Exception("Error - not 200");
+            }
+            String json = response.body();
+            System.out.println(json);
+            return gson.fromJson(json, Host[].class);
+        } catch (Exception e){
+            System.err.println("EXEP- RestAPI");
+            e.printStackTrace();
+            return null;
+        }
+    }
+}
+
+class Port{
+    @Expose
+    private String dpid;
+    @Expose private String port_no;
+    @Expose private String hw_addr;
+    @Expose private String name;
+
+    @Override
+    public String toString() {
+        return "Port{" +
+                "dpid='" + dpid + '\'' +
+                ", port_no='" + port_no + '\'' +
+                ", hw_addr='" + hw_addr + '\'' +
+                ", name='" + name + '\'' +
+                '}';
+    }
+
+    public String getName() {
+        return name;
     }
 }

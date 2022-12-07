@@ -5,9 +5,11 @@ import javafx.scene.image.Image;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Router extends NetItem{
 
+    private String name;
     @Expose private String dpid;
     @Expose private List<Port> ports;
 
@@ -18,10 +20,15 @@ public class Router extends NetItem{
 
 
     public Router() {
-        super("R", icon);
+        super(icon);
         ports = new ArrayList<>();
         hostLinkList = new ArrayList<>();
         routerLinkList = new ArrayList<>();
+    }
+
+    public Router(String s){
+        super(icon);
+        this.name = s;
     }
 
     public void addHostLink(Host i){
@@ -45,7 +52,8 @@ public class Router extends NetItem{
 
     @Override
     public String toString() {
-        StringBuilder out = new StringBuilder("SwitchJson{\n" +
+        StringBuilder out = new StringBuilder("Router{\n" +
+                " name='" + name + '\'' +
                 " dpid='" + dpid + '\'' +
                 ",\n portArray=\n");
         for(int i = 0; i < ports.size(); i++){
@@ -54,21 +62,29 @@ public class Router extends NetItem{
         out.append("}");
         return out.toString();
     }
-}
 
-class Port{
-    @Expose private String dpid;
-    @Expose private String port_no;
-    @Expose private String hw_addr;
-    @Expose private String name;
+    public void setName(){
+        try{
+            int number = Integer.parseInt(dpid);
+//            System.out.println(number);
+            this.name = "s"+number;
+        }
+        catch (NumberFormatException ex){
+            ex.printStackTrace();
+        }
+    }
 
     @Override
-    public String toString() {
-        return "Port{" +
-                "dpid='" + dpid + '\'' +
-                ", port_no='" + port_no + '\'' +
-                ", hw_addr='" + hw_addr + '\'' +
-                ", name='" + name + '\'' +
-                '}';
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Router router = (Router) o;
+        return name.equals(router.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
     }
 }
+
