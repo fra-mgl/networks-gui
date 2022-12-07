@@ -1,4 +1,6 @@
 import json
+from operator import attrgetter
+
 from ryu.app.wsgi import ControllerBase
 from ryu.app.wsgi import Response
 from ryu.app.wsgi import route
@@ -7,12 +9,13 @@ from ryu.base import app_manager
 from ryu.lib import dpid as dpid_lib
 from ryu.topology.api import get_switch, get_link, get_host
 from ryu.controller import ofp_event
-from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER
+from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER, DEAD_DISPATCHER
 from ryu.controller.handler import set_ev_cls
 from ryu.ofproto import ofproto_v1_3
 from ryu.lib.packet import packet
 from ryu.lib.packet import ethernet
 from ryu.lib.packet import ether_types
+from ryu.lib import hub
 
 # REST API for switch configuration
 #
@@ -48,8 +51,40 @@ class TopologyAPI(app_manager.RyuApp):
         super(TopologyAPI, self).__init__(*args, **kwargs)
 
         self.mac_to_port = {}
+        self.datapaths = {}
+        self.switches = {}
+        # self.monitor_thread = hub.spawn(self._monitor)
         wsgi = kwargs['wsgi']
         wsgi.register(TopologyController, {'topology_api_app': self})
+
+    @set_ev_cls(ofp_event.EventOFPStateChange,
+                [MAIN_DISPATCHER, DEAD_DISPATCHER])
+    def _state_change_handler(self, ev):
+        datapath = ev.datapath
+        if ev.state == MAIN_DISPATCHER:
+            if datapath.id not in self.datapaths:
+                self.logger.debug('register datapath: %016x', datapath.id)
+                self.datapaths[datapath.id] = datapath
+        elif ev.state == DEAD_DISPATCHER:
+            if datapath.id in self.datapaths:
+                self.logger.debug('unregister datapath: %016x', datapath.id)
+                del self.datapaths[datapath.id]
+
+    def _monitor(self):
+        while True:
+            for dp in self.datapaths.values():
+                self._request_stats(dp)
+            hub.sleep(10)
+
+    def _request_stats(self, datapath):
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+
+        req = parser.OFPFlowStatsRequest(datapath)
+        datapath.send_msg(req)
+
+        req = parser.OFPPortStatsRequest(datapath, 0, ofproto.OFPP_ANY)
+        datapath.send_msg(req)
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
@@ -68,6 +103,9 @@ class TopologyAPI(app_manager.RyuApp):
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
                                           ofproto.OFPCML_NO_BUFFER)]
         self.add_flow(datapath, 0, match, actions)
+
+        self.switches[datapath.id] = datapath
+        self.mac_to_port.setdefault(datapath.id, {})
 
     def add_flow(self, datapath, priority, match, actions, buffer_id=None):
         ofproto = datapath.ofproto
@@ -139,12 +177,37 @@ class TopologyAPI(app_manager.RyuApp):
                                   in_port=in_port, actions=actions, data=data)
         datapath.send_msg(out)
 
+    def set_mac_to_port(self, dpid, entry):
+        mac_table = self.mac_to_port.setdefault(dpid, {})
+        datapath = self.switches.get(dpid)
+
+        entry_port = entry['port']
+        entry_mac = entry['mac']
+
+        if datapath is not None:
+            parser = datapath.ofproto_parser
+            if entry_port not in mac_table.values():
+
+                for mac, port in mac_table.items():
+
+                    # from known device to new device
+                    actions = [parser.OFPActionOutput(entry_port)]
+                    match = parser.OFPMatch(in_port=port, eth_dst=entry_mac)
+                    self.add_flow(datapath, 1, match, actions)
+
+                    # from new device to known device
+                    actions = [parser.OFPActionOutput(port)]
+                    match = parser.OFPMatch(in_port=entry_port, eth_dst=mac)
+                    self.add_flow(datapath, 1, match, actions)
+
+                mac_table.update({entry_mac: entry_port})
+        return mac_table
 
 
 class TopologyController(ControllerBase):
     def __init__(self, req, link, data, **config):
         super(TopologyController, self).__init__(req, link, data, **config)
-        self.topology_api_app = data['topology_api_app']
+        self.app = data['topology_api_app']
 
     @route('topology', '/topology/switches',
            methods=['GET'])
@@ -180,7 +243,7 @@ class TopologyController(ControllerBase):
         dpid = None
         if 'dpid' in kwargs:
             dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
-        switches = get_switch(self.topology_api_app, dpid)
+        switches = get_switch(self.app, dpid)
         body = json.dumps([switch.to_dict() for switch in switches])
         return Response(content_type='application/json', body=body)
 
@@ -188,7 +251,7 @@ class TopologyController(ControllerBase):
         dpid = None
         if 'dpid' in kwargs:
             dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
-        links = get_link(self.topology_api_app, dpid)
+        links = get_link(self.app, dpid)
         body = json.dumps([link.to_dict() for link in links])
         return Response(content_type='application/json', body=body)
 
@@ -196,6 +259,21 @@ class TopologyController(ControllerBase):
         dpid = None
         if 'dpid' in kwargs:
             dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
-        hosts = get_host(self.topology_api_app, dpid)
+        hosts = get_host(self.app, dpid)
         body = json.dumps([host.to_dict() for host in hosts])
         return Response(content_type='application/json', body=body)
+
+    @route('mactable', '/mactable/{dpid}', methods=['GET'],
+                requirements={'dpid': dpid_lib.DPID_PATTERN})
+    def list_mac_table(self, req, **kwargs):
+        try:
+            dpid = int(kwargs['dpid'])
+        except ValueError:
+            return Response(status=400)
+
+        if dpid not in self.app.mac_to_port.keys():
+            return Response(status=404)
+
+        mac_table = self.app.mac_to_port.get(dpid, {})
+        body = json.dumps(mac_table)
+        return Response(content_type='application/json', text=body)
