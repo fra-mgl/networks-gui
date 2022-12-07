@@ -11,8 +11,8 @@ public class NetItem extends ImageView {
     static final int SIZE = 50;
     static final int HALF_SIZE = SIZE/2;
 
-    private String name;
-    private double angle;
+    transient private String name;
+    transient private double angle;
 
 //    static public NetItem fromString(String json){
 //

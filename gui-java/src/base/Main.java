@@ -1,5 +1,7 @@
 package base;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -7,10 +9,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -59,53 +61,34 @@ public class Main extends Application {
 //        p.get(0).setAngle(30.0);
 //        System.out.println(p.get(0).getAngle());
 
-        Router r1 = new Router("1");
-        Router r2 = new Router("1");
-        Router r3 = new Router("1");
-        Router r4 = new Router("1");
-        Router r5 = new Router("1");
-        Router r6 = new Router("1");
-        Router r7 = new Router("1");
-        Router r8 = new Router("1");
-        Router r9 = new Router("1");
-        Router r10 = new Router("1");
-        Router r11 = new Router("1");
-        Router r12 = new Router("1");
-        Router r13 = new Router("1");
-        Router r14 = new Router("1");
+//        String s = "{'dpid': '0000000000000007', 'ports': [{'dpid': '0000000000000007', 'port_no': '00000001', 'hw_addr': '96:10:5e:db:0c:d3', 'name': 's7-eth1'}, {'dpid': '0000000000000007', 'port_no': '00000002', 'hw_addr': 'c6:e5:b1:06:38:85', 'name': 's7-eth2'}, {'dpid': '0000000000000007', 'port_no': '00000003', 'hw_addr': 'ae:99:21:7c:e0:bb', 'name': 's7-eth3'}]}";
+//
+//        Gson gson = new GsonBuilder()
+//                .excludeFieldsWithoutExposeAnnotation()
+//                .create();
+//        Router r0 = gson.fromJson(s, Router.class);
+//        Router r0 = RestAPI.getRouter();
+        List<Router> list = Arrays.asList(RestAPI.getRouter());
+        Router r0 = list.get(0);
+        Router r1 = new Router();
+        Router r2 = new Router();
+        Router r3 = new Router();
+        System.out.println(r0);
 
+        network.addRouter(r0);
         network.addRouter(r1);
         network.addRouter(r2);
         network.addRouter(r3);
-        network.addRouter(r4);
-        network.addRouter(r5);
-        network.addRouter(r6);
-        network.addRouter(r7);
-        network.addRouter(r8);
-        network.addRouter(r9);
-        network.addRouter(r10);
-        network.addRouter(r11);
-        network.addRouter(r12);
-        network.addRouter(r13);
-        network.addRouter(r14);
-        network.addHost(new Host("H1"), r1);
+
+        network.addHost(new Host("H1"), r0);
         network.addHost(new Host("H1"), r1);
         network.addHost(new Host("H1"), r2);
         network.addHost(new Host("H1"), r2);
         network.addHost(new Host("H1"), r3);
-        network.addHost(new Host("H1"), r3);
-        network.addHost(new Host("H1"), r3);
-        network.addHost(new Host("H1"), r5);
-        network.addHost(new Host("H1"), r14);
-        network.addHost(new Host("H1"), r14);
-        network.addHost(new Host("H1"), r14);
-        network.addHost(new Host("H1"), r8);
-        network.addHost(new Host("H1"), r9);
-        network.addHost(new Host("H1"), r11);
-        network.addHost(new Host("H1"), r5);
         network.addHost(new Host("H1"), r3);
         network.addHost(new Host("H1"), r3);
 
+        r0.addRouterLink(r1);
         r1.addRouterLink(r2);
         r1.addRouterLink(r3);
         r2.addRouterLink(r3);
@@ -121,5 +104,21 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         launch(args);
+//        String s = "{'dpid': '0000000000000007', 'ports': [{'dpid': '0000000000000007', 'port_no': '00000001', 'hw_addr': '96:10:5e:db:0c:d3', 'name': 's7-eth1'}, {'dpid': '0000000000000007', 'port_no': '00000002', 'hw_addr': 'c6:e5:b1:06:38:85', 'name': 's7-eth2'}, {'dpid': '0000000000000007', 'port_no': '00000003', 'hw_addr': 'ae:99:21:7c:e0:bb', 'name': 's7-eth3'}]}";
+//        Gson gson = new GsonBuilder()
+//                .excludeFieldsWithoutExposeAnnotation()
+//                .create();
+
+//        Gson gson = new GsonBuilder()
+//                .excludeFieldsWithModifiers(Modifier.STATIC,
+//                        Modifier.TRANSIENT,
+//                        Modifier.VOLATILE)
+//                .create();
+//        Gson gson = new Gson();
+//        SwitchJson switchJson = new SwitchJson();
+//        switchJson.setCiaoo(12);
+//        System.out.println(switchJson);
+//        SwitchJson switchJson = gson.fromJson(s, SwitchJson.class);
+//        System.out.println(switchJson);
     }
 }

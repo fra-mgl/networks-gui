@@ -68,10 +68,10 @@ public class Network {
         routerList = new ArrayList<>();
         linkList = new ArrayList<>();
 
-        System.out.println("W+H: " + width + " " + height);
-        System.out.println("CX+CY: " + centerX + " " + centerY);
-        System.out.println("Router radius: " + routerRadius);
-        System.out.println("Host radius: " + hostRadius);
+//        System.out.println("W+H: " + width + " " + height);
+//        System.out.println("CX+CY: " + centerX + " " + centerY);
+//        System.out.println("Router radius: " + routerRadius);
+//        System.out.println("Host radius: " + hostRadius);
     }
 
     public boolean addHost(Host i, Router r){
@@ -106,10 +106,10 @@ public class Network {
         for (int i = 0; i < routerList.size(); i++){
             tmpRouter = routerList.get(i);
             iAlpha = i * deltaAlpha;
-            System.out.println("SWITCH:" + i);
+//            System.out.println("SWITCH:" + i);
             tmpRouter.setAngle(iAlpha);
             tmpRouter.computeCoords(iAlpha, routerRadius, centerX, centerY);
-            System.out.println("COORDS: " + routerList.get(i).getCenterX() + " " + routerList.get(i).getCenterY());
+//            System.out.println("COORDS: " + routerList.get(i).getCenterX() + " " + routerList.get(i).getCenterY());
             //System.out.println(routerList.get(i).getAnchorX() + " " + routerList.get(i).getAnchorY());
 
             /* for each host linked to that router, calculate coordinates */
@@ -121,7 +121,7 @@ public class Network {
                 jHostAngle = startAlpha + ((2*j)+1) * deltaHostAlpha;
                 tmpHost.setAngle(jHostAngle);
                 tmpHost.computeCoords(jHostAngle, hostRadius, centerX, centerY);
-                System.out.println("\tHOST: " + tmpHost.getCenterX() + " " + tmpHost.getCenterY());
+//                System.out.println("\tHOST: " + tmpHost.getCenterX() + " " + tmpHost.getCenterY());
 
                 /* add link between this pair host-router */
                 linkList.add(new Link(tmpRouter.getCenterX(), tmpRouter.getCenterY(), tmpHost.getCenterX(), tmpHost.getCenterY()));
@@ -134,7 +134,7 @@ public class Network {
 //                System.out.println("Router number: " + tmpRouter.getRouterLinkNumber());
 //                t = tmpRouter.getRouterFromLink(j);
 //                System.out.println("Router link: " + t);
-                System.out.println(tmpRouter.getCenterX() + " " +  tmpRouter.getCenterY()+ " " + tmpRouter.getRouterFromLink(j).getCenterX()+ " " + tmpRouter.getRouterFromLink(j).getCenterY());
+//                System.out.println(tmpRouter.getCenterX() + " " +  tmpRouter.getCenterY()+ " " + tmpRouter.getRouterFromLink(j).getCenterX()+ " " + tmpRouter.getRouterFromLink(j).getCenterY());
                 linkList.add(new Link(tmpRouter.getCenterX(), tmpRouter.getCenterY(), tmpRouter.getRouterFromLink(j).getCenterX(), tmpRouter.getRouterFromLink(j).getCenterY()));
             }
         }
