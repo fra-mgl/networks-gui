@@ -53,7 +53,7 @@ class TopologyAPI(app_manager.RyuApp):
         self.mac_to_port = {}
         self.datapaths = {}
         self.switches = {}
-        # self.monitor_thread = hub.spawn(self._monitor)
+        self.monitor_thread = hub.spawn(self._monitor)
         wsgi = kwargs['wsgi']
         wsgi.register(TopologyController, {'topology_api_app': self})
 
