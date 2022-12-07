@@ -19,7 +19,7 @@ public class Network {
     private AnchorPane connectionsAnchor;
     private AnchorPane itemsAnchor;
     private Circle graphStage;
-    private static final double graphPadding = 100.0;
+    private static final double graphPadding = 50.0;
     private static double hostRadius;
     private static double routerRadius;
     private double centerX;
@@ -46,10 +46,10 @@ public class Network {
         netStack.getChildren().addAll(graphAnchor, connectionsAnchor, itemsAnchor);
 
         hostRadius = width/2.0 - graphPadding;
-        routerRadius = hostRadius - 1.75*graphPadding;
+        routerRadius = hostRadius/2.0;
         graphStage = new Circle(hostRadius, Color.CADETBLUE);
         /* reduce a bit hostRadius to let hosts to be inside the circle */
-        hostRadius -= 40.0;
+        hostRadius -= hostRadius * 0.15;
         graphStage.setCenterX(width/2.0);
         graphStage.setCenterY(height/2.0);
 

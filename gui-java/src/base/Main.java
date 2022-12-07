@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -18,8 +19,11 @@ import java.util.List;
 
 public class Main extends Application {
 
-    private static final double windowHeight = 850.0 ;
-    private static final double windowWidth = 800.0;
+    private static final double networkDim = 750.0;
+    private static final double textWidth = 350.0;
+    private static final double buttonsHeight = 50.0;
+    private static final double windowWidth = networkDim +  textWidth;
+    private static final double windowHeight = networkDim + buttonsHeight;
     private static final int HBoxPadding = 20;
 
 
@@ -38,22 +42,52 @@ public class Main extends Application {
 //                System.out.println("Hello GUI!");
 //            }
 //        });
-        BorderPane layout = new BorderPane();
+//        BorderPane layout = new BorderPane();
 
         /* BUTTONS */
         HBox buttonsBox = new HBox(bRefresh, bAddHost, bAddSwitch);
         buttonsBox.setBackground(new Background(new BackgroundFill(Color.CADETBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
-        layout.setBottom(buttonsBox);
         buttonsBox.setAlignment(Pos.CENTER);
-        BorderPane.setAlignment(buttonsBox, Pos.CENTER);
-        buttonsBox.setPadding(new Insets(HBoxPadding, 0, HBoxPadding, 0));
         buttonsBox.setSpacing(50);
-        buttonsBox.setPrefHeight(50.0);
+        buttonsBox.setMinHeight(buttonsHeight);
+        buttonsBox.setMaxHeight(buttonsHeight);
+
+        /* SPECS TEXT BOX */
+        Text codice = new Text("cia");
+        Text materiale = new Text("ciao");
+        Text costo = new Text("ciao");
+        Text dimensione = new Text();
+        Text sceltaColore = new Text();
+        VBox texts = new VBox();
+        texts.getChildren().addAll(codice, materiale, costo);
+//        texts.setBackground(new Background(new BackgroundFill(Color.CADETBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
+        texts.setAlignment(Pos.CENTER);
+        texts.setPadding(new Insets(HBoxPadding, 0, HBoxPadding, 0));
+        texts.setSpacing(50);
+
+        /* LAYOUT */
+        GridPane layou = new GridPane();
+        ColumnConstraints col1 = new ColumnConstraints();
+        ColumnConstraints col2 = new ColumnConstraints();
+        col1.setMinWidth(networkDim);
+        col1.setMaxWidth(networkDim);
+        col2.setMinWidth(textWidth);
+        col2.setMaxWidth(textWidth);
+        layou.getColumnConstraints().addAll(col1, col2);
+        RowConstraints row1 = new RowConstraints();
+        RowConstraints row2 = new RowConstraints();
+        row1.setMinHeight(networkDim);
+        row1.setMaxHeight(networkDim);
+        row2.setMinHeight(buttonsHeight);
+        row2.setMaxHeight(buttonsHeight);
+        layou.getRowConstraints().addAll(row1, row2);
+        Network network = new Network(networkDim, networkDim);
+        layou.add(network.netStack, 0,0);
+        layou.add(texts, 1,0);
+        layou.add(buttonsBox, 0,1);
 
 
 
-        Network network = new Network(windowWidth, windowHeight - buttonsBox.getPrefHeight());
-        layout.setCenter(network.netStack);
 //        prova.setCoordinates(100.0, 50.0);
 //        network.addHost(prova);
 
@@ -78,18 +112,6 @@ public class Main extends Application {
 //        }else{
 //            return 1;
 //        }
-        /* retrieve routers information, add routers to network, clean listRouter to initialize for next request */
-
-        try{
-            network.routerList.addAll(Arrays.asList(RestAPI.getRouter()));
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        try{
-            network.hostList.addAll(Arrays.asList(RestAPI.getHosts()));
-        } catch (Exception e){
-            e.printStackTrace();
-        }
 
 //        System.out.println(network.routerList);
 
@@ -122,6 +144,17 @@ public class Main extends Application {
 //        network.addHost(new Host("H1"), r0);
 //        r0.addRouterLink(r1);
 
+        /* NETWORK INITIALIZATION */
+        try{
+            network.routerList.addAll(Arrays.asList(RestAPI.getRouter()));
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        try{
+            network.hostList.addAll(Arrays.asList(RestAPI.getHosts()));
+        } catch (Exception e){
+            e.printStackTrace();
+        }
 
         for(int i=0;i< network.routerList.size(); i++){
             network.routerList.get(i).setName();
@@ -133,10 +166,6 @@ public class Main extends Application {
             index = network.routerList.indexOf(new Router(network.hostList.get(i).getRouter()));
             network.routerList.get(index).addHostLink(network.hostList.get(i));
         }
-
-
-
-
 
         /* PRINT NETITEM */
         for(int i=0;i< network.routerList.size(); i++){
@@ -151,7 +180,7 @@ public class Main extends Application {
         /* STAGE */
         primaryStage.setResizable(false);
         primaryStage.setTitle("Networks GUI");
-        primaryStage.setScene(new Scene(layout, windowWidth, windowHeight));
+        primaryStage.setScene(new Scene(layou, windowWidth, windowHeight));
         primaryStage.show();
     }
 
