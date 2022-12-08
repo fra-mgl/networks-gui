@@ -94,6 +94,12 @@ public class Router extends NetItem{
         return switchLinkList.get(i);
     }
 
+    public int getRouterLinkNumber(){
+        return routerLinkList.size();
+    }
+    public Router getRouterFromLink(int i){
+        return routerLinkList.get(i);
+    }
     public int getIdR() {
         return id_r;
     }

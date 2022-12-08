@@ -349,13 +349,13 @@ public class Main extends Application {
 
         /* ADD LINKS BETWEEN NOT-HOSTS */
         try {
-            network.linkList.clear();
-            network.linkList.addAll(Arrays.asList(RestAPI.getLinks()));
+            network.linkJsonList.clear();
+            network.linkJsonList.addAll(Arrays.asList(RestAPI.getLinks()));
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        for (LinkJson ll : network.linkList) {
+        for (LinkJson ll : network.linkJsonList) {
             int dpid1 = ll.getSrc();
             int dpid2 = ll.getDst();
             // routers' and switches' equals() is based on the id
@@ -385,8 +385,13 @@ public class Main extends Application {
 
         /*TEST AGGIUNGO DEI LINK*/
         network.routerList.get(99).addRouterLink(network.routerList.get((Integer) 98));
-        network.routerList.get(99).addSwitchLink(network.switchList.get((Integer) 2));
-        network.routerList.get(98).addSwitchLink(network.switchList.get((Integer) 1));
+        network.routerList.get(99).addSwitchLink(network.switchList.get((Integer) 1));
+        network.routerList.get(98).addSwitchLink(network.switchList.get((Integer) 2));
+        network.routerList.get(98).addSwitchLink(network.switchList.get((Integer) 3));
+        network.routerList.get(99).addSwitchLink(network.switchList.get((Integer) 4));
+        network.routerList.get(99).addSwitchLink(network.switchList.get((Integer) 5));
+        network.routerList.get(98).addSwitchLink(network.switchList.get((Integer) 6));
+        network.routerList.get(98).addSwitchLink(network.switchList.get((Integer) 7));
         /* ALL LINKS ARE PROCESSED */
 
 
