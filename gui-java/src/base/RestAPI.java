@@ -59,6 +59,28 @@ public class RestAPI {
             return null;
         }
     }
+    static LinkJson[] getLinks() throws Exception{
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(URL + "links"))
+                    .GET().build();
+            HttpClient client = HttpClient.newHttpClient();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+//            System.out.println(response.statusCode());
+//            System.out.println(response.body());
+            if(response.statusCode() != 200){
+                System.err.println("EXEP- RestAPI - ERROR: not 200");
+                throw new Exception("Error - not 200");
+            }
+            String json = response.body();
+//            System.out.println(json);
+            return gson.fromJson(json, LinkJson[].class);
+        } catch (Exception e){
+            System.err.println("EXEP- RestAPI");
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
 
 class Port{
@@ -85,3 +107,32 @@ class Port{
         return dpid;
     }
 }
+
+class LinkJson{
+    @Expose private Port src;
+    @Expose private Port dst;
+
+    public LinkJson() {}
+
+    public int getSrc(){
+        try{
+            int number = Integer.parseInt(src.getDpid());
+            return number;
+        }
+        catch (NumberFormatException ex){
+            ex.printStackTrace();
+            return -1;
+        }
+    }
+    public int getDst(){
+        try{
+            int number = Integer.parseInt(dst.getDpid());
+            return number;
+        }
+        catch (NumberFormatException ex){
+            ex.printStackTrace();
+            return -1;
+        }
+    }
+}
+

@@ -181,77 +181,17 @@ public class Main extends Application {
         });
 
 
-        /* TEST */
-//        layout.add(network.netStack, 0,0);
-//        System.out.println(network.netStack.getHeight());
-//        layout.add(specs, 1,0);
-
-
-
-//        prova.setCoordinates(100.0, 50.0);
-//        network.addHost(prova);
-
-//        List<Switch> p = new ArrayList<>();
-//        p.add(new Switch("1", 10.0));
-//        p.add(new Switch("2", 20.0));
-//        p.get(0).setAngle(30.0);
-//        System.out.println(p.get(0).getAngle());
-
-//        String s = "{'dpid': '0000000000000007', 'ports': [{'dpid': '0000000000000007', 'port_no': '00000001', 'hw_addr': '96:10:5e:db:0c:d3', 'name': 's7-eth1'}, {'dpid': '0000000000000007', 'port_no': '00000002', 'hw_addr': 'c6:e5:b1:06:38:85', 'name': 's7-eth2'}, {'dpid': '0000000000000007', 'port_no': '00000003', 'hw_addr': 'ae:99:21:7c:e0:bb', 'name': 's7-eth3'}]}";
-//
-//        Gson gson = new GsonBuilder()
-//                .excludeFieldsWithoutExposeAnnotation()
-//                .create();
-//        Switch r0 = gson.fromJson(s, Switch.class);
-//        Switch r0 = RestAPI.getSwitch();
-//        List<Switch> listSwitch = Arrays.asList(RestAPI.getSwitch());
-//        if (listSwitch != null) {
-//            for (int i = 0; i < listSwitch.size(); i++) {
-//                network.addSwitch(listSwitch.get(i));
-//            }
-//        }else{
-//            return 1;
-//        }
-
-//        System.out.println(network.switchList);
-
-//        Switch r0 = list.get(0);
-//        Switch r1 = new Switch();
-//        Switch r2 = new Switch();
-//        Switch r3 = new Switch();
-//        System.out.println(r0);
-//
-//        network.addSwitch(r0);
-//        network.addSwitch(r1);
-//        network.addSwitch(r2);
-//        network.addSwitch(r3);
-//
-//        network.addHost(new Host("H1"), r0);
-//        network.addHost(new Host("H1"), r1);
-//        network.addHost(new Host("H1"), r2);
-//        network.addHost(new Host("H1"), r2);
-//        network.addHost(new Host("H1"), r3);
-//        network.addHost(new Host("H1"), r3);
-//        network.addHost(new Host("H1"), r3);
-//
-//        r0.addSwitchLink(r1);
-//        r1.addSwitchLink(r2);
-//        r1.addSwitchLink(r3);
-//        r2.addSwitchLink(r3);
-
-//        Switch r0 = network.switchList.get(0);
-//        Switch r1 = network.switchList.get(1);
-//        network.addHost(new Host("H1"), r0);
-//        r0.addSwitchLink(r1);
-
         /* PRINT NETITEM */
-//        for(int i=0;i< network.switchList.size(); i++){
-//            System.out.println(network.switchList.get(i));
-//        }
-//        for(int i=0;i< network.hostList.size(); i++){
-//            System.out.println(network.hostList.get(i));
-//        }
-//        System.out.println(network.switchList.contains(new Switch(network.hostList.get(1).getSwitch())));
+        for(int i : network.routerList.keySet()){
+            System.out.println(network.routerList.get(i));
+        }
+        for(int i : network.switchList.keySet()){
+            System.out.println(network.switchList.get(i));
+        }
+        for(int i=0;i< network.hostList.size(); i++){
+            System.out.println(network.hostList.get(i));
+        }
+
 
 
         /* STAGE */
@@ -286,22 +226,51 @@ public class Main extends Application {
 //        System.out.println(switchJson);
     }
 
-    public void refreshNetwork(){
-        try{
-            network.switchList.clear();
-            network.switchList.addAll(Arrays.asList(RestAPI.getSwitch()));
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        try{
+    public void refreshNetwork() {
+
+        /* ADD ITEMS IN NETWORK */
+        try {
             network.hostList.clear();
             network.hostList.addAll(Arrays.asList(RestAPI.getHosts()));
-        } catch (Exception e){
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            network.switchList.clear();
+            for(Switch s : Arrays.asList(RestAPI.getSwitch())){
+                network.switchList.put(s.getIdFromDpid(), s);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // finto router - da sistempare per rendere api compliant
+        Router r0 = new Router(99);
+        Router r1 = new Router(98);
+        List<Router> l = new ArrayList<>();
+        l.add(r0);
+        l.add(r1);
+
+        try {
+            network.routerList.clear();
+            for(Router r : l){
+                network.routerList.put(r.getIdR(), r); // sistemare come prende la chiave
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        for(int i=0;i< network.switchList.size(); i++){
+        /* SET ROUTERS */
+        for (int i : network.routerList.keySet()) {
+//            network.routerList.get(i).setName();
+//            network.routerList.get(i).setID();
+
+            //handler per dispaly info
+
+        }
+        /* SET SWITCHES */
+        for (int i : network.switchList.keySet()) {
             network.switchList.get(i).setName();
+            network.switchList.get(i).setID();
 
             /* set eventHandler to dispaly specs */
             int finalI = i;
@@ -328,12 +297,15 @@ public class Main extends Application {
                     }
                 }
             });
+
         }
+
+        /*SET HOSTS */
         int index;
-        for(int i=0;i< network.hostList.size(); i++){
+        for (int i = 0; i < network.hostList.size(); i++) {
             network.hostList.get(i).setSwitch();
+            index = network.hostList.get(i).getSwitch();
             /* add each host to its switch */
-            index = network.switchList.indexOf(new Switch(network.hostList.get(i).getSwitch()));
             network.switchList.get(index).addHostLink(network.hostList.get(i));
 
             /* set eventHandler to dispaly specs */
@@ -372,13 +344,52 @@ public class Main extends Application {
                 }
             });
         }
-        network.displayAlgorithm();
 
-        if(isExplore){
-            switchToSpecsBox();
-        }else{
-            resetSpecs();
+        /* SETTING COMPLETED */
+
+        /* ADD LINKS BETWEEN NOT-HOSTS */
+        try {
+            network.linkList.clear();
+            network.linkList.addAll(Arrays.asList(RestAPI.getLinks()));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
+        for (LinkJson ll : network.linkList) {
+            int dpid1 = ll.getSrc();
+            int dpid2 = ll.getDst();
+            // routers' and switches' equals() is based on the id
+            if(network.routerList.containsKey((Integer)dpid1)){
+                //means that src is a router
+                if(network.routerList.containsKey((Integer)dpid2)){
+                    // means that dst is a router
+                    network.routerList.get(dpid1).addRouterLink(network.routerList.get((Integer) dpid2));
+                }else{
+                    // means that dst is a switch
+                    network.routerList.get(dpid1).addSwitchLink(network.switchList.get((Integer) dpid2));
+                }
+            }else if (network.routerList.containsKey((Integer)dpid2)) {
+                //means that dst is a router
+                if(network.routerList.containsKey((Integer)dpid1)){
+                    // means that src is a router
+                    network.routerList.get(dpid2).addRouterLink(network.routerList.get((Integer) dpid1));
+                }else{
+                    // means that src is a switch
+                    network.routerList.get(dpid2).addSwitchLink(network.switchList.get((Integer) dpid1));
+                }
+            }else{
+                // means that both src and dst are switches
+                network.switchList.get(dpid1).addSwitchLink(network.switchList.get((Integer) dpid2));
+            }
+        }
+
+        /*TEST AGGIUNGO DEI LINK*/
+        network.routerList.get(99).addRouterLink(network.routerList.get((Integer) 98));
+        network.routerList.get(99).addSwitchLink(network.switchList.get((Integer) 2));
+        network.routerList.get(98).addSwitchLink(network.switchList.get((Integer) 1));
+        /* ALL LINKS ARE PROCESSED */
+
+
     }
     
     private void resetSpecs(){

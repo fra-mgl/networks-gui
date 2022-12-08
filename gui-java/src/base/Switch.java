@@ -10,6 +10,7 @@ import java.util.Objects;
 public class Switch extends NetItem{
 
     private String name;
+    private int id_s;
     @Expose private String dpid;
     @Expose private List<Port> ports;
 
@@ -59,6 +60,10 @@ public class Switch extends NetItem{
         for(int i = 0; i < ports.size(); i++){
             out.append("\t").append(ports.get(i).toString()).append("\n");
         }
+        out.append(",\n Link with Switches=\n");
+        for(int i = 0; i < switchLinkList.size(); i++){
+            out.append("\t").append(switchLinkList.get(i).getIdS()).append("\n");
+        }
         out.append("}");
         return out.toString();
     }
@@ -74,17 +79,27 @@ public class Switch extends NetItem{
         }
     }
 
+    public void setID(){
+        try{
+            int number = Integer.parseInt(dpid);
+            this.id_s = number;
+        }
+        catch (NumberFormatException ex){
+            ex.printStackTrace();
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Switch switch_i = (Switch) o;
-        return name.equals(switch_i.name);
+        Switch aSwitch = (Switch) o;
+        return id_s == aSwitch.id_s;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name);
+        return Objects.hash(id_s);
     }
 
     public String getName() {
@@ -95,8 +110,24 @@ public class Switch extends NetItem{
         return dpid;
     }
 
+    public int getIdS() {
+        return id_s;
+    }
+
     public List<Port> getPorts() {
         return ports;
+    }
+
+    public int getIdFromDpid(){
+        /* needed tihs because in this phase, id cannot be set*/
+        try{
+            int number = Integer.parseInt(dpid);
+            return number;
+        }
+        catch (NumberFormatException ex){
+            ex.printStackTrace();
+            return -1;
+        }
     }
 }
 

@@ -19,13 +19,12 @@ public class Host extends NetItem{
     @Expose
     private Port port;
 
-    private StringBuilder switch_l;
+    private int switch_l;
 
 
     public Host() {
         super(icon);
 //        System.out.println("Host " + this.getName() + " created.");
-        switch_l = new StringBuilder();
         ipv4 = new ArrayList<>();
         ipv6 = new ArrayList<>();
     }
@@ -51,15 +50,15 @@ public class Host extends NetItem{
     public void setSwitch(){
         try{
             int number = Integer.parseInt(this.port.getDpid());
-            this.switch_l.append("s"+number);
+            switch_l = number;
         }
         catch (NumberFormatException ex){
             ex.printStackTrace();
         }
     }
 
-    public String getSwitch() {
-        return switch_l .toString();
+    public int getSwitch() {
+        return switch_l;
     }
 
     public String getMac() {
