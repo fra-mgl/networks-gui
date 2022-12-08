@@ -390,6 +390,14 @@ public class Main extends Application {
         /* ALL LINKS ARE PROCESSED */
 
 
+        network.displayAlgorithm();
+
+        if(isExplore){
+            switchToSpecsBox();
+        }else{
+            resetSpecs();
+        }
+
     }
     
     private void resetSpecs(){

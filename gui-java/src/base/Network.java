@@ -84,44 +84,8 @@ public class Network {
 
 
     //make private ?
-//    public boolean displayAlgorithm(){
-//        itemsAnchor.getChildren().clear();
-//        connectionsAnchor.getChildren().clear();
-//
-//        Host tmpHost;
-//        Switch tmpSwitch;
-//        Router tmpRouter;
-//        double deltaAlpha = 360.0 / routerList.size();
-//        double iAlpha;
-//        double startAlpha;
-//        double deltaSwitchAlpha;
-//        double jSwitchAngle;
-//
-//        /* for each router */
-//        for (int i=0; i<routerList.size();i++){
-//            tmpRouter = routerList.get(i);
-//            iAlpha = i * deltaAlpha;
-//            tmpRouter.setAngle(iAlpha);
-//            tmpRouter.computeCoords(iAlpha, routerRadius, centerX, centerY);
-//
-//            /* for each switch linked to that router, compute coordinates */
-//            startAlpha = iAlpha - deltaAlpha/2.0;
-//            deltaSwitchAlpha = deltaAlpha / (tmpRouter.getSwitchLinkNumber() * 2);
-////            System.out.println("switch i list number:" + switchList.get(i).getHostLinkNumber());
-//            for (int j = 0; j < tmpRouter.getSwitchLinkNumber(); j++){
-//                tmpSwitch = tmpRouter.getSwitchFromLink(j);
-//                jSwitchAngle = startAlpha + ((2*j)+1) * deltaSwitchAlpha;
-//                tmpSwitch.setAngle(jSwitchAngle);
-//                tmpSwitch.computeCoords(jSwitchAngle, hostRadius, centerX, centerY);
-////                System.out.println("\tHOST: " + tmpHost.getCenterX() + " " + tmpHost.getCenterY());
-//
-//                /* add link between this pair host-switch */
-//                linkList.add(new Link(tmpRouter.getCenterX(), tmpSwitch.getCenterY(), tmpSwitch.getCenterX(), tmpSwitch.getCenterY()));
-//            }
-//        }
-//
-//        return true;
-//    }
+    public void displayAlgorithm(){
+    }
 }
 
 
