@@ -20,7 +20,9 @@ public class Network {
     private AnchorPane itemsAnchor;
     private Circle graphStage;
     private static final double graphPadding = 50.0;
+    private static double circleRadius;
     private static double hostRadius;
+    private static double switchRadius;
     private static double routerRadius;
     private double centerX;
     private double centerY;
@@ -31,7 +33,7 @@ public class Network {
     // o anche no, gestiamo sull'immagine che accede direttamente alle properties dell'elemento
 
     public List<Host> hostList;
-    public List<Router> routerList;
+    public List<Switch> switchList;
     private List<Link> linkList;
 
 
@@ -45,11 +47,13 @@ public class Network {
         itemsAnchor = new AnchorPane();
         netStack.getChildren().addAll(graphAnchor, connectionsAnchor, itemsAnchor);
 
-        hostRadius = width/2.0 - graphPadding;
-        routerRadius = hostRadius/2.0;
-        graphStage = new Circle(hostRadius, Color.CADETBLUE);
+//        hostRadius = width/2.0 - graphPadding;
+        circleRadius = width/2.0;
+        graphStage = new Circle(circleRadius, Color.CADETBLUE);
         /* reduce a bit hostRadius to let hosts to be inside the circle */
-        hostRadius -= hostRadius * 0.15;
+        hostRadius = circleRadius -  circleRadius * 0.15;
+        switchRadius = circleRadius*0.66;
+        routerRadius = circleRadius*0.33;
         graphStage.setCenterX(width/2.0);
         graphStage.setCenterY(height/2.0);
 
@@ -65,13 +69,13 @@ public class Network {
         AnchorPane.setLeftAnchor(graphStage, graphStage.getCenterX() - graphStage.getRadius());
 
         hostList = new ArrayList<>();
-        routerList = new ArrayList<>();
+        switchList = new ArrayList<>();
         linkList = new ArrayList<>();
 
-//        System.out.println("W+H: " + width + " " + height);
-//        System.out.println("CX+CY: " + centerX + " " + centerY);
-//        System.out.println("Router radius: " + routerRadius);
-//        System.out.println("Host radius: " + hostRadius);
+        System.out.println("W+H: " + width + " " + height);
+        System.out.println("CX+CY: " + centerX + " " + centerY);
+        System.out.println("Switch radius: " + switchRadius);
+        System.out.println("Host radius: " + hostRadius);
     }
 
     public boolean addHost(Host i){
@@ -79,13 +83,13 @@ public class Network {
 //        itemsAnchor.getChildren().add(i);
 //        AnchorPane.setTopAnchor(i, i.getAnchorY());
 //        AnchorPane.setLeftAnchor(i, i.getAnchorX());
-//        assert(routerList.contains(r));
+//        assert(switchList.contains(r));
         hostList.add(i);
 //        r.addHostLink(i);
         return true;
     }
-    public boolean addRouter(Router i){
-        routerList.add(i);
+    public boolean addSwitch(Switch i){
+        switchList.add(i);
         return true;
     }
 
@@ -95,64 +99,64 @@ public class Network {
         itemsAnchor.getChildren().clear();
         connectionsAnchor.getChildren().clear();
 
-        /* for each router, calculate coordinates */
-        double deltaAlpha = 360.0 / routerList.size();
+        /* for each switch, calculate coordinates */
+        double deltaAlpha = 360.0 / switchList.size();
         double iAlpha;
         double startAlpha;
         Host tmpHost;
-        Router tmpRouter;
+        Switch tmpSwitch;
         double deltaHostAlpha;
         double jHostAngle;
-        for (int i = 0; i < routerList.size(); i++){
-            tmpRouter = routerList.get(i);
+        for (int i = 0; i < switchList.size(); i++){
+            tmpSwitch = switchList.get(i);
             iAlpha = i * deltaAlpha;
 //            System.out.println("SWITCH:" + i);
-            tmpRouter.setAngle(iAlpha);
-            tmpRouter.computeCoords(iAlpha, routerRadius, centerX, centerY);
-//            System.out.println("COORDS: " + routerList.get(i).getCenterX() + " " + routerList.get(i).getCenterY());
-            //System.out.println(routerList.get(i).getAnchorX() + " " + routerList.get(i).getAnchorY());
+            tmpSwitch.setAngle(iAlpha);
+            tmpSwitch.computeCoords(iAlpha, switchRadius, centerX, centerY);
+//            System.out.println("COORDS: " + switchList.get(i).getCenterX() + " " + switchList.get(i).getCenterY());
+            //System.out.println(switchList.get(i).getAnchorX() + " " + switchList.get(i).getAnchorY());
 
-            /* for each host linked to that router, calculate coordinates */
+            /* for each host linked to that switch, calculate coordinates */
             startAlpha = iAlpha - deltaAlpha/2.0;
-            deltaHostAlpha = deltaAlpha / (tmpRouter.getHostLinkNumber() * 2);
-//            System.out.println("router i list number:" + routerList.get(i).getHostLinkNumber());
-            for (int j = 0; j < tmpRouter.getHostLinkNumber(); j++){
-                tmpHost = tmpRouter.getHostFromLink(j);
+            deltaHostAlpha = deltaAlpha / (tmpSwitch.getHostLinkNumber() * 2);
+//            System.out.println("switch i list number:" + switchList.get(i).getHostLinkNumber());
+            for (int j = 0; j < tmpSwitch.getHostLinkNumber(); j++){
+                tmpHost = tmpSwitch.getHostFromLink(j);
                 jHostAngle = startAlpha + ((2*j)+1) * deltaHostAlpha;
                 tmpHost.setAngle(jHostAngle);
                 tmpHost.computeCoords(jHostAngle, hostRadius, centerX, centerY);
 //                System.out.println("\tHOST: " + tmpHost.getCenterX() + " " + tmpHost.getCenterY());
 
-                /* add link between this pair host-router */
-                linkList.add(new Link(tmpRouter.getCenterX(), tmpRouter.getCenterY(), tmpHost.getCenterX(), tmpHost.getCenterY()));
+                /* add link between this pair host-switch */
+                linkList.add(new Link(tmpSwitch.getCenterX(), tmpSwitch.getCenterY(), tmpHost.getCenterX(), tmpHost.getCenterY()));
             }
         }
-        for (int i = 0; i < routerList.size(); i++){
-            tmpRouter = routerList.get(i);
-            /* for each router, compute links between routers */
-            for(int j = 0; j < tmpRouter.getRouterLinkNumber(); j++){
-//                System.out.println("Router number: " + tmpRouter.getRouterLinkNumber());
-//                t = tmpRouter.getRouterFromLink(j);
-//                System.out.println("Router link: " + t);
-//                System.out.println(tmpRouter.getCenterX() + " " +  tmpRouter.getCenterY()+ " " + tmpRouter.getRouterFromLink(j).getCenterX()+ " " + tmpRouter.getRouterFromLink(j).getCenterY());
-                linkList.add(new Link(tmpRouter.getCenterX(), tmpRouter.getCenterY(), tmpRouter.getRouterFromLink(j).getCenterX(), tmpRouter.getRouterFromLink(j).getCenterY()));
+        for (int i = 0; i < switchList.size(); i++){
+            tmpSwitch = switchList.get(i);
+            /* for each switch, compute links between switchs */
+            for(int j = 0; j < tmpSwitch.getSwitchLinkNumber(); j++){
+//                System.out.println("Switch number: " + tmpSwitch.getSwitchLinkNumber());
+//                t = tmpSwitch.getSwitchFromLink(j);
+//                System.out.println("Switch link: " + t);
+//                System.out.println(tmpSwitch.getCenterX() + " " +  tmpSwitch.getCenterY()+ " " + tmpSwitch.getSwitchFromLink(j).getCenterX()+ " " + tmpSwitch.getSwitchFromLink(j).getCenterY());
+                linkList.add(new Link(tmpSwitch.getCenterX(), tmpSwitch.getCenterY(), tmpSwitch.getSwitchFromLink(j).getCenterX(), tmpSwitch.getSwitchFromLink(j).getCenterY()));
             }
         }
 
         /* compute all connections
-        * between routers
-        * between routers and hosts*/
+        * between switchs
+        * between switchs and hosts*/
 
 
         /* add all elements to corresponding stackpane */
         //connectionsAnchor.getChildren().addAll()
 //        System.out.println("SIZE: " + hostList.size());
         itemsAnchor.getChildren().addAll(hostList);
-        itemsAnchor.getChildren().addAll(routerList);
+        itemsAnchor.getChildren().addAll(switchList);
 
-        for (Router router : routerList) {
-            AnchorPane.setTopAnchor(router, router.getAnchorY());
-            AnchorPane.setLeftAnchor(router, router.getAnchorX());
+        for (Switch switch_i : switchList) {
+            AnchorPane.setTopAnchor(switch_i, switch_i.getAnchorY());
+            AnchorPane.setLeftAnchor(switch_i, switch_i.getAnchorX());
         }
         for (Host host : hostList) {
             AnchorPane.setTopAnchor(host, host.getAnchorY());

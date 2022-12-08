@@ -3,11 +3,13 @@ package base;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import javafx.application.Application;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -23,33 +25,42 @@ import java.util.List;
 
 public class Main extends Application {
 
-    private static final double networkDim = 750.0;
+    private static final double networkDim = 800.0;
     private static final double textWidth = 350.0;
-    private static final double buttonsHeight = 50.0;
+    private static final double buttonsHeight = 40.0;
     private static final double windowWidth = networkDim +  textWidth;
-    private static final double windowHeight = networkDim + buttonsHeight;
+    private static final double windowHeight = networkDim;
     private static final int HBoxPadding = 20;
 
+    private Network network;
 
-    public void addGuiElement(Pane pane, NetItem item){
-        pane.getChildren().add((item));
-    }
+    private Text field0;
+    private Text field1;
+    private Text field2;
+    private Text field3;
+    private Text field4;
+    private VBox specs;
+
+    private GridPane rightSide;
+    private GridPane specsBox;
+    private Pane exploreBox;
+
+    private Button bSpecs;
+    private Button bExplore;
+
+
+    private boolean isExplore;
+
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Button bAddHost = new Button("Add host");
-        Button bAddSwitch = new Button("Add switch");
-        Button bRefresh = new Button("Refresh");
-//        button.setOnAction(new EventHandler<ActionEvent>() {
-//            @Override
-//            public void handle(ActionEvent actionEvent) {
-//                System.out.println("Hello GUI!");
-//            }
-//        });
-//        BorderPane layout = new BorderPane();
 
         /* BUTTONS */
-        HBox buttonsBox = new HBox(bRefresh, bAddHost, bAddSwitch);
+        bSpecs = new Button("Specs");
+        bExplore = new Button("Explore");
+        Button bRefresh = new Button("Refresh");
+
+        HBox buttonsBox = new HBox(bSpecs, bExplore, bRefresh);
         buttonsBox.setBackground(new Background(new BackgroundFill(Color.CADETBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
         buttonsBox.setAlignment(Pos.CENTER);
         buttonsBox.setSpacing(50);
@@ -57,24 +68,38 @@ public class Main extends Application {
         buttonsBox.setMaxHeight(buttonsHeight);
 
         /* SPECS TEXT BOX */
-
-        Text field0 = new Text();
-        Text field1 = new Text();
-        Text field2 = new Text();
-        Text field3 = new Text();
-        Text field4 = new Text();
-        Text field5 = new Text();
-        VBox title = new VBox();
-        VBox texts = new VBox();
-        title.getChildren().add(field0);
-        texts.getChildren().addAll(field1, field2, field3, field4, field5);
-//        texts.setBackground(new Background(new BackgroundFill(Color.CADETBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
-        title.setAlignment(Pos.CENTER);
-        texts.setAlignment(Pos.CENTER_LEFT);
+        field0 = new Text();
+        field1 = new Text();
+        field2 = new Text();
+        field3 = new Text();
+        field4 = new Text();
+//        Text field5 = new Text();
+        specs = new VBox();
+//        title.getChildren().add(field0);
+//        specs.getChildren().addAll(field1, field2, field3, field4, field5);
+//        specs.setBackground(new Background(new BackgroundFill(Color.CADETBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
 //        field0.setFont(new Font());
-        texts.setPadding(new Insets(HBoxPadding, 0, HBoxPadding, 0));
-        texts.setSpacing(50);
-        VBox specs = new VBox(field0, texts);
+        specs.setPadding(new Insets(HBoxPadding, HBoxPadding, HBoxPadding, HBoxPadding));
+        specs.setSpacing(10);
+
+        /* TABLES TEXT BOX */
+        Text tableText = new Text("tabella");
+
+        ScrollPane specsScroll = new ScrollPane(specs);
+        specs.setAlignment(Pos.CENTER_LEFT);
+        ScrollPane tableScroll = new ScrollPane(tableText);
+
+
+        Pane p1 = new Pane();
+        p1.setBackground(new Background(new BackgroundFill(Color.RED, CornerRadii.EMPTY, Insets.EMPTY)));
+        Pane p2 = new Pane();
+        p2.setBackground(new Background(new BackgroundFill(Color.YELLOW, CornerRadii.EMPTY, Insets.EMPTY)));
+        Pane p3 = new Pane();
+        p3.setBackground(new Background(new BackgroundFill(Color.VIOLET, CornerRadii.EMPTY, Insets.EMPTY)));
+        Pane p4 = new Pane();
+        p4.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)));
+        exploreBox = new Pane();
+        exploreBox.setBackground(new Background(new BackgroundFill(Color.GREEN, CornerRadii.EMPTY, Insets.EMPTY)));
 
         /* LAYOUT */
         GridPane layout = new GridPane();
@@ -86,25 +111,89 @@ public class Main extends Application {
         col2.setMaxWidth(textWidth);
         layout.getColumnConstraints().addAll(col1, col2);
         RowConstraints row1 = new RowConstraints();
-        RowConstraints row2 = new RowConstraints();
         row1.setMinHeight(networkDim);
         row1.setMaxHeight(networkDim);
-        row2.setMinHeight(buttonsHeight);
-        row2.setMaxHeight(buttonsHeight);
-        layout.getRowConstraints().addAll(row1, row2);
-        Network network = new Network(networkDim, networkDim);
+        layout.getRowConstraints().add(row1);
+
+        rightSide = new GridPane();
+        rightSide.getColumnConstraints().addAll(col2);
+        RowConstraints rowDX1 = new RowConstraints();
+        rowDX1.setMinHeight(networkDim - buttonsHeight);
+        rowDX1.setMaxHeight(networkDim - buttonsHeight);
+        RowConstraints rowDX2 = new RowConstraints();
+        rowDX2.setMinHeight(buttonsHeight);
+        rowDX2.setMaxHeight(buttonsHeight);
+        rightSide.getRowConstraints().addAll(rowDX1,rowDX2);
+
+        specsBox = new GridPane();
+        specsBox.getColumnConstraints().addAll(col2);
+        RowConstraints rowSpecs1 = new RowConstraints();
+        rowSpecs1.setMinHeight(rowDX1.getMaxHeight() / 2.0);
+        rowSpecs1.setMaxHeight(rowDX1.getMaxHeight() / 2.0);
+        RowConstraints rowSpecs2 = new RowConstraints();
+        rowSpecs2.setMinHeight(rowDX1.getMaxHeight() / 2.0);
+        rowSpecs2.setMaxHeight(rowDX1.getMaxHeight() / 2.0);
+        specsBox.getRowConstraints().addAll(rowSpecs1,rowSpecs2);
+
+        network = new Network(networkDim, networkDim);
         layout.add(network.netStack, 0,0);
-        layout.add(texts, 1,0);
-        layout.add(buttonsBox, 0,1);
+        layout.add(rightSide, 1,0);
+        rightSide.add(buttonsBox,0,1); // buttons
+        // init specsBox //
+        specsBox.add(specsScroll, 0,0);
+        specsBox.add(tableScroll, 0,1);
+        /* explore */
+//        rightSide.add(exploreBox,0,0);
+        /* specs */
+//        rightSide.add(specsBox, 0, 0); // internal grid
+
+        /* init right side */
+        rightSide.add(specsBox, 0, 0);
+        resetSpecs();
+        isExplore = false;
+        bSpecs.setDisable(true);
+        bExplore.setDisable(false);
+        bExplore.requestFocus();
+
+        /* NETWORK INITIALIZATION */
+        refreshNetwork();
+
+
+
+        /* BUTTONS' EVENT HANDLERS */
+        bSpecs.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                switchToSpecsBox();
+            }
+        });
+        bExplore.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                switchToExploreBox();
+            }
+        });
+        bRefresh.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                refreshNetwork();
+            }
+        });
+
+
+        /* TEST */
+//        layout.add(network.netStack, 0,0);
+//        System.out.println(network.netStack.getHeight());
+//        layout.add(specs, 1,0);
 
 
 
 //        prova.setCoordinates(100.0, 50.0);
 //        network.addHost(prova);
 
-//        List<Router> p = new ArrayList<>();
-//        p.add(new Router("1", 10.0));
-//        p.add(new Router("2", 20.0));
+//        List<Switch> p = new ArrayList<>();
+//        p.add(new Switch("1", 10.0));
+//        p.add(new Switch("2", 20.0));
 //        p.get(0).setAngle(30.0);
 //        System.out.println(p.get(0).getAngle());
 
@@ -113,29 +202,29 @@ public class Main extends Application {
 //        Gson gson = new GsonBuilder()
 //                .excludeFieldsWithoutExposeAnnotation()
 //                .create();
-//        Router r0 = gson.fromJson(s, Router.class);
-//        Router r0 = RestAPI.getRouter();
-//        List<Router> listRouter = Arrays.asList(RestAPI.getRouter());
-//        if (listRouter != null) {
-//            for (int i = 0; i < listRouter.size(); i++) {
-//                network.addRouter(listRouter.get(i));
+//        Switch r0 = gson.fromJson(s, Switch.class);
+//        Switch r0 = RestAPI.getSwitch();
+//        List<Switch> listSwitch = Arrays.asList(RestAPI.getSwitch());
+//        if (listSwitch != null) {
+//            for (int i = 0; i < listSwitch.size(); i++) {
+//                network.addSwitch(listSwitch.get(i));
 //            }
 //        }else{
 //            return 1;
 //        }
 
-//        System.out.println(network.routerList);
+//        System.out.println(network.switchList);
 
-//        Router r0 = list.get(0);
-//        Router r1 = new Router();
-//        Router r2 = new Router();
-//        Router r3 = new Router();
+//        Switch r0 = list.get(0);
+//        Switch r1 = new Switch();
+//        Switch r2 = new Switch();
+//        Switch r3 = new Switch();
 //        System.out.println(r0);
 //
-//        network.addRouter(r0);
-//        network.addRouter(r1);
-//        network.addRouter(r2);
-//        network.addRouter(r3);
+//        network.addSwitch(r0);
+//        network.addSwitch(r1);
+//        network.addSwitch(r2);
+//        network.addSwitch(r3);
 //
 //        network.addHost(new Host("H1"), r0);
 //        network.addHost(new Host("H1"), r1);
@@ -145,104 +234,35 @@ public class Main extends Application {
 //        network.addHost(new Host("H1"), r3);
 //        network.addHost(new Host("H1"), r3);
 //
-//        r0.addRouterLink(r1);
-//        r1.addRouterLink(r2);
-//        r1.addRouterLink(r3);
-//        r2.addRouterLink(r3);
+//        r0.addSwitchLink(r1);
+//        r1.addSwitchLink(r2);
+//        r1.addSwitchLink(r3);
+//        r2.addSwitchLink(r3);
 
-//        Router r0 = network.routerList.get(0);
-//        Router r1 = network.routerList.get(1);
+//        Switch r0 = network.switchList.get(0);
+//        Switch r1 = network.switchList.get(1);
 //        network.addHost(new Host("H1"), r0);
-//        r0.addRouterLink(r1);
-
-        /* NETWORK INITIALIZATION */
-        try{
-            network.routerList.addAll(Arrays.asList(RestAPI.getRouter()));
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        try{
-            network.hostList.addAll(Arrays.asList(RestAPI.getHosts()));
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-
-        for(int i=0;i< network.routerList.size(); i++){
-            network.routerList.get(i).setName();
-
-            /* set eventHandler to dispaly stats */
-            int finalI = i;
-            network.routerList.get(i).setOnMousePressed(new EventHandler<MouseEvent>() {
-                @Override
-                public void handle(MouseEvent mouseEvent) {
-                    field0.setText("ROUTER");
-                    field1.setText("NAME:\t" + network.routerList.get(finalI).getName());
-                    field2.setText("DPID:\t" + network.routerList.get(finalI).getDpid());
-                    StringBuilder str = new StringBuilder("PORTS:\n\n");
-
-                    for (Port p: network.routerList.get(finalI).getPorts()) {
-                        str.append("\t"+p.toString()+"\n");
-                    }
-                    field3.setText(str.toString());
-                }
-            });
-        }
-        int index;
-        for(int i=0;i< network.hostList.size(); i++){
-            network.hostList.get(i).setRouter();
-            /* add each host to its router */
-            index = network.routerList.indexOf(new Router(network.hostList.get(i).getRouter()));
-            network.routerList.get(index).addHostLink(network.hostList.get(i));
-
-            /* set eventHandler to dispaly stats */
-            int finalI = i;
-            network.hostList.get(i).setOnMousePressed(new EventHandler<MouseEvent>() {
-                @Override
-                public void handle(MouseEvent mouseEvent) {
-                    field0.setText("HOST");
-                    field1.setText("MAC:\t" + network.hostList.get(finalI).getMac());
-                    StringBuilder str;
-                    if (network.hostList.get(finalI).getIpv4().size() == 0){
-                        str = new StringBuilder("IPv4:\n");
-                    }else{
-                        str = new StringBuilder("IPv4:\n\n");
-                        for (String p: network.hostList.get(finalI).getIpv4()) {
-                            str.append("\t"+p+"\n");
-                        }
-
-                    }
-                    field2.setText(str.toString());
-
-                    if (network.hostList.get(finalI).getIpv6().size() == 0){
-                        str = new StringBuilder("IPv6:\n");
-                    }else{
-                        str = new StringBuilder("IPv6:\n\n");
-                        for (String p: network.hostList.get(finalI).getIpv6()) {
-                            str.append("\t"+p+"\n");
-                        }
-
-                    }
-                    field3.setText(str.toString());
-                    field4.setText("PORT:\t" + network.hostList.get(finalI).getPort().toString()+"\n");
-                }
-            });
-        }
+//        r0.addSwitchLink(r1);
 
         /* PRINT NETITEM */
-        for(int i=0;i< network.routerList.size(); i++){
-            System.out.println(network.routerList.get(i));
-        }
-        for(int i=0;i< network.hostList.size(); i++){
-            System.out.println(network.hostList.get(i));
-        }
-//        System.out.println(network.routerList.contains(new Router(network.hostList.get(1).getRouter())));
-        network.displayAlgorithm();
+//        for(int i=0;i< network.switchList.size(); i++){
+//            System.out.println(network.switchList.get(i));
+//        }
+//        for(int i=0;i< network.hostList.size(); i++){
+//            System.out.println(network.hostList.get(i));
+//        }
+//        System.out.println(network.switchList.contains(new Switch(network.hostList.get(1).getSwitch())));
 
 
         /* STAGE */
         primaryStage.setResizable(false);
         primaryStage.setTitle("Networks GUI");
-        primaryStage.setScene(new Scene(layout, windowWidth, windowHeight));
+        primaryStage.setScene(new Scene(layout));
+        primaryStage.setMinHeight(windowHeight);
+        primaryStage.setMaxHeight(windowHeight);
+        primaryStage.setMinWidth(windowWidth);
+        primaryStage.setMaxWidth(windowWidth);
+        System.out.println(layout.getHeight());
         primaryStage.show();
     }
 
@@ -264,5 +284,133 @@ public class Main extends Application {
 //        System.out.println(switchJson);
 //        SwitchJson switchJson = gson.fromJson(s, SwitchJson.class);
 //        System.out.println(switchJson);
+    }
+
+    public void refreshNetwork(){
+        try{
+            network.switchList.clear();
+            network.switchList.addAll(Arrays.asList(RestAPI.getSwitch()));
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        try{
+            network.hostList.clear();
+            network.hostList.addAll(Arrays.asList(RestAPI.getHosts()));
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        for(int i=0;i< network.switchList.size(); i++){
+            network.switchList.get(i).setName();
+
+            /* set eventHandler to dispaly specs */
+            int finalI = i;
+            network.switchList.get(i).setOnMousePressed(new EventHandler<MouseEvent>() {
+                @Override
+                public void handle(MouseEvent mouseEvent) {
+                    if (!isExplore) {
+                        specs.getChildren().clear();
+                        field0.setText("SWITCH");
+                        field1.setText("NAME:\t" + network.switchList.get(finalI).getName());
+                        field2.setText("DPID:\t" + network.switchList.get(finalI).getDpid());
+                        StringBuilder str = new StringBuilder("PORTS:\n");
+                        for (Port p : network.switchList.get(finalI).getPorts()) {
+                            str.append("\t" + p.toString() + "\n");
+                        }
+
+                        /* test scroll */
+//                    for (Port p: network.switchList.get(finalI).getPorts()) {
+//                        str.append("\t"+p.toString()+"\n");
+//                    }
+
+                        field3.setText(str.toString());
+                        specs.getChildren().addAll(field0, field1, field2, field3);
+                    }
+                }
+            });
+        }
+        int index;
+        for(int i=0;i< network.hostList.size(); i++){
+            network.hostList.get(i).setSwitch();
+            /* add each host to its switch */
+            index = network.switchList.indexOf(new Switch(network.hostList.get(i).getSwitch()));
+            network.switchList.get(index).addHostLink(network.hostList.get(i));
+
+            /* set eventHandler to dispaly specs */
+            int finalI = i;
+            network.hostList.get(i).setOnMousePressed(new EventHandler<MouseEvent>() {
+                @Override
+                public void handle(MouseEvent mouseEvent) {
+                    if (!isExplore) {
+                        specs.getChildren().clear();
+                        field0.setText("HOST");
+                        field1.setText("MAC:\t" + network.hostList.get(finalI).getMac());
+                        StringBuilder str;
+                        if (network.hostList.get(finalI).getIpv4().size() == 0) {
+                            str = new StringBuilder("IPv4:\n");
+                        } else {
+                            str = new StringBuilder("IPv4:\n\n");
+                            for (String p : network.hostList.get(finalI).getIpv4()) {
+                                str.append("\t" + p + "\n");
+                            }
+
+                        }
+                        field2.setText(str.toString());
+                        if (network.hostList.get(finalI).getIpv6().size() == 0) {
+                            str = new StringBuilder("IPv6:\n");
+                        } else {
+                            str = new StringBuilder("IPv6:\n\n");
+                            for (String p : network.hostList.get(finalI).getIpv6()) {
+                                str.append("\t" + p + "\n");
+                            }
+
+                        }
+                        field3.setText(str.toString());
+                        field4.setText("PORT:\t" + network.hostList.get(finalI).getPort().toString() + "\n");
+                        specs.getChildren().addAll(field0, field1, field2, field3, field4);
+                    }
+                }
+            });
+        }
+        network.displayAlgorithm();
+
+        if(isExplore){
+            switchToSpecsBox();
+        }else{
+            resetSpecs();
+        }
+    }
+    
+    private void resetSpecs(){
+        specs.getChildren().clear();
+        field0.setText("Click on an item to show its statistics!");
+        specs.getChildren().add(field0);
+        // reset table
+    }
+    private void resetExplore(){
+        
+    }
+
+    private void switchToSpecsBox(){
+        if(isExplore) {
+            rightSide.getChildren().remove(exploreBox);
+            rightSide.add(specsBox, 0, 0);
+            resetSpecs();
+            isExplore = false;
+            bSpecs.setDisable(true);
+            bExplore.setDisable(false);
+            bExplore.requestFocus();
+        }
+    }
+    private void switchToExploreBox(){
+        if (!isExplore) {
+            rightSide.getChildren().remove(specsBox);
+            rightSide.add(exploreBox, 0, 0);
+            resetExplore();
+            isExplore = true;
+            bSpecs.setDisable(false);
+            bExplore.setDisable(true);
+            bSpecs.requestFocus();
+        }
     }
 }

@@ -19,13 +19,13 @@ public class Host extends NetItem{
     @Expose
     private Port port;
 
-    private StringBuilder router;
+    private StringBuilder switch_l;
 
 
     public Host() {
         super(icon);
 //        System.out.println("Host " + this.getName() + " created.");
-        router = new StringBuilder();
+        switch_l = new StringBuilder();
         ipv4 = new ArrayList<>();
         ipv6 = new ArrayList<>();
     }
@@ -34,7 +34,7 @@ public class Host extends NetItem{
     public String toString() {
         StringBuilder out = new StringBuilder("Host{\n" +
                 " mac='" + mac + '\'' +
-                " router='" + router + '\'' +
+                " switch='" + switch_l + '\'' +
                 ",\n portArray= " + port +"\n");
         out.append("ipv4=\n");
         for(int i = 0; i < ipv4.size(); i++){
@@ -48,18 +48,18 @@ public class Host extends NetItem{
         return out.toString();
     }
 
-    public void setRouter(){
+    public void setSwitch(){
         try{
             int number = Integer.parseInt(this.port.getDpid());
-            this.router.append("s"+number);
+            this.switch_l.append("s"+number);
         }
         catch (NumberFormatException ex){
             ex.printStackTrace();
         }
     }
 
-    public String getRouter() {
-        return router.toString();
+    public String getSwitch() {
+        return switch_l .toString();
     }
 
     public String getMac() {

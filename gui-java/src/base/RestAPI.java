@@ -17,7 +17,7 @@ public class RestAPI {
             .create();
 
     static final String URL = "http://localhost:8080/topology/";
-    static Router[] getRouter() throws Exception{
+    static Switch[] getSwitch() throws Exception{
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(new URI(URL + "switches"))
@@ -31,7 +31,7 @@ public class RestAPI {
             }
             String json = response.body();
 //            System.out.println(json);
-            return gson.fromJson(json, Router[].class);
+            return gson.fromJson(json, Switch[].class);
         } catch (Exception e){
             System.err.println("EXEP- RestAPI");
             e.printStackTrace();
