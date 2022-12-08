@@ -11,7 +11,9 @@ import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -55,17 +57,24 @@ public class Main extends Application {
         buttonsBox.setMaxHeight(buttonsHeight);
 
         /* SPECS TEXT BOX */
+
+        Text field0 = new Text();
         Text field1 = new Text();
         Text field2 = new Text();
         Text field3 = new Text();
         Text field4 = new Text();
         Text field5 = new Text();
+        VBox title = new VBox();
         VBox texts = new VBox();
+        title.getChildren().add(field0);
         texts.getChildren().addAll(field1, field2, field3, field4, field5);
 //        texts.setBackground(new Background(new BackgroundFill(Color.CADETBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
+        title.setAlignment(Pos.CENTER);
         texts.setAlignment(Pos.CENTER_LEFT);
+//        field0.setFont(new Font());
         texts.setPadding(new Insets(HBoxPadding, 0, HBoxPadding, 0));
         texts.setSpacing(50);
+        VBox specs = new VBox(field0, texts);
 
         /* LAYOUT */
         GridPane layout = new GridPane();
@@ -161,11 +170,12 @@ public class Main extends Application {
         for(int i=0;i< network.routerList.size(); i++){
             network.routerList.get(i).setName();
 
-            /* set event handler to dispaly stats */
+            /* set eventHandler to dispaly stats */
             int finalI = i;
             network.routerList.get(i).setOnMousePressed(new EventHandler<MouseEvent>() {
                 @Override
                 public void handle(MouseEvent mouseEvent) {
+                    field0.setText("ROUTER");
                     field1.setText("NAME:\t" + network.routerList.get(finalI).getName());
                     field2.setText("DPID:\t" + network.routerList.get(finalI).getDpid());
                     StringBuilder str = new StringBuilder("PORTS:\n\n");
@@ -183,6 +193,39 @@ public class Main extends Application {
             /* add each host to its router */
             index = network.routerList.indexOf(new Router(network.hostList.get(i).getRouter()));
             network.routerList.get(index).addHostLink(network.hostList.get(i));
+
+            /* set eventHandler to dispaly stats */
+            int finalI = i;
+            network.hostList.get(i).setOnMousePressed(new EventHandler<MouseEvent>() {
+                @Override
+                public void handle(MouseEvent mouseEvent) {
+                    field0.setText("HOST");
+                    field1.setText("MAC:\t" + network.hostList.get(finalI).getMac());
+                    StringBuilder str;
+                    if (network.hostList.get(finalI).getIpv4().size() == 0){
+                        str = new StringBuilder("IPv4:\n");
+                    }else{
+                        str = new StringBuilder("IPv4:\n\n");
+                        for (String p: network.hostList.get(finalI).getIpv4()) {
+                            str.append("\t"+p+"\n");
+                        }
+
+                    }
+                    field2.setText(str.toString());
+
+                    if (network.hostList.get(finalI).getIpv6().size() == 0){
+                        str = new StringBuilder("IPv6:\n");
+                    }else{
+                        str = new StringBuilder("IPv6:\n\n");
+                        for (String p: network.hostList.get(finalI).getIpv6()) {
+                            str.append("\t"+p+"\n");
+                        }
+
+                    }
+                    field3.setText(str.toString());
+                    field4.setText("PORT:\t" + network.hostList.get(finalI).getPort().toString()+"\n");
+                }
+            });
         }
 
         /* PRINT NETITEM */

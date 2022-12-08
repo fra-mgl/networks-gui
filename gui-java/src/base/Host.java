@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Host extends NetItem{
 
-    static final Image icon = new Image("/media/desktop_mac_FILL0_wght500_GRAD200_opsz48.png");
+    static final Image icon = new Image("/media/desktop2_mac_FILL0_wght500_GRAD200_opsz48.png");
 
     @Expose
     private String mac;
@@ -56,5 +56,21 @@ public class Host extends NetItem{
 
     public String getRouter() {
         return router.toString();
+    }
+
+    public String getMac() {
+        return mac;
+    }
+
+    public List<String> getIpv4() {
+        return ipv4;
+    }
+
+    public List<String> getIpv6() {
+        return ipv6;
+    }
+
+    public Port getPort() {
+        return port;
     }
 }
