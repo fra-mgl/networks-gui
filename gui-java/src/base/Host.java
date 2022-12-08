@@ -49,9 +49,13 @@ public class Host extends NetItem{
     }
 
     public void setRouter(){
-        String s = this.port.getName();
-        this.router.append(s.charAt(0));
-        this.router.append(s.charAt(1));
+        try{
+            int number = Integer.parseInt(this.port.getDpid());
+            this.router.append("s"+number);
+        }
+        catch (NumberFormatException ex){
+            ex.printStackTrace();
+        }
     }
 
     public String getRouter() {

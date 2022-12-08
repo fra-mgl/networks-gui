@@ -80,4 +80,8 @@ class Port{
     public String getName() {
         return name;
     }
+
+    public String getDpid() {
+        return dpid;
+    }
 }
