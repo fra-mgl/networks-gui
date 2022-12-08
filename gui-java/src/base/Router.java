@@ -86,5 +86,17 @@ public class Router extends NetItem{
     public int hashCode() {
         return Objects.hash(name);
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDpid() {
+        return dpid;
+    }
+
+    public List<Port> getPorts() {
+        return ports;
+    }
 }
 

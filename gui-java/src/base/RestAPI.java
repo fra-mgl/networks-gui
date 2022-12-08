@@ -70,12 +70,11 @@ class Port{
 
     @Override
     public String toString() {
-        return "Port{" +
-                "dpid='" + dpid + '\'' +
-                ", port_no='" + port_no + '\'' +
-                ", hw_addr='" + hw_addr + '\'' +
-                ", name='" + name + '\'' +
-                '}';
+        return "Port" +
+                "\n\t\tdpid='" + dpid + '\'' +
+                ",\n\t\tport_no='" + port_no + '\'' +
+                ",\n\t\thw_addr='" + hw_addr + '\'' +
+                ",\n\t\tname='" + name + '\'';
     }
 
     public String getName() {

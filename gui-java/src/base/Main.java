@@ -3,10 +3,12 @@ package base;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -53,38 +55,38 @@ public class Main extends Application {
         buttonsBox.setMaxHeight(buttonsHeight);
 
         /* SPECS TEXT BOX */
-        Text codice = new Text("cia");
-        Text materiale = new Text("ciao");
-        Text costo = new Text("ciao");
-        Text dimensione = new Text();
-        Text sceltaColore = new Text();
+        Text field1 = new Text();
+        Text field2 = new Text();
+        Text field3 = new Text();
+        Text field4 = new Text();
+        Text field5 = new Text();
         VBox texts = new VBox();
-        texts.getChildren().addAll(codice, materiale, costo);
+        texts.getChildren().addAll(field1, field2, field3, field4, field5);
 //        texts.setBackground(new Background(new BackgroundFill(Color.CADETBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
-        texts.setAlignment(Pos.CENTER);
+        texts.setAlignment(Pos.CENTER_LEFT);
         texts.setPadding(new Insets(HBoxPadding, 0, HBoxPadding, 0));
         texts.setSpacing(50);
 
         /* LAYOUT */
-        GridPane layou = new GridPane();
+        GridPane layout = new GridPane();
         ColumnConstraints col1 = new ColumnConstraints();
         ColumnConstraints col2 = new ColumnConstraints();
         col1.setMinWidth(networkDim);
         col1.setMaxWidth(networkDim);
         col2.setMinWidth(textWidth);
         col2.setMaxWidth(textWidth);
-        layou.getColumnConstraints().addAll(col1, col2);
+        layout.getColumnConstraints().addAll(col1, col2);
         RowConstraints row1 = new RowConstraints();
         RowConstraints row2 = new RowConstraints();
         row1.setMinHeight(networkDim);
         row1.setMaxHeight(networkDim);
         row2.setMinHeight(buttonsHeight);
         row2.setMaxHeight(buttonsHeight);
-        layou.getRowConstraints().addAll(row1, row2);
+        layout.getRowConstraints().addAll(row1, row2);
         Network network = new Network(networkDim, networkDim);
-        layou.add(network.netStack, 0,0);
-        layou.add(texts, 1,0);
-        layou.add(buttonsBox, 0,1);
+        layout.add(network.netStack, 0,0);
+        layout.add(texts, 1,0);
+        layout.add(buttonsBox, 0,1);
 
 
 
@@ -158,6 +160,22 @@ public class Main extends Application {
 
         for(int i=0;i< network.routerList.size(); i++){
             network.routerList.get(i).setName();
+
+            /* set event handler to dispaly stats */
+            int finalI = i;
+            network.routerList.get(i).setOnMousePressed(new EventHandler<MouseEvent>() {
+                @Override
+                public void handle(MouseEvent mouseEvent) {
+                    field1.setText("NAME:\t" + network.routerList.get(finalI).getName());
+                    field2.setText("DPID:\t" + network.routerList.get(finalI).getDpid());
+                    StringBuilder str = new StringBuilder("PORTS:\n\n");
+
+                    for (Port p: network.routerList.get(finalI).getPorts()) {
+                        str.append("\t"+p.toString()+"\n");
+                    }
+                    field3.setText(str.toString());
+                }
+            });
         }
         int index;
         for(int i=0;i< network.hostList.size(); i++){
@@ -177,10 +195,11 @@ public class Main extends Application {
 //        System.out.println(network.routerList.contains(new Router(network.hostList.get(1).getRouter())));
         network.displayAlgorithm();
 
+
         /* STAGE */
         primaryStage.setResizable(false);
         primaryStage.setTitle("Networks GUI");
-        primaryStage.setScene(new Scene(layou, windowWidth, windowHeight));
+        primaryStage.setScene(new Scene(layout, windowWidth, windowHeight));
         primaryStage.show();
     }
 
