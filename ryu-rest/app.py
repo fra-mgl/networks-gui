@@ -26,7 +26,14 @@ class App(app_manager.RyuApp):
         wsgi = kwargs['wsgi']
         self.waiters = {}
         self.data = {'waiters': self.waiters}
-        wsgi.register(TopologyController, {'topology_api_app': self})
+        mapper = wsgi.mapper
+        wsgi.registory['TopologyController'] = {'app': self}
+        wsgi.register(TopologyController, {'app': self})
+
+        path = '/topology/l2switches'
+        mapper.connect('topology', path, controller=TopologyController,
+                       action='_l2_switches',
+                       conditions=dict(method=['GET']))
 
         self.l2_controller = L2Controller(None, None, self.data)
         self.l3_controller = L3Controller(None, None, self.data)
