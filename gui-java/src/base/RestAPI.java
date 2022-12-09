@@ -20,7 +20,7 @@ public class RestAPI {
     static Switch[] getSwitch() throws Exception{
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI(URL + "topology/switches"))
+                    .uri(new URI(URL + "topology/l2switches"))
                     .GET().build();
             HttpClient client = HttpClient.newHttpClient();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -32,6 +32,27 @@ public class RestAPI {
             String json = response.body();
 //            System.out.println(json);
             return gson.fromJson(json, Switch[].class);
+        } catch (Exception e){
+            System.err.println("EXEP- RestAPI");
+            e.printStackTrace();
+            return null;
+        }
+    }
+    static Router[] getRouter() throws Exception{
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(URL + "topology/l3switches"))
+                    .GET().build();
+            HttpClient client = HttpClient.newHttpClient();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+//            System.out.println(response.statusCode());
+            if(response.statusCode() != 200){
+                System.err.println("EXEP- RestAPI - ERROR: not 200");
+                throw new Exception("Error - not 200");
+            }
+            String json = response.body();
+//            System.out.println(json);
+            return gson.fromJson(json, Router[].class);
         } catch (Exception e){
             System.err.println("EXEP- RestAPI");
             e.printStackTrace();

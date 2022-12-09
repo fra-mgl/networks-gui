@@ -24,14 +24,14 @@ public class Router extends NetItem{
         routerLinkList = new ArrayList<>();
         switchLinkList = new ArrayList<>();
     }
-    public Router(int i){
-        super(icon);
-        id_r = i;
-        dpid = ((Integer)i).toString();
-        ports = new ArrayList<>();
-        routerLinkList = new ArrayList<>();
-        switchLinkList = new ArrayList<>();
-    }
+//    public Router(int i){
+//        super(icon);
+//        id_r = i;
+//        dpid = ((Integer)i).toString();
+//        ports = new ArrayList<>();
+//        routerLinkList = new ArrayList<>();
+//        switchLinkList = new ArrayList<>();
+//    }
 
     @Override
     public String toString() {

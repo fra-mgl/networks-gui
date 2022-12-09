@@ -334,26 +334,34 @@ public class Main extends Application {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // finto router - da sistempare per rendere api compliant
-        Router r0 = new Router(99);
-        Router r1 = new Router(98);
-        List<Router> l = new ArrayList<>();
-        l.add(r0);
-        l.add(r1);
-
         try {
             network.routerList.clear();
-            for(Router r : l){
-                network.routerList.put(r.getIdR(), r); // sistemare come prende la chiave
+            for(Router r : Arrays.asList(RestAPI.getRouter())){
+                network.routerList.put(r.getIdFromDpid(), r);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+        // finto router - da sistempare per rendere api compliant
+//        Router r0 = new Router(99);
+//        Router r1 = new Router(98);
+//        List<Router> l = new ArrayList<>();
+//        l.add(r0);
+//        l.add(r1);
+
+//        try {
+//            network.routerList.clear();
+//            for(Router r : l){
+//                network.routerList.put(r.getIdR(), r); // sistemare come prende la chiave
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
         /* SET ROUTERS */
         for (int i : network.routerList.keySet()) {
-//            network.routerList.get(i).setName();
-//            network.routerList.get(i).setID();
+            network.routerList.get(i).setName();
+            network.routerList.get(i).setID();
             /* set eventHandler to dispaly specs */
             int finalI = i;
             network.routerList.get(i).setOnMousePressed(new EventHandler<MouseEvent>() {
@@ -474,38 +482,38 @@ public class Main extends Application {
             int dpid2 = ll.getDst();
             // routers' and switches' equals() is based on the id
             if(network.routerList.containsKey((Integer)dpid1)){
-                //means that src is a router
                 if(network.routerList.containsKey((Integer)dpid2)){
-                    // means that dst is a router
-                    network.routerList.get(dpid1).addRouterLink(network.routerList.get((Integer) dpid2));
+                    // HERE: src=router dst=router
+                    checkLinkRR(network.routerList.get(dpid1),network.routerList.get(dpid2));
                 }else{
-                    // means that dst is a switch
+                    // HERE: src=router dst=switch
+                    // always saved
                     network.routerList.get(dpid1).addSwitchLink(network.switchList.get((Integer) dpid2));
                 }
             }else if (network.routerList.containsKey((Integer)dpid2)) {
-                //means that dst is a router
                 if(network.routerList.containsKey((Integer)dpid1)){
-                    // means that src is a router
-                    network.routerList.get(dpid2).addRouterLink(network.routerList.get((Integer) dpid1));
+                    // HERE: src=router dst=router
+                    checkLinkRR(network.routerList.get(dpid1),network.routerList.get(dpid2));
                 }else{
-                    // means that src is a switch
-                    network.routerList.get(dpid2).addSwitchLink(network.switchList.get((Integer) dpid1));
+                    // HERE: src=switch dst=router
+                    // ignore link
+                    continue;
                 }
             }else{
-                // means that both src and dst are switches
-                network.switchList.get(dpid1).addSwitchLink(network.switchList.get((Integer) dpid2));
+                // HERE src=switch dst=switch
+                checkLinkSS(network.switchList.get(dpid1),network.switchList.get(dpid2));
             }
         }
 
-        /*TEST AGGIUNGO DEI LINK*/
-        network.routerList.get(99).addRouterLink(network.routerList.get((Integer) 98));
-        network.routerList.get(99).addSwitchLink(network.switchList.get((Integer) 1));
-        network.routerList.get(98).addSwitchLink(network.switchList.get((Integer) 2));
-        network.routerList.get(98).addSwitchLink(network.switchList.get((Integer) 3));
-        network.routerList.get(99).addSwitchLink(network.switchList.get((Integer) 4));
-        network.routerList.get(99).addSwitchLink(network.switchList.get((Integer) 5));
-        network.routerList.get(98).addSwitchLink(network.switchList.get((Integer) 6));
-        network.routerList.get(98).addSwitchLink(network.switchList.get((Integer) 7));
+//        /*TEST AGGIUNGO DEI LINK*/
+//        network.routerList.get(99).addRouterLink(network.routerList.get((Integer) 98));
+//        network.routerList.get(99).addSwitchLink(network.switchList.get((Integer) 1));
+//        network.routerList.get(98).addSwitchLink(network.switchList.get((Integer) 2));
+//        network.routerList.get(98).addSwitchLink(network.switchList.get((Integer) 3));
+//        network.routerList.get(99).addSwitchLink(network.switchList.get((Integer) 4));
+//        network.routerList.get(99).addSwitchLink(network.switchList.get((Integer) 5));
+//        network.routerList.get(98).addSwitchLink(network.switchList.get((Integer) 6));
+//        network.routerList.get(98).addSwitchLink(network.switchList.get((Integer) 7));
         /* ALL LINKS ARE PROCESSED */
 
 
@@ -563,4 +571,18 @@ public class Main extends Application {
             bSpecs.requestFocus();
         }
     }
+
+    private void checkLinkRR(Router src, Router dst){
+        if(src.getRouterFromLink(dst.getIdR()) == null && dst.getRouterFromLink(src.getIdR()) == null){
+            // link has never been saved
+            network.routerList.get(src).addRouterLink(network.routerList.get(dst.getIdR()));
+        }
+    }
+    private void checkLinkSS(Switch src, Switch dst){
+        if(src.getSwitchFromLink(dst.getIdS()) == null && dst.getSwitchFromLink(src.getIdS()) == null){
+            // link has never been saved
+            network.switchList.get(src).addSwitchLink(network.switchList.get(dst.getIdS()));
+        }
+    }
+
 }

@@ -109,8 +109,11 @@ public class Network {
             iRouterAngle = counter * deltaRouterAlpha;
             counter += 1;
             tmpRouter.setAngle(iRouterAngle);
-            tmpRouter.computeCoords(iRouterAngle, routerRadius, centerX, centerY);
-
+            if(routerList.size() == 1){
+                tmpRouter.computeCoords(iRouterAngle, 0, centerX, centerY);
+            }else {
+                tmpRouter.computeCoords(iRouterAngle, routerRadius, centerX, centerY);
+            }
             /* for each router, check linked router and compure link */
             for(int j = 0; j < tmpRouter.getRouterLinkNumber(); j++){
                 linkList.add(new Link(tmpRouter.getCenterX(), tmpRouter.getCenterY(), tmpRouter.getRouterFromLink(j).getCenterX(), tmpRouter.getRouterFromLink(j).getCenterY()));
