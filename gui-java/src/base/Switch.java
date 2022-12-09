@@ -14,7 +14,7 @@ public class Switch extends NetItem{
     @Expose private String dpid;
     @Expose private List<Port> ports;
 
-    static final Image icon = new Image("/media/lan2_FILL0_wght500_GRAD200_opsz48.png");
+    static final Image icon = new Image("/media/switch_edit.png");
 
     private List<Host> hostLinkList;
     private List<Switch> switchLinkList;

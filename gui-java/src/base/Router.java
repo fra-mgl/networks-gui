@@ -14,7 +14,7 @@ public class Router extends NetItem{
     private String dpid;
     @Expose private List<Port> ports;
 
-    static final Image icon = new Image("/media/lan_FILL0_wght500_GRAD200_opsz48.png");
+    static final Image icon = new Image("/media/router_edit.png");
     private List<Switch> switchLinkList;
     private List<Router> routerLinkList;
 

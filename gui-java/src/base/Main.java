@@ -1,13 +1,10 @@
 package base;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -15,9 +12,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -42,6 +37,7 @@ public class Main extends Application {
     private Text field2;
     private Text field3;
     private Text field4;
+    private Text tableText;
     private VBox specs;
 
     private GridPane rightSide;
@@ -49,6 +45,7 @@ public class Main extends Application {
     private GridPane exploreBox;
     private ChoiceBox src;
     private  ChoiceBox dst;
+    private Text explorePath;
 
     private Button bSpecs;
     private Button bExplore;
@@ -92,11 +89,14 @@ public class Main extends Application {
         specs.setSpacing(10);
 
         /* TABLES TEXT BOX */
-        Text tableText = new Text("tabella");
+        tableText = new Text();
+        StackPane tablePane = new StackPane(tableText);
+        tablePane.setPadding(new Insets(HBoxPadding, HBoxPadding, HBoxPadding, HBoxPadding));
 
         ScrollPane specsScroll = new ScrollPane(specs);
-        specs.setAlignment(Pos.CENTER_LEFT);
-        ScrollPane tableScroll = new ScrollPane(tableText);
+//        specs.setAlignment(Pos.CENTER_LEFT);
+        ScrollPane tableScroll = new ScrollPane(tablePane);
+//        tablePane.setAlignment(Pos.CENTER);
 
 
         p0 = new Pane();
@@ -168,7 +168,7 @@ public class Main extends Application {
 //        r4Exp.setMaxHeight((networkDim - buttonsHeight) * 0.1);
         exploreBox.getColumnConstraints().add(colExp);
         exploreBox.getRowConstraints().addAll(r1Exp, r2Exp, r3Exp);
-        Text titleExp = new Text("Explore packets' paths!");
+        Text titleExp = new Text("EXPLORE PACKETS' PATH!");
         StackPane titleExpPane = new StackPane(titleExp);
         titleExpPane.setAlignment(Pos.CENTER);
 //        titleExp.setTextAlignment(TextAlignment.CENTER);
@@ -177,7 +177,7 @@ public class Main extends Application {
         VBox srcBox = new VBox(textSrc, src);
         srcBox.setAlignment(Pos.CENTER);
         srcBox.setSpacing(15);
-        Text textDst = new Text("Choose source");
+        Text textDst = new Text("Choose destination");
         dst = new ChoiceBox();
         VBox dstBox = new VBox(textDst, dst);
         dstBox.setSpacing(15);
@@ -190,6 +190,11 @@ public class Main extends Application {
         HBox bExpButtons = new HBox(bExpStart, bExpClean);
         bExpButtons.setAlignment(Pos.CENTER);
         bExpButtons.setSpacing(30);
+        explorePath = new Text("");
+        VBox expPathBox = new VBox(new Text("PATH"), explorePath);
+        expPathBox.setAlignment(Pos.TOP_CENTER);
+        expPathBox.setPadding(new Insets(HBoxPadding, 0,0,0));
+        expPathBox.setSpacing(30);
         bExpClean.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
@@ -216,9 +221,16 @@ public class Main extends Application {
                 bExpStart.setDisable(false);
             }
         });
+        bExpStart.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                bExpStart.setDisable(true);
+                explorePath.setText("GIVEN PATH");
+            }
+        });
         exploreBox.add(titleExpBox, 0,0);
         exploreBox.add(bExpButtons, 0,1);
-        exploreBox.add(p0, 0,2);
+        exploreBox.add(expPathBox, 0,2);
 //        exploreBox.add(bExpStart, 0,3);
 //        exploreBox.add(p1, 0,0);
 //        exploreBox.add(p2, 0,1);
@@ -374,7 +386,7 @@ public class Main extends Application {
                         field2.setText("DPID:\t" + network.routerList.get(finalI).getDpid());
                         StringBuilder str = new StringBuilder("PORTS:\n");
                         for (Port p : network.routerList.get(finalI).getPorts()) {
-                            str.append("\t" + p.toString() + "\n");
+                            str.append("\t" + p.toStringRouter() + "\n");
                         }
 
                         /* test scroll */
@@ -384,6 +396,19 @@ public class Main extends Application {
 
                         field3.setText(str.toString());
                         specs.getChildren().addAll(field0, field1, field2, field3);
+                        /* retrieve iptable */
+                        StringBuilder ip = new StringBuilder("IP TABLE\n\n");
+                        List<TableEntrySwitch> l = new ArrayList<>();
+                        try {
+                            for(TableEntryRouter e : Arrays.asList(RestAPI.getIPTable(network.routerList.get(finalI).getDpid()))){
+//                                System.out.println(e);
+                                ip.append(e);
+                                ip.append("\n\n");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        tableText.setText(ip.toString());
                     }
                 }
             });
@@ -416,6 +441,21 @@ public class Main extends Application {
 
                         field3.setText(str.toString());
                         specs.getChildren().addAll(field0, field1, field2, field3);
+
+                        /* retrieve mactable */
+                        StringBuilder mac = new StringBuilder("MAC TABLE\n\n");
+                        List<TableEntrySwitch> l = new ArrayList<>();
+                        try {
+                            for(TableEntrySwitch e : Arrays.asList(RestAPI.getMacTable(network.switchList.get(finalI).getDpid()))){
+//                                System.out.println(e);
+                                mac.append("\t");
+                                mac.append(e);
+                                mac.append("\n\n");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        tableText.setText(mac.toString());
                     }
                 }
             });
@@ -441,9 +481,9 @@ public class Main extends Application {
                         field1.setText("MAC:\t" + network.hostList.get(finalI).getMac());
                         StringBuilder str;
                         if (network.hostList.get(finalI).getIpv4().size() == 0) {
-                            str = new StringBuilder("IPv4:\n");
+                            str = new StringBuilder("IPv4:");
                         } else {
-                            str = new StringBuilder("IPv4:\n\n");
+                            str = new StringBuilder("IP4:\n");
                             for (String p : network.hostList.get(finalI).getIpv4()) {
                                 str.append("\t" + p + "\n");
                             }
@@ -451,17 +491,22 @@ public class Main extends Application {
                         }
                         field2.setText(str.toString());
                         if (network.hostList.get(finalI).getIpv6().size() == 0) {
-                            str = new StringBuilder("IPv6:\n");
+                            str = new StringBuilder("IPv6:");
                         } else {
-                            str = new StringBuilder("IPv6:\n\n");
+                            str = new StringBuilder("IPv6:\n");
                             for (String p : network.hostList.get(finalI).getIpv6()) {
-                                str.append("\t" + p + "\n");
+                                if (p.equals("::")){
+                                    continue;
+                                }else {
+                                    str.append("\t" + p + "\n");
+                                }
                             }
 
                         }
                         field3.setText(str.toString());
-                        field4.setText("PORT:\t" + network.hostList.get(finalI).getPort().toString() + "\n");
+                        field4.setText("PORT:\n\t" + network.hostList.get(finalI).getPort().toString() + "\n");
                         specs.getChildren().addAll(field0, field1, field2, field3, field4);
+                        tableText.setText("");
                     }
                 }
             });
@@ -530,12 +575,14 @@ public class Main extends Application {
     private void resetSpecs(){
         specs.getChildren().clear();
         field0.setText("Click on an item to show its statistics!");
+        tableText.setText("");
         specs.getChildren().add(field0);
         // reset table
     }
     private void resetExplore(){
         src.getItems().clear();
         dst.getItems().clear();
+        explorePath.setText("");
         src.setDisable(false);
         dst.setDisable(true);
         bExpStart.setDisable(true);
