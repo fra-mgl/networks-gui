@@ -1,37 +1,28 @@
 package database
 
 import (
-	"database/sql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"os"
 )
 
-var dbName = os.Getenv("POSTGRES_USER")
+var dbName = os.Getenv("POSTGRES_DB")
 var dbUser = os.Getenv("POSTGRES_USER")
 var dbPassword = os.Getenv("POSTGRES_PASSWORD")
-var dbHost = "localhost"
-var dbPort = "5432"
+var dbHost = os.Getenv("POSTGRES_HOST")
+var dbPort = os.Getenv("POSTGRES_PORT")
 var dbURL = "sslmode=disable user=" + dbUser + " password=" + dbPassword + " dbname=" +
 	dbName + " host=" + dbHost + " port=" + dbPort
 
 func InitDB() *DbConn {
-	// The SQL driver opens a connection to the database
-	db, err := sql.Open("pgx", dbURL)
-	if err != nil {
-		panic(err)
-	}
-
 	// A Gorm database connection is created
-	gormDB, err := gorm.Open(postgres.New(postgres.Config{
-		Conn: db,
-	}), &gorm.Config{})
+	gormDB, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
 
 	// Migrations are applied. That means that overall changes to the db data model are applied
-	err = gormDB.AutoMigrate([]interface{}{IpAddress{}})
+	err = gormDB.AutoMigrate(&IpAddress{})
 
 	dbConn := new(DbConn)
 	dbConn.gormConn = gormDB

@@ -20,7 +20,9 @@ func main() {
 	router.GET("/dataPathIps/:dpid", dataPathIps(dbConn))
 
 	// Start the server
-	router.Run("localhost:" + PORT)
+	if err := router.Run(":" + PORT); err != nil {
+		panic(err)
+	}
 }
 
 // The following closures return a request handler that has access to a database connection
@@ -29,6 +31,7 @@ func main() {
 
 func allDataPathIps(dbConn *database.DbConn) func(*gin.Context) {
 	return func(c *gin.Context) {
+		fmt.Println("inside handler")
 		datapathMap, err := dbConn.GetIPsGroupedByDataPath()
 		if err != nil {
 			c.AbortWithError(500, fmt.Errorf("internal error"))

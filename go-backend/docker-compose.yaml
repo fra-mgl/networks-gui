@@ -1,19 +1,32 @@
-version: "3.3"
+version: '3.8'
 services:
-  net-conf:
-    build:
-      context: .
-    environment:
-      - POSTGRES_USER=net-conf
-      - POSTGRES_PASSWORD=dumb-password
-    command: ./main
-    ports:
-      - "4000:4000"
   postgres:
-    image: postgres:13.1
+    image: postgres:14.1-alpine
     restart: always
     environment:
       - POSTGRES_USER=net-conf
       - POSTGRES_PASSWORD=dumb-password
-networks:
-  net:
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
+  net-conf:
+    build:
+      context: .
+    depends_on:
+      - postgres
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=net-conf
+      - POSTGRES_USER=net-conf
+      - POSTGRES_PASSWORD=dumb-password
+    links:
+      - postgres
+    restart: always
+    command: ./main
+    ports:
+      - "4000:4000"
+volumes:
+  db:
+    driver: local
