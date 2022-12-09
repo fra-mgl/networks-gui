@@ -103,8 +103,22 @@ class TopologyController(ControllerBase):
         l3_switches = []
         for switch in switches:
             if switch.dp.id in self.app.l3_datapaths:
-                l3_switches.append(switch)
-        body = json.dumps([switch.to_dict() for switch in l3_switches])
+                l3_switches.append(switch.dp.id)
+        l3_switches_data = [
+            {
+                "dpid": dpid,
+                "ports": [
+                    {
+                        "hw_addr": "",
+                        "name": address.eth_name,
+                        "ip_addr": address.default_gw
+                    }
+                    for address in router[0].address_data.values()
+                ]
+            }
+            for (dpid, router) in self.app.l3_controller.routers_list.items()
+        ]
+        body = json.dumps(l3_switches_data)
         return Response(content_type='application/json', body=body)
 
     def _links(self, req, **kwargs):

@@ -20,7 +20,7 @@ class AddressData(dict):
         super(AddressData, self).__init__()
         self.address_id = 1
 
-    def add(self, address):
+    def add(self, l2interface, address):
         err_msg = 'Invalid [%s] value.' % REST_ADDRESS
         nw_addr, mask, default_gw = nw_addr_aton(address, err_msg=err_msg)
 
@@ -34,7 +34,7 @@ class AddressData(dict):
                 msg = 'Address overlaps [address_id=%d]' % other.address_id
                 raise CommandFailure(msg=msg)
 
-        address = Address(self.address_id, nw_addr, mask, default_gw)
+        address = Address(self.address_id, l2interface, nw_addr, mask, default_gw)
         ip_str = ip_addr_ntoa(nw_addr)
         key = '%s/%d' % (ip_str, mask)
         self[key] = address
@@ -68,9 +68,11 @@ class AddressData(dict):
 
 
 class Address(object):
-    def __init__(self, address_id, nw_addr, netmask, default_gw):
+    def __init__(self, address_id, eth_name, nw_addr,
+                    netmask, default_gw):
         super(Address, self).__init__()
         self.address_id = address_id
+        self.eth_name = eth_name
         self.nw_addr = nw_addr
         self.netmask = netmask
         self.default_gw = default_gw

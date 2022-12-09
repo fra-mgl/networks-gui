@@ -101,9 +101,10 @@ class VlanRouter(object):
 
         try:
             # Set address data
-            if REST_ADDRESS in data:
+            if REST_ADDRESS and REST_L2INTERFACE in data:
                 address = data[REST_ADDRESS]
-                address_id = self._set_address_data(address)
+                l2interface = data[REST_L2INTERFACE]
+                address_id = self._set_address_data(l2interface, address)
                 details = 'Add address [address_id=%d]' % address_id
             # Set routing data
             elif REST_GATEWAY in data:
@@ -125,8 +126,8 @@ class VlanRouter(object):
         else:
             raise ValueError('Invalid parameter.')
 
-    def _set_address_data(self, address):
-        address = self.address_data.add(address)
+    def _set_address_data(self, l2interface, address):
+        address = self.address_data.add(l2interface, address)
 
         cookie = self._id_to_cookie(REST_ADDRESSID, address.address_id)
 

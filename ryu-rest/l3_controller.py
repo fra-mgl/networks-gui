@@ -31,9 +31,9 @@ class L3Controller(ControllerBase):
         self.routers_list.setdefault(dp.id, router)
 
         self._access_router('0000000000000003', 0, 'set_data',
-        {'address': '10.0.0.254/24'})
+        {'address': '10.0.0.254/24', 'l2interface': 'S3-eth0'})
         self._access_router('0000000000000003', 0, 'set_data', 
-        {'address': '20.0.0.254/24'})
+        {'address': '20.0.0.254/24', 'l2interface': 'S3-eth1'})
 
         self._LOGGER.info('Join as router.', extra=dpid)
 
