@@ -3,13 +3,15 @@ package base;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -25,6 +27,7 @@ import java.util.List;
 
 public class Main extends Application {
 
+    /**/ private Pane p0;
     private static final double networkDim = 800.0;
     private static final double textWidth = 350.0;
     private static final double buttonsHeight = 40.0;
@@ -43,10 +46,16 @@ public class Main extends Application {
 
     private GridPane rightSide;
     private GridPane specsBox;
-    private Pane exploreBox;
+    private GridPane exploreBox;
+    private ChoiceBox src;
+    private  ChoiceBox dst;
 
     private Button bSpecs;
     private Button bExplore;
+
+    private Host exploreSrc;
+    private Host exploreDst;
+    private Button bExpStart;
 
 
     private boolean isExplore;
@@ -90,6 +99,8 @@ public class Main extends Application {
         ScrollPane tableScroll = new ScrollPane(tableText);
 
 
+        p0 = new Pane();
+        p0.setBackground(new Background(new BackgroundFill(Color.RED, CornerRadii.EMPTY, Insets.EMPTY)));
         Pane p1 = new Pane();
         p1.setBackground(new Background(new BackgroundFill(Color.RED, CornerRadii.EMPTY, Insets.EMPTY)));
         Pane p2 = new Pane();
@@ -98,8 +109,8 @@ public class Main extends Application {
         p3.setBackground(new Background(new BackgroundFill(Color.VIOLET, CornerRadii.EMPTY, Insets.EMPTY)));
         Pane p4 = new Pane();
         p4.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)));
-        exploreBox = new Pane();
-        exploreBox.setBackground(new Background(new BackgroundFill(Color.GREEN, CornerRadii.EMPTY, Insets.EMPTY)));
+        Pane p5 = new Pane();
+        p5.setBackground(new Background(new BackgroundFill(Color.GREEN, CornerRadii.EMPTY, Insets.EMPTY)));
 
         /* LAYOUT */
         GridPane layout = new GridPane();
@@ -125,6 +136,7 @@ public class Main extends Application {
         rowDX2.setMaxHeight(buttonsHeight);
         rightSide.getRowConstraints().addAll(rowDX1,rowDX2);
 
+        /* SPECSBOX */
         specsBox = new GridPane();
         specsBox.getColumnConstraints().addAll(col2);
         RowConstraints rowSpecs1 = new RowConstraints();
@@ -134,18 +146,97 @@ public class Main extends Application {
         rowSpecs2.setMinHeight(rowDX1.getMaxHeight() / 2.0);
         rowSpecs2.setMaxHeight(rowDX1.getMaxHeight() / 2.0);
         specsBox.getRowConstraints().addAll(rowSpecs1,rowSpecs2);
+        specsBox.add(specsScroll, 0,0);
+        specsBox.add(tableScroll, 0,1);
 
+        /* EXPLORE */
+        exploreBox = new GridPane();
+        ColumnConstraints colExp = new ColumnConstraints();
+        colExp.setMinWidth(textWidth);
+        colExp.setMaxWidth(textWidth);
+        RowConstraints r1Exp = new RowConstraints();
+        RowConstraints r2Exp = new RowConstraints();
+        RowConstraints r3Exp = new RowConstraints();
+//        RowConstraints r4Exp = new RowConstraints();
+        r1Exp.setMinHeight((networkDim - buttonsHeight) * 0.4);
+        r1Exp.setMaxHeight((networkDim - buttonsHeight) * 0.4);
+        r2Exp.setMinHeight((networkDim - buttonsHeight) * 0.2);
+        r2Exp.setMaxHeight((networkDim - buttonsHeight) * 0.2);
+        r3Exp.setMinHeight((networkDim - buttonsHeight) * 0.4);
+        r3Exp.setMaxHeight((networkDim - buttonsHeight) * 0.4);
+//        r4Exp.setMinHeight((networkDim - buttonsHeight) * 0.1);
+//        r4Exp.setMaxHeight((networkDim - buttonsHeight) * 0.1);
+        exploreBox.getColumnConstraints().add(colExp);
+        exploreBox.getRowConstraints().addAll(r1Exp, r2Exp, r3Exp);
+        Text titleExp = new Text("Explore packets' paths!");
+        StackPane titleExpPane = new StackPane(titleExp);
+        titleExpPane.setAlignment(Pos.CENTER);
+//        titleExp.setTextAlignment(TextAlignment.CENTER);
+        Text textSrc = new Text("Choose source");
+        src = new ChoiceBox();
+        VBox srcBox = new VBox(textSrc, src);
+        srcBox.setAlignment(Pos.CENTER);
+        srcBox.setSpacing(15);
+        Text textDst = new Text("Choose source");
+        dst = new ChoiceBox();
+        VBox dstBox = new VBox(textDst, dst);
+        dstBox.setSpacing(15);
+        dstBox.setAlignment(Pos.CENTER);
+        VBox titleExpBox = new VBox(titleExpPane, srcBox, dstBox);
+        titleExpBox.setPadding(new Insets(30.0,0,0,0));
+        titleExpBox.setSpacing(50);
+        bExpStart = new Button("Explore!");
+        Button bExpClean = new Button("Clean");
+        HBox bExpButtons = new HBox(bExpStart, bExpClean);
+        bExpButtons.setAlignment(Pos.CENTER);
+        bExpButtons.setSpacing(30);
+        bExpClean.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                resetExplore();
+            }
+        });
+        src.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue observableValue, Object o, Object h) {
+                exploreSrc = (Host) h;
+                List<Host> tmp = new ArrayList<>(network.hostList);
+                tmp.remove(h);
+                dst.getItems().clear();
+                dst.getItems().addAll(tmp);
+                dst.setDisable(false);
+                src.setDisable(true);
+            }
+        });
+        dst.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue observableValue, Object o, Object h) {
+                exploreDst = (Host) h;
+                dst.setDisable(true);
+                bExpStart.setDisable(false);
+            }
+        });
+        exploreBox.add(titleExpBox, 0,0);
+        exploreBox.add(bExpButtons, 0,1);
+        exploreBox.add(p0, 0,2);
+//        exploreBox.add(bExpStart, 0,3);
+//        exploreBox.add(p1, 0,0);
+//        exploreBox.add(p2, 0,1);
+//        exploreBox.add(p3, 0,2);
+//        exploreBox.add(p4, 0,3);
+
+
+        /* INIT */
         network = new Network(networkDim, networkDim);
         layout.add(network.netStack, 0,0);
         layout.add(rightSide, 1,0);
         rightSide.add(buttonsBox,0,1); // buttons
-        // init specsBox //
-        specsBox.add(specsScroll, 0,0);
-        specsBox.add(tableScroll, 0,1);
+
         /* explore */
 //        rightSide.add(exploreBox,0,0);
         /* specs */
 //        rightSide.add(specsBox, 0, 0); // internal grid
+
 
         /* init right side */
         rightSide.add(specsBox, 0, 0);
@@ -153,7 +244,6 @@ public class Main extends Application {
         isExplore = false;
         bSpecs.setDisable(true);
         bExplore.setDisable(false);
-        bExplore.requestFocus();
 
         /* NETWORK INITIALIZATION */
         refreshNetwork();
@@ -179,6 +269,7 @@ public class Main extends Application {
                 refreshNetwork();
             }
         });
+
 
 
         /* PRINT NETITEM */
@@ -263,8 +354,31 @@ public class Main extends Application {
         for (int i : network.routerList.keySet()) {
 //            network.routerList.get(i).setName();
 //            network.routerList.get(i).setID();
+            /* set eventHandler to dispaly specs */
+            int finalI = i;
+            network.routerList.get(i).setOnMousePressed(new EventHandler<MouseEvent>() {
+                @Override
+                public void handle(MouseEvent mouseEvent) {
+                    if (!isExplore) {
+                        specs.getChildren().clear();
+                        field0.setText("ROUTER");
+                        field1.setText("NAME:\t" + network.routerList.get(finalI).getName());
+                        field2.setText("DPID:\t" + network.routerList.get(finalI).getDpid());
+                        StringBuilder str = new StringBuilder("PORTS:\n");
+                        for (Port p : network.routerList.get(finalI).getPorts()) {
+                            str.append("\t" + p.toString() + "\n");
+                        }
 
-            //handler per dispaly info
+                        /* test scroll */
+//                    for (Port p: network.switchList.get(finalI).getPorts()) {
+//                        str.append("\t"+p.toString()+"\n");
+//                    }
+
+                        field3.setText(str.toString());
+                        specs.getChildren().addAll(field0, field1, field2, field3);
+                    }
+                }
+            });
 
         }
         /* SET SWITCHES */
@@ -412,7 +526,19 @@ public class Main extends Application {
         // reset table
     }
     private void resetExplore(){
-        
+        src.getItems().clear();
+        dst.getItems().clear();
+        src.setDisable(false);
+        dst.setDisable(true);
+        bExpStart.setDisable(true);
+        double w = 200.0;
+        src.setMinWidth(w);
+        src.setMaxWidth(w);
+        dst.setMinWidth(w);
+        dst.setMaxWidth(w);
+        src.getItems().addAll(network.hostList);
+
+
     }
 
     private void switchToSpecsBox(){

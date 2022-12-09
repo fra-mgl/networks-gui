@@ -29,22 +29,28 @@ public class Host extends NetItem{
         ipv6 = new ArrayList<>();
     }
 
+//    @Override
+//    public String toString() {
+//        StringBuilder out = new StringBuilder("Host{\n" +
+//                " mac='" + mac + '\'' +
+//                " switch='" + switch_l + '\'' +
+//                ",\n portArray= " + port +"\n");
+//        out.append("ipv4=\n");
+//        for(int i = 0; i < ipv4.size(); i++){
+//            out.append("\t").append(ipv4.get(i)).append("\n");
+//        }
+//        out.append("ipv6=\n");
+//        for(int i = 0; i < ipv6.size(); i++){
+//            out.append("\t").append(ipv6.get(i)).append("\n");
+//        }
+//        out.append("}");
+//        return out.toString();
+//    }
+
+
     @Override
     public String toString() {
-        StringBuilder out = new StringBuilder("Host{\n" +
-                " mac='" + mac + '\'' +
-                " switch='" + switch_l + '\'' +
-                ",\n portArray= " + port +"\n");
-        out.append("ipv4=\n");
-        for(int i = 0; i < ipv4.size(); i++){
-            out.append("\t").append(ipv4.get(i)).append("\n");
-        }
-        out.append("ipv6=\n");
-        for(int i = 0; i < ipv6.size(); i++){
-            out.append("\t").append(ipv6.get(i)).append("\n");
-        }
-        out.append("}");
-        return out.toString();
+        return mac;
     }
 
     public void setSwitch(){

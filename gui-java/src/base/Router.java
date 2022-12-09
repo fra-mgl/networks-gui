@@ -57,7 +57,6 @@ public class Router extends NetItem{
     public void setName(){
         try{
             int number = Integer.parseInt(dpid);
-//            System.out.println(number);
             this.name = "r"+number;
         }
         catch (NumberFormatException ex){
@@ -114,6 +113,18 @@ public class Router extends NetItem{
             ex.printStackTrace();
             return -1;
         }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDpid() {
+        return dpid;
+    }
+
+    public List<Port> getPorts() {
+        return ports;
     }
 
     public void addRouterLink(Router i){

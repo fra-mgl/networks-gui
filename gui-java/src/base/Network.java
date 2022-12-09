@@ -139,6 +139,12 @@ public class Network {
         }
 
         /*now we can compute links between switches - because their coords are already set*/
+        for(Integer i : switchList.keySet()){
+            tmpSwitch = switchList.get(i);
+            for(int j=0; j<tmpSwitch.getSwitchLinkNumber();j++){
+                linkList.add(new Link(tmpSwitch.getCenterX(), tmpSwitch.getCenterY(), tmpSwitch.getSwitchFromLink(j).getCenterX(), tmpSwitch.getSwitchFromLink(j).getCenterY()));
+            }
+        }
 
         /* add all elements to corresponding stackpane */
         itemsAnchor.getChildren().addAll(hostList);

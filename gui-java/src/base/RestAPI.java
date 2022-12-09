@@ -16,11 +16,11 @@ public class RestAPI {
             .excludeFieldsWithoutExposeAnnotation()
             .create();
 
-    static final String URL = "http://localhost:8080/topology/";
+    static final String URL = "http://localhost:8080/";
     static Switch[] getSwitch() throws Exception{
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI(URL + "switches"))
+                    .uri(new URI(URL + "topology/switches"))
                     .GET().build();
             HttpClient client = HttpClient.newHttpClient();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -41,7 +41,7 @@ public class RestAPI {
     static Host[] getHosts() throws Exception{
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI(URL + "hosts"))
+                    .uri(new URI(URL + "topology/hosts"))
                     .GET().build();
             HttpClient client = HttpClient.newHttpClient();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -62,7 +62,7 @@ public class RestAPI {
     static LinkJson[] getLinks() throws Exception{
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI(URL + "links"))
+                    .uri(new URI(URL + "topology/links"))
                     .GET().build();
             HttpClient client = HttpClient.newHttpClient();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -75,6 +75,29 @@ public class RestAPI {
             String json = response.body();
 //            System.out.println(json);
             return gson.fromJson(json, LinkJson[].class);
+        } catch (Exception e){
+            System.err.println("EXEP- RestAPI");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    static TableEntry[] getMacTable(String dpid){
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(URL + "mactable/" + dpid))
+                    .GET().build();
+            HttpClient client = HttpClient.newHttpClient();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+//            System.out.println(response.statusCode());
+//            System.out.println(response.body());
+            if(response.statusCode() != 200){
+                System.err.println("EXEP- RestAPI - ERROR: not 200");
+                throw new Exception("Error - not 200");
+            }
+            String json = response.body();
+//            System.out.println(json);
+            return gson.fromJson(json, TableEntry[].class);
         } catch (Exception e){
             System.err.println("EXEP- RestAPI");
             e.printStackTrace();
@@ -136,3 +159,7 @@ class LinkJson{
     }
 }
 
+class TableEntry{
+    String addr;
+    int port;
+}
