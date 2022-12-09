@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Host extends NetItem{
 
-    static final Image icon = new Image("/media/desktop2_mac_FILL0_wght500_GRAD200_opsz48.png");
+    static final Image icon = new Image("/media/host_edit.png");
 
     @Expose
     private String mac;
@@ -19,43 +19,52 @@ public class Host extends NetItem{
     @Expose
     private Port port;
 
-    private StringBuilder router;
+    private int switch_l;
 
 
     public Host() {
         super(icon);
 //        System.out.println("Host " + this.getName() + " created.");
-        router = new StringBuilder();
         ipv4 = new ArrayList<>();
         ipv6 = new ArrayList<>();
     }
 
+//    @Override
+//    public String toString() {
+//        StringBuilder out = new StringBuilder("Host{\n" +
+//                " mac='" + mac + '\'' +
+//                " switch='" + switch_l + '\'' +
+//                ",\n portArray= " + port +"\n");
+//        out.append("ipv4=\n");
+//        for(int i = 0; i < ipv4.size(); i++){
+//            out.append("\t").append(ipv4.get(i)).append("\n");
+//        }
+//        out.append("ipv6=\n");
+//        for(int i = 0; i < ipv6.size(); i++){
+//            out.append("\t").append(ipv6.get(i)).append("\n");
+//        }
+//        out.append("}");
+//        return out.toString();
+//    }
+
+
     @Override
     public String toString() {
-        StringBuilder out = new StringBuilder("Host{\n" +
-                " mac='" + mac + '\'' +
-                " router='" + router + '\'' +
-                ",\n portArray= " + port +"\n");
-        out.append("ipv4=\n");
-        for(int i = 0; i < ipv4.size(); i++){
-            out.append("\t").append(ipv4.get(i)).append("\n");
-        }
-        out.append("ipv6=\n");
-        for(int i = 0; i < ipv6.size(); i++){
-            out.append("\t").append(ipv6.get(i)).append("\n");
-        }
-        out.append("}");
-        return out.toString();
+        return mac;
     }
 
-    public void setRouter(){
-        String s = this.port.getName();
-        this.router.append(s.charAt(0));
-        this.router.append(s.charAt(1));
+    public void setSwitch(){
+        try{
+            int number = Integer.parseInt(this.port.getDpid());
+            switch_l = number;
+        }
+        catch (NumberFormatException ex){
+            ex.printStackTrace();
+        }
     }
 
-    public String getRouter() {
-        return router.toString();
+    public int getSwitch() {
+        return switch_l;
     }
 
     public String getMac() {

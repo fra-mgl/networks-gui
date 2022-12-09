@@ -7,35 +7,53 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Router extends NetItem{
+public class Switch extends NetItem{
+
     private String name;
-    private int id_r;
-    @Expose
-    private String dpid;
+    private int id_s;
+    @Expose private String dpid;
     @Expose private List<Port> ports;
 
-    static final Image icon = new Image("/media/router_edit.png");
-    private List<Switch> switchLinkList;
-    private List<Router> routerLinkList;
+    static final Image icon = new Image("/media/switch_edit.png");
 
-    public Router() {
+    private List<Host> hostLinkList;
+    private List<Switch> switchLinkList;
+
+
+    public Switch() {
         super(icon);
         ports = new ArrayList<>();
-        routerLinkList = new ArrayList<>();
+        hostLinkList = new ArrayList<>();
         switchLinkList = new ArrayList<>();
     }
-//    public Router(int i){
-//        super(icon);
-//        id_r = i;
-//        dpid = ((Integer)i).toString();
-//        ports = new ArrayList<>();
-//        routerLinkList = new ArrayList<>();
-//        switchLinkList = new ArrayList<>();
-//    }
+
+    public Switch(String s){
+        super(icon);
+        this.name = s;
+    }
+
+    public void addHostLink(Host i){
+        hostLinkList.add(i);
+    }
+    public void addSwitchLink(Switch i){
+        switchLinkList.add(i);
+    }
+    public int getHostLinkNumber(){
+        return hostLinkList.size();
+    }
+    public int getSwitchLinkNumber(){
+        return switchLinkList.size();
+    }
+    public Host getHostFromLink(int i){
+        return hostLinkList.get(i);
+    }
+    public Switch getSwitchFromLink(int i){
+        return switchLinkList.get(i);
+    }
 
     @Override
     public String toString() {
-        StringBuilder out = new StringBuilder("Router{\n" +
+        StringBuilder out = new StringBuilder("Switch{\n" +
                 " name='" + name + '\'' +
                 " dpid='" + dpid + '\'' +
                 ",\n portArray=\n");
@@ -46,10 +64,6 @@ public class Router extends NetItem{
         for(int i = 0; i < switchLinkList.size(); i++){
             out.append("\t").append(switchLinkList.get(i).getIdS()).append("\n");
         }
-        out.append(",\n Link with Routers=\n");
-        for(int i = 0; i < routerLinkList.size(); i++){
-            out.append("\t").append(routerLinkList.get(i).getIdR()).append("\n");
-        }
         out.append("}");
         return out.toString();
     }
@@ -57,16 +71,18 @@ public class Router extends NetItem{
     public void setName(){
         try{
             int number = Integer.parseInt(dpid);
-            this.name = "r"+number;
+//            System.out.println(number);
+            this.name = "s"+number;
         }
         catch (NumberFormatException ex){
             ex.printStackTrace();
         }
     }
+
     public void setID(){
         try{
             int number = Integer.parseInt(dpid);
-            this.id_r = number;
+            this.id_s = number;
         }
         catch (NumberFormatException ex){
             ex.printStackTrace();
@@ -77,30 +93,29 @@ public class Router extends NetItem{
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Router router = (Router) o;
-        return id_r == router.id_r;
+        Switch aSwitch = (Switch) o;
+        return id_s == aSwitch.id_s;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id_r);
+        return Objects.hash(id_s);
     }
 
-    public int getSwitchLinkNumber(){
-       return switchLinkList.size();
-    }
-    public Switch getSwitchFromLink(int i){
-        return switchLinkList.get(i);
+    public String getName() {
+        return name;
     }
 
-    public int getRouterLinkNumber(){
-        return routerLinkList.size();
+    public String getDpid() {
+        return dpid;
     }
-    public Router getRouterFromLink(int i){
-        return routerLinkList.get(i);
+
+    public int getIdS() {
+        return id_s;
     }
-    public int getIdR() {
-        return id_r;
+
+    public List<Port> getPorts() {
+        return ports;
     }
 
     public int getIdFromDpid(){
@@ -114,23 +129,5 @@ public class Router extends NetItem{
             return -1;
         }
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDpid() {
-        return dpid;
-    }
-
-    public List<Port> getPorts() {
-        return ports;
-    }
-
-    public void addRouterLink(Router i){
-        this.routerLinkList.add(i);
-    }
-    public void addSwitchLink(Switch i){
-        this.switchLinkList.add(i);
-    }
 }
+

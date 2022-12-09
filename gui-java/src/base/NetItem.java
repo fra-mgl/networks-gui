@@ -8,7 +8,7 @@ import javafx.scene.shape.Rectangle;
 
 public class NetItem extends ImageView {
 
-    static final int SIZE = 50;
+    static final int SIZE = 64;
     static final int HALF_SIZE = SIZE/2;
 
 //    transient protected String name;

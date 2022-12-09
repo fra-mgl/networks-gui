@@ -1,2 +1,18 @@
 # networks-gui
 Final project for Networking 2 course (University of Trento)
+
+
+## Credits
+All icons have been edited, according to Flaticon licence.\
+These are the original sources:
+
+- Host icons:\
+[Ui icons created by rukanicon - Flaticon](https://www.flaticon.com/free-icons/ui)
+
+
+- Switches icons:\
+[Network-switch icons created by Chattapat - Flaticon](https://www.flaticon.com/free-icons/network-switch)
+
+
+- Routers icons:\
+[Internet icons created by Freepik - Flaticon](https://www.flaticon.com/free-icons/internet)
