@@ -109,9 +109,10 @@ class TopologyController(ControllerBase):
                 "dpid": dpid,
                 "ports": [
                     {
+                        "dpid": dpid,
                         "hw_addr": "",
                         "name": address.eth_name,
-                        "ip_addr": address.default_gw
+                        "port_no": address.default_gw
                     }
                     for address in router[0].address_data.values()
                 ]
