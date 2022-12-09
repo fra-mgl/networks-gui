@@ -1,0 +1,19 @@
+version: "3.3"
+services:
+  net-conf:
+    build:
+      context: .
+    environment:
+      - POSTGRES_USER=net-conf
+      - POSTGRES_PASSWORD=dumb-password
+    command: ./main
+    ports:
+      - "4000:4000"
+  postgres:
+    image: postgres:13.1
+    restart: always
+    environment:
+      - POSTGRES_USER=net-conf
+      - POSTGRES_PASSWORD=dumb-password
+networks:
+  net:
