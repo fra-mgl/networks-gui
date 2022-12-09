@@ -76,9 +76,9 @@ class TopologyController(ControllerBase):
         except ValueError:
             return Response(status=400)
 
-        if dpid not in self.app.mac_to_port.keys():
+        if dpid not in self.app.l2_controller.switches_list:
             return Response(status=404)
 
-        mac_table = self.app.mac_to_port.get(dpid, {})
+        mac_table = self.app.l2_controller.switches_list.get(dpid, {})
         body = json.dumps(mac_table)
         return Response(content_type='application/json', text=body)
