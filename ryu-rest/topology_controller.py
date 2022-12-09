@@ -53,7 +53,7 @@ class TopologyController(ControllerBase):
 
     @route('mactable', '/mactable/{dpid}', methods=['GET'],
                 requirements={'dpid': dpid_lib.DPID_PATTERN})
-    def list_mac_table(self, req, **kwargs):
+    def mac_table(self, req, **kwargs):
         try:
             dpid = int(kwargs['dpid'])
         except ValueError:
@@ -65,6 +65,22 @@ class TopologyController(ControllerBase):
         mac_table_raw = self.app.l2_controller.switches_list.get(dpid, {})
         mac_table = [{"mac": key, "port": port} for (key, port) in mac_table_raw.items()]
         body = json.dumps(mac_table)
+        return Response(content_type='application/json', text=body)
+
+    @route('iptable', '/iptable/{dpid}', methods=['GET'],
+                requirements={'dpid': dpid_lib.DPID_PATTERN})
+    def ip_table(self, req, **kwargs):
+        try:
+            dpid = int(kwargs['dpid'])
+        except ValueError:
+            return Response(status=400)
+
+        if dpid not in self.app.l3_controller.routers_list:
+            return Response(status=404)
+
+        ip_table_raw = self.app.l3_controller.routers_list[dpid][0].address_data
+        ip_table = [{"destination": key, "gateway": val.default_gw} for (key, val) in ip_table_raw.items()]
+        body = json.dumps(ip_table)
         return Response(content_type='application/json', text=body)
 
     def _l2_switches(self, req, **kwargs):
