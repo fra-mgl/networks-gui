@@ -99,17 +99,20 @@ class TopologyController(ControllerBase):
         dpid = None
         if 'dpid' in kwargs:
             dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
-        switches = get_switch(self.app, dpid)
-        l3_switches = []
-        for switch in switches:
-            if switch.dp.id in self.app.l3_datapaths:
-                l3_switches.append(switch.dp.id)
+        if dpid is None:
+            l3_switches = self.app.l3_controller.routers_list
+        else:
+            try:
+                l3_switches = {dpid: self.app.l3_controller.routers_list[dpid]}
+            except KeyError:
+                l3_switches = {}
+        
         l3_switches_data = [
             {
-                "dpid": dpid,
+                "dpid": dpid_lib.dpid_to_str(_dpid),
                 "ports": [
                     {
-                        "dpid": dpid,
+                        "dpid": dpid_lib.dpid_to_str(_dpid),
                         "hw_addr": "",
                         "name": address.eth_name,
                         "port_no": address.default_gw
@@ -117,7 +120,7 @@ class TopologyController(ControllerBase):
                     for address in router[0].address_data.values()
                 ]
             }
-            for (dpid, router) in self.app.l3_controller.routers_list.items()
+            for (_dpid, router) in l3_switches.items()
         ]
         body = json.dumps(l3_switches_data)
         return Response(content_type='application/json', body=body)
