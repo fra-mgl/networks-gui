@@ -3,7 +3,8 @@ from ryu.base import app_manager
 from ryu.controller import ofp_event
 from ryu.controller.handler import set_ev_cls
 from ryu.controller.handler import MAIN_DISPATCHER, CONFIG_DISPATCHER, DEAD_DISPATCHER
-from ryu.ofproto import ofproto_v1_3_parser
+from ryu.ofproto import ofproto_v1_3
+
 # DON'T REMOVE THIS IMPORT
 from ryu.topology.api import get_switch, get_link, get_host
 

@@ -11,6 +11,18 @@ Steps to setup your environment:
 * ```$ pip install -r requirements.txt``` to install external dependencies.
 * ```$ ryu-manager --observe-links app.py``` to run the application.
 
+### Endpoints:
+
+* `/topology/l2switches`: list of all layer 2 OF switches.
+* `/topology/l2switches/{datapath_id}`: information about a specific layer 2 switch.
+* `/topology/l3switches`: list of all layer 3 OF switches.
+* `/topology/l3switches/{datapath_id}`: information about a specific layer 3 switch.
+* `/topology/hosts`: list of all host connected to the network.
+* `/topology/hosts/{datapath_id}`: list of all hosts connected to an OF switch.
+* `/topology/links/{datapath_id}`: information about links related with a specific OF switch.
+* `/mactable/{datapath_id}`: mac table of a layer 2 OF switch.
+* `/iptable/{datapath_id}`: ip routing table of a layer 3 OF switch
+
 
 ## Mininet emulation
 
