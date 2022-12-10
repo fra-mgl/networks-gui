@@ -1,9 +1,11 @@
 package base;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -13,7 +15,10 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +31,7 @@ public class Main extends Application {
     private static final double networkDim = 800.0;
     private static final double textWidth = 350.0;
     private static final double buttonsHeight = 40.0;
-    private static final double windowWidth = networkDim +  textWidth;
+    private static final double windowWidth = networkDim + textWidth;
     private static final double windowHeight = networkDim;
     private static final int HBoxPadding = 20;
 
@@ -44,27 +49,27 @@ public class Main extends Application {
     private GridPane specsBox;
     private GridPane exploreBox;
     private ChoiceBox src;
-    private  ChoiceBox dst;
+    private ChoiceBox dst;
     private Text explorePath;
 
     private Button bSpecs;
     private Button bExplore;
+    static private Button bRefresh;
 
     private Host exploreSrc;
     private Host exploreDst;
     private Button bExpStart;
-
-
     private boolean isExplore;
 
 
+
     @Override
-    public void start(Stage primaryStage) throws Exception{
+    public void start(Stage primaryStage) throws Exception {
 
         /* BUTTONS */
         bSpecs = new Button("Specs");
         bExplore = new Button("Explore");
-        Button bRefresh = new Button("Refresh");
+        bRefresh = new Button("Refresh");
 
         HBox buttonsBox = new HBox(bSpecs, bExplore, bRefresh);
         buttonsBox.setBackground(new Background(new BackgroundFill(Color.CADETBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -134,7 +139,7 @@ public class Main extends Application {
         RowConstraints rowDX2 = new RowConstraints();
         rowDX2.setMinHeight(buttonsHeight);
         rowDX2.setMaxHeight(buttonsHeight);
-        rightSide.getRowConstraints().addAll(rowDX1,rowDX2);
+        rightSide.getRowConstraints().addAll(rowDX1, rowDX2);
 
         /* SPECSBOX */
         specsBox = new GridPane();
@@ -145,9 +150,9 @@ public class Main extends Application {
         RowConstraints rowSpecs2 = new RowConstraints();
         rowSpecs2.setMinHeight(rowDX1.getMaxHeight() / 2.0);
         rowSpecs2.setMaxHeight(rowDX1.getMaxHeight() / 2.0);
-        specsBox.getRowConstraints().addAll(rowSpecs1,rowSpecs2);
-        specsBox.add(specsScroll, 0,0);
-        specsBox.add(tableScroll, 0,1);
+        specsBox.getRowConstraints().addAll(rowSpecs1, rowSpecs2);
+        specsBox.add(specsScroll, 0, 0);
+        specsBox.add(tableScroll, 0, 1);
 
         /* EXPLORE */
         exploreBox = new GridPane();
@@ -183,7 +188,7 @@ public class Main extends Application {
         dstBox.setSpacing(15);
         dstBox.setAlignment(Pos.CENTER);
         VBox titleExpBox = new VBox(titleExpPane, srcBox, dstBox);
-        titleExpBox.setPadding(new Insets(30.0,0,0,0));
+        titleExpBox.setPadding(new Insets(30.0, 0, 0, 0));
         titleExpBox.setSpacing(50);
         bExpStart = new Button("Explore!");
         Button bExpClean = new Button("Clean");
@@ -193,7 +198,7 @@ public class Main extends Application {
         explorePath = new Text("");
         VBox expPathBox = new VBox(new Text("PATH"), explorePath);
         expPathBox.setAlignment(Pos.TOP_CENTER);
-        expPathBox.setPadding(new Insets(HBoxPadding, 0,0,0));
+        expPathBox.setPadding(new Insets(HBoxPadding, 0, 0, 0));
         expPathBox.setSpacing(30);
         bExpClean.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -226,11 +231,17 @@ public class Main extends Application {
             public void handle(ActionEvent actionEvent) {
                 bExpStart.setDisable(true);
                 explorePath.setText("GIVEN PATH");
+
+                /* URASE GLI HOST SALVATI E QUELLO CHE VIENE
+                RITORNATO PER CREARE IL PATH E TROVARE I LINK
+                DA COLORARE
+                 */
+
             }
         });
-        exploreBox.add(titleExpBox, 0,0);
-        exploreBox.add(bExpButtons, 0,1);
-        exploreBox.add(expPathBox, 0,2);
+        exploreBox.add(titleExpBox, 0, 0);
+        exploreBox.add(bExpButtons, 0, 1);
+        exploreBox.add(expPathBox, 0, 2);
 //        exploreBox.add(bExpStart, 0,3);
 //        exploreBox.add(p1, 0,0);
 //        exploreBox.add(p2, 0,1);
@@ -240,9 +251,9 @@ public class Main extends Application {
 
         /* INIT */
         network = new Network(networkDim, networkDim);
-        layout.add(network.netStack, 0,0);
-        layout.add(rightSide, 1,0);
-        rightSide.add(buttonsBox,0,1); // buttons
+        layout.add(network.netStack, 0, 0);
+        layout.add(rightSide, 1, 0);
+        rightSide.add(buttonsBox, 0, 1); // buttons
 
         /* explore */
 //        rightSide.add(exploreBox,0,0);
@@ -285,16 +296,15 @@ public class Main extends Application {
 
 
         /* PRINT NETITEM */
-        for(int i : network.routerList.keySet()){
+        for (int i : network.routerList.keySet()) {
             System.out.println(network.routerList.get(i));
         }
-        for(int i : network.switchList.keySet()){
+        for (int i : network.switchList.keySet()) {
             System.out.println(network.switchList.get(i));
         }
-        for(int i=0;i< network.hostList.size(); i++){
+        for (int i = 0; i < network.hostList.size(); i++) {
             System.out.println(network.hostList.get(i));
         }
-
 
 
         /* STAGE */
@@ -310,23 +320,21 @@ public class Main extends Application {
     }
 
     public static void main(String[] args) {
-        launch(args);
-//        String s = "{'dpid': '0000000000000007', 'ports': [{'dpid': '0000000000000007', 'port_no': '00000001', 'hw_addr': '96:10:5e:db:0c:d3', 'name': 's7-eth1'}, {'dpid': '0000000000000007', 'port_no': '00000002', 'hw_addr': 'c6:e5:b1:06:38:85', 'name': 's7-eth2'}, {'dpid': '0000000000000007', 'port_no': '00000003', 'hw_addr': 'ae:99:21:7c:e0:bb', 'name': 's7-eth3'}]}";
-//        Gson gson = new GsonBuilder()
-//                .excludeFieldsWithoutExposeAnnotation()
-//                .create();
+        Thread serverThread = new Thread(()->{
+            Server server = new Server(7777);
+            server.runServer();
+        });
+        Thread sentinel = new Thread(()->{
+            while(true){
+                Sem.sWait();
+                Platform.runLater(Main::receiveUpdate);
+                Sem.tPost();
+            }
+        });
+        serverThread.start();
+        sentinel.start();
 
-//        Gson gson = new GsonBuilder()
-//                .excludeFieldsWithModifiers(Modifier.STATIC,
-//                        Modifier.TRANSIENT,
-//                        Modifier.VOLATILE)
-//                .create();
-//        Gson gson = new Gson();
-//        SwitchJson switchJson = new SwitchJson();
-//        switchJson.setCiaoo(12);
-//        System.out.println(switchJson);
-//        SwitchJson switchJson = gson.fromJson(s, SwitchJson.class);
-//        System.out.println(switchJson);
+        launch(args);
     }
 
     public void refreshNetwork() {
@@ -340,7 +348,7 @@ public class Main extends Application {
         }
         try {
             network.switchList.clear();
-            for(Switch s : Arrays.asList(RestAPI.getSwitch())){
+            for (Switch s : Arrays.asList(RestAPI.getSwitch())) {
                 network.switchList.put(s.getIdFromDpid(), s);
             }
         } catch (Exception e) {
@@ -348,7 +356,7 @@ public class Main extends Application {
         }
         try {
             network.routerList.clear();
-            for(Router r : Arrays.asList(RestAPI.getRouter())){
+            for (Router r : Arrays.asList(RestAPI.getRouter())) {
                 network.routerList.put(r.getIdFromDpid(), r);
             }
         } catch (Exception e) {
@@ -400,7 +408,7 @@ public class Main extends Application {
                         StringBuilder ip = new StringBuilder("IP TABLE\n\n");
                         List<TableEntrySwitch> l = new ArrayList<>();
                         try {
-                            for(TableEntryRouter e : Arrays.asList(RestAPI.getIPTable(network.routerList.get(finalI).getDpid()))){
+                            for (TableEntryRouter e : Arrays.asList(RestAPI.getIPTable(network.routerList.get(finalI).getDpid()))) {
 //                                System.out.println(e);
                                 ip.append(e);
                                 ip.append("\n\n");
@@ -446,7 +454,7 @@ public class Main extends Application {
                         StringBuilder mac = new StringBuilder("MAC TABLE\n\n");
                         List<TableEntrySwitch> l = new ArrayList<>();
                         try {
-                            for(TableEntrySwitch e : Arrays.asList(RestAPI.getMacTable(network.switchList.get(finalI).getDpid()))){
+                            for (TableEntrySwitch e : Arrays.asList(RestAPI.getMacTable(network.switchList.get(finalI).getDpid()))) {
 //                                System.out.println(e);
                                 mac.append("\t");
                                 mac.append(e);
@@ -495,9 +503,9 @@ public class Main extends Application {
                         } else {
                             str = new StringBuilder("IPv6:\n");
                             for (String p : network.hostList.get(finalI).getIpv6()) {
-                                if (p.equals("::")){
+                                if (p.equals("::")) {
                                     continue;
-                                }else {
+                                } else {
                                     str.append("\t" + p + "\n");
                                 }
                             }
@@ -526,27 +534,27 @@ public class Main extends Application {
             int dpid1 = ll.getSrc();
             int dpid2 = ll.getDst();
             // routers' and switches' equals() is based on the id
-            if(network.routerList.containsKey((Integer)dpid1)){
-                if(network.routerList.containsKey((Integer)dpid2)){
+            if (network.routerList.containsKey((Integer) dpid1)) {
+                if (network.routerList.containsKey((Integer) dpid2)) {
                     // HERE: src=router dst=router
-                    checkLinkRR(network.routerList.get(dpid1),network.routerList.get(dpid2));
-                }else{
+                    checkLinkRR(network.routerList.get(dpid1), network.routerList.get(dpid2));
+                } else {
                     // HERE: src=router dst=switch
                     // always saved
                     network.routerList.get(dpid1).addSwitchLink(network.switchList.get((Integer) dpid2));
                 }
-            }else if (network.routerList.containsKey((Integer)dpid2)) {
-                if(network.routerList.containsKey((Integer)dpid1)){
+            } else if (network.routerList.containsKey((Integer) dpid2)) {
+                if (network.routerList.containsKey((Integer) dpid1)) {
                     // HERE: src=router dst=router
-                    checkLinkRR(network.routerList.get(dpid1),network.routerList.get(dpid2));
-                }else{
+                    checkLinkRR(network.routerList.get(dpid1), network.routerList.get(dpid2));
+                } else {
                     // HERE: src=switch dst=router
                     // ignore link
                     continue;
                 }
-            }else{
+            } else {
                 // HERE src=switch dst=switch
-                checkLinkSS(network.switchList.get(dpid1),network.switchList.get(dpid2));
+                checkLinkSS(network.switchList.get(dpid1), network.switchList.get(dpid2));
             }
         }
 
@@ -564,22 +572,23 @@ public class Main extends Application {
 
         network.displayAlgorithm();
 
-        if(isExplore){
+        if (isExplore) {
             switchToSpecsBox();
-        }else{
+        } else {
             resetSpecs();
         }
 
     }
-    
-    private void resetSpecs(){
+
+    private void resetSpecs() {
         specs.getChildren().clear();
         field0.setText("Click on an item to show its statistics!");
         tableText.setText("");
         specs.getChildren().add(field0);
         // reset table
     }
-    private void resetExplore(){
+
+    private void resetExplore() {
         src.getItems().clear();
         dst.getItems().clear();
         explorePath.setText("");
@@ -596,8 +605,8 @@ public class Main extends Application {
 
     }
 
-    private void switchToSpecsBox(){
-        if(isExplore) {
+    private void switchToSpecsBox() {
+        if (isExplore) {
             rightSide.getChildren().remove(exploreBox);
             rightSide.add(specsBox, 0, 0);
             resetSpecs();
@@ -607,7 +616,8 @@ public class Main extends Application {
             bExplore.requestFocus();
         }
     }
-    private void switchToExploreBox(){
+
+    private void switchToExploreBox() {
         if (!isExplore) {
             rightSide.getChildren().remove(specsBox);
             rightSide.add(exploreBox, 0, 0);
@@ -619,17 +629,44 @@ public class Main extends Application {
         }
     }
 
-    private void checkLinkRR(Router src, Router dst){
-        if(src.getRouterFromLink(dst.getIdR()) == null && dst.getRouterFromLink(src.getIdR()) == null){
+    private void checkLinkRR(Router src, Router dst) {
+        if (src.getRouterFromLink(dst.getIdR()) == null && dst.getRouterFromLink(src.getIdR()) == null) {
             // link has never been saved
             network.routerList.get(src).addRouterLink(network.routerList.get(dst.getIdR()));
         }
     }
-    private void checkLinkSS(Switch src, Switch dst){
-        if(src.getSwitchFromLink(dst.getIdS()) == null && dst.getSwitchFromLink(src.getIdS()) == null){
+
+    private void checkLinkSS(Switch src, Switch dst) {
+        if (src.getSwitchFromLink(dst.getIdS()) == null && dst.getSwitchFromLink(src.getIdS()) == null) {
             // link has never been saved
             network.switchList.get(src).addSwitchLink(network.switchList.get(dst.getIdS()));
         }
     }
 
+    static public void receiveUpdate() {
+        System.out.println("Update receive\n");
+        Stage refreshStage = new Stage();
+        Text text = new Text("Network has been modified!\nUpdate now!");
+        text.setTextAlignment(TextAlignment.CENTER);
+        Button bRef = new Button("Refresh!");
+        VBox refresh = new VBox(text, bRef);
+        refresh.setSpacing(50);
+        refresh.setAlignment(Pos.CENTER);
+        bRef.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                bRefresh.fireEvent(new ActionEvent());
+                refreshStage.close();
+            }
+        });
+
+        refreshStage.setTitle("Update");
+        refreshStage.setScene(new Scene(refresh));
+        refreshStage.setMinHeight(300);
+        refreshStage.setMaxHeight(300);
+        refreshStage.setMinWidth(300);
+        refreshStage.setMaxWidth(300);
+        refreshStage.initStyle(StageStyle.UNDECORATED);
+        refreshStage.show();
+    }
 }
