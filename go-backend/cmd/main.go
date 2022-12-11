@@ -31,7 +31,6 @@ func main() {
 
 func allDataPathIps(dbConn *database.DbConn) func(*gin.Context) {
 	return func(c *gin.Context) {
-		fmt.Println("inside handler")
 		datapathMap, err := dbConn.GetIPsGroupedByDataPath()
 		if err != nil {
 			c.AbortWithError(500, fmt.Errorf("internal error"))

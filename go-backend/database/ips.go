@@ -2,18 +2,84 @@ package database
 
 import (
 	"fmt"
+	"gorm.io/gorm"
 	"strconv"
 	"strings"
 )
 
-// IP address database record.
-// Each address is allocated to a 'Data path ID', which is the identifier of an
-// OpenFlow switch
+// Database table for OF switches
+
+type DataPath struct {
+	ID int64 `gorm:"not null;primary_key;"`
+}
+
+// Database table for IP addresses. Each address is assigned to a particular port
 
 type IpAddress struct {
-	Address    string `gorm:"not null;uniqueIndex:uniqueIP;" json:"ip"`
-	EthName    string `gorm:"not null;" json:"name"`
-	DataPathID int64  `gorm:"not null;" json:"dpid"`
+	Address string `gorm:"not null;primary_key;"`
+	PortNo  int    `gorm:"not null;"`
+	MAC     string `gorm:"not null;"`
+}
+
+// Mapping between OF switches, ip addresses assigned to their ports, and related
+// next hop addresses.
+
+type PortData struct {
+	DataPathID    int64      `gorm:"not null;index:,type:hash"`
+	DataPath      DataPath   `gorm:"ForeignKey:DataPathID;"`
+	PortAddress   string     `gorm:"not null;uniqueIndex:uniquePortIP"`
+	PortAddressFK IpAddress  `gorm:"ForeignKey:PortAddress;"`
+	NextHop       string     `gorm:"uniqueIndex:uniqueNextHopIP"`
+	NextHopFK     *IpAddress `gorm:"ForeignKey:NextHop;"`
+}
+
+// This function is called by Gorm before saving a record of the 'ip_addresses'
+// table. It checks that the input ip is of the form '10.0.0.1/24'
+
+func (ip *IpAddress) BeforeSave(tx *gorm.DB) error {
+	nip := netMaskedIp{ip.Address}
+	return nip.validate()
+}
+
+/* LIBRARY CODE TO WORK WITH IP ADDRESSES */
+
+// Given two ip addresses and their netmask, the function returns the ip
+// that is part of the larger subnetwork
+
+func largerSubNet(ip1, ip2 ipAddress, net1, net2 int) (ipAddress, int) {
+	if net1 > net2 {
+		return ip2, net2
+	}
+	return ip1, net1
+}
+
+// The function compares two IP addresses and determines if they are part of
+// the same subnetwork
+
+func compareSubNets(ip1, ip2 ipAddress, net1, net2 int) (bool, error) {
+	if net1 > 31 {
+		return false, fmt.Errorf("invalid netmask: %d", net1)
+	}
+	if net2 > 31 {
+		return false, fmt.Errorf("invalid netmask: %d", net2)
+	}
+
+	mask := min(net1, net2)
+	binIp1, err := ip1.toBinary()
+	if err != nil {
+		return false, fmt.Errorf("invalid IP address: %s", ip1.str)
+	}
+	binIp2, err := ip2.toBinary()
+	if err != nil {
+		return false, fmt.Errorf("invalid IP address: %s", ip2.str)
+	}
+
+	for i := 0; i < mask; i++ {
+		if binIp1.str[i] != binIp2.str[i] {
+			return false, nil
+		}
+	}
+	return true, nil
 }
 
 // Wrapper to a string representation of an IP address of the form 10.0.0.1
@@ -162,45 +228,6 @@ func (bip *binaryIpAddress) toIp() (ipAddress, error) {
 		ip = ip + strconv.Itoa(currDigit)
 	}
 	return ipAddress{ip}, nil
-}
-
-// Given two ip addresses and their netmask, the function returns the ip
-// that is part of the larger subnetwork
-
-func largerSubNet(ip1, ip2 ipAddress, net1, net2 int) (ipAddress, int) {
-	if net1 > net2 {
-		return ip2, net2
-	}
-	return ip1, net1
-}
-
-// The function compares two IP addresses and determines if they are part of
-// the same subnetwork
-
-func compareSubNets(ip1, ip2 ipAddress, net1, net2 int) (bool, error) {
-	if net1 > 31 {
-		return false, fmt.Errorf("invalid netmask: %d", net1)
-	}
-	if net2 > 31 {
-		return false, fmt.Errorf("invalid netmask: %d", net2)
-	}
-
-	mask := min(net1, net2)
-	binIp1, err := ip1.toBinary()
-	if err != nil {
-		return false, fmt.Errorf("invalid IP address: %s", ip1.str)
-	}
-	binIp2, err := ip2.toBinary()
-	if err != nil {
-		return false, fmt.Errorf("invalid IP address: %s", ip2.str)
-	}
-
-	for i := 0; i < mask; i++ {
-		if binIp1.str[i] != binIp2.str[i] {
-			return false, nil
-		}
-	}
-	return true, nil
 }
 
 // Utility to convert an integer into its binary representation, as a string
