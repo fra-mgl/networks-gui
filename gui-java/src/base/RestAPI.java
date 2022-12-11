@@ -26,14 +26,14 @@ public class RestAPI {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 //            System.out.println(response.statusCode());
             if(response.statusCode() != 200){
-                System.err.println("EXEP- RestAPI - ERROR: not 200");
+                System.err.println("EXEP - RestAPI(getSwitch) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
 //            System.out.println(json);
             return gson.fromJson(json, Switch[].class);
         } catch (Exception e){
-            System.err.println("EXEP- RestAPI");
+            System.err.println("EXEP - RestAPI(getSwitch)");
             e.printStackTrace();
             return null;
         }
@@ -47,14 +47,14 @@ public class RestAPI {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 //            System.out.println(response.statusCode());
             if(response.statusCode() != 200){
-                System.err.println("EXEP- RestAPI - ERROR: not 200");
+                System.err.println("EXEP - RestAPI(getRouter) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
 //            System.out.println(json);
             return gson.fromJson(json, Router[].class);
         } catch (Exception e){
-            System.err.println("EXEP- RestAPI");
+            System.err.println("EXEP - RestAPI(getRouter)");
             e.printStackTrace();
             return null;
         }
@@ -68,14 +68,14 @@ public class RestAPI {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 //            System.out.println(response.statusCode());
             if(response.statusCode() != 200){
-                System.err.println("EXEP- RestAPI - ERROR: not 200");
+                System.err.println("EXEP - RestAPI(getHosts) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
             System.out.println(json);
             return gson.fromJson(json, Host[].class);
         } catch (Exception e){
-            System.err.println("EXEP- RestAPI");
+            System.err.println("EXEP - RestAPI(getHosts)");
             e.printStackTrace();
             return null;
         }
@@ -90,14 +90,14 @@ public class RestAPI {
 //            System.out.println(response.statusCode());
 //            System.out.println(response.body());
             if(response.statusCode() != 200){
-                System.err.println("EXEP- RestAPI - ERROR: not 200");
+                System.err.println("EXEP - RestAPI(getLinks) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
 //            System.out.println(json);
             return gson.fromJson(json, LinkJson[].class);
         } catch (Exception e){
-            System.err.println("EXEP- RestAPI");
+            System.err.println("EXEP - RestAPI(getLinks)");
             e.printStackTrace();
             return null;
         }
@@ -113,14 +113,14 @@ public class RestAPI {
 //            System.out.println(response.statusCode());
 //            System.out.println(response.body());
             if(response.statusCode() != 200){
-                System.err.println("EXEP- RestAPI - ERROR: not 200");
+                System.err.println("EXEP - RestAPI(getMAcTable) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
 //            System.out.println(json);
             return gson.fromJson(json, TableEntrySwitch[].class);
         } catch (Exception e){
-            System.err.println("EXEP- RestAPI");
+            System.err.println("EXEP - RestAPI(getMacTable)");
             e.printStackTrace();
             return null;
         }
@@ -135,14 +135,14 @@ public class RestAPI {
 //            System.out.println(response.statusCode());
 //            System.out.println(response.body());
             if(response.statusCode() != 200){
-                System.err.println("EXEP- RestAPI - ERROR: not 200");
+                System.err.println("EXEP - RestAPI(getIPTable) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
 //            System.out.println(json);
             return gson.fromJson(json, TableEntryRouter[].class);
         } catch (Exception e){
-            System.err.println("EXEP- RestAPI");
+            System.err.println("EXEP - RestAPI(getIPTable)");
             e.printStackTrace();
             return null;
         }
