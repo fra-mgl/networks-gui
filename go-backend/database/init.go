@@ -14,6 +14,12 @@ var dbPort = os.Getenv("POSTGRES_PORT")
 var dbURL = "sslmode=disable user=" + dbUser + " password=" + dbPassword + " dbname=" +
 	dbName + " host=" + dbHost + " port=" + dbPort
 
+// Wrapper type to a database connection
+
+type DbConn struct {
+	gormConn *gorm.DB
+}
+
 func InitDB() *DbConn {
 	// A Gorm database connection is created
 	gormDB, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
@@ -22,7 +28,7 @@ func InitDB() *DbConn {
 	}
 
 	// Migrations are applied. That means that overall changes to the db data model are applied
-	err = gormDB.AutoMigrate(&IpAddress{}, &PortData{}, &DataPath{})
+	err = gormDB.AutoMigrate(&IpAddress{}, &PortData{}, &DataPath{}, &IpTableRecord{})
 
 	dbConn := new(DbConn)
 	dbConn.gormConn = gormDB
