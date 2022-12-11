@@ -103,6 +103,45 @@ func (dbConn *DbConn) BuildIpTables() error {
 	return nil
 }
 
+type jsonIpTableEntry struct {
+	SrcMAC string `json:"src_mac"`
+	SrcIp  string `json:"src_ip"`
+	DstMAC string `json:"dst_mac"`
+	DstIp  string `json:"dst_ip"`
+}
+
+// Queries the ip routing table of the given switch. The output is represented as
+// [ { 'destination network' : { 'src_mac', 'src_ip', 'dst_mac', 'dst_ip' } } ]
+
+func (dbConn *DbConn) GetIpTable(dpid int64) ([]map[string]jsonIpTableEntry, error) {
+	ipTableRecords := make([]IpTableRecord, 0)
+	if err := dbConn.gormConn.Find(&ipTableRecords, "data_path_id = ?", dpid).Error; err != nil {
+		return nil, err
+	}
+
+	output := make([]map[string]jsonIpTableEntry, 0)
+	for _, record := range ipTableRecords {
+		entry := make(map[string]jsonIpTableEntry)
+		var dstMAC string
+		var dstIp string
+		if record.NextHopMAC == nil {
+			dstMAC = ""
+			dstIp = ""
+		} else {
+			dstMAC = *record.NextHopMAC
+			dstIp = *record.NextHopAddress
+		}
+		entry[record.DestinationSubNet] = jsonIpTableEntry{
+			SrcMAC: record.PortMAC,
+			SrcIp:  record.PortAddress,
+			DstMAC: dstMAC,
+			DstIp:  dstIp,
+		}
+		output = append(output, entry)
+	}
+	return output, nil
+}
+
 // The function builds the network graph
 
 func (dbConn *DbConn) buildNetworkGraph() (map[int64][]IpTableRecord, error) {
