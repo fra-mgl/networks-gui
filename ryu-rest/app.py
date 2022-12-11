@@ -2,18 +2,19 @@ from ryu.app.wsgi import WSGIApplication
 from ryu.base import app_manager
 from ryu.controller import ofp_event
 from ryu.controller.handler import set_ev_cls
-from ryu.controller.handler import MAIN_DISPATCHER, CONFIG_DISPATCHER, DEAD_DISPATCHER
+from ryu.controller.handler import MAIN_DISPATCHER, CONFIG_DISPATCHER
 from ryu.ofproto import ofproto_v1_3
-
 # DON'T REMOVE THIS IMPORT
 from ryu.topology.api import get_switch, get_link, get_host
-
 from l2_controller import L2Controller
 from l3_controller import L3Controller
 from topology_controller import TopologyController
-from utils import *
-from ofctl import *
+from ofctl import add_flow
+from http_client import HTTPClient
 
+NETCONF_BACKEND_URL = 'http://localhost:4000/'
+IP_ADDRESSES_ENDPOINT = lambda dpid : NETCONF_BACKEND_URL + 'dataPathIps/' + str(dpid)
+IP_TABLES_ENDPOINT = lambda dpid : NETCONF_BACKEND_URL + 'getIpTable/' + str(dpid)
 
 class App(app_manager.RyuApp):
 
@@ -24,8 +25,6 @@ class App(app_manager.RyuApp):
     def __init__(self, *args, **kwargs):
         super(App, self).__init__(*args, **kwargs)
         wsgi = kwargs['wsgi']
-        self.waiters = {}
-        self.data = {'waiters': self.waiters}
         mapper = wsgi.mapper
         wsgi.registory['TopologyController'] = {'app': self}
         wsgi.register(TopologyController, {'app': self})
@@ -35,35 +34,24 @@ class App(app_manager.RyuApp):
                        action='_l2_switches',
                        conditions=dict(method=['GET']))
 
-        self.l2_controller = L2Controller(None, None, self.data)
-        self.l3_controller = L3Controller(None, None, self.data)
-        self.l3_controller.set_logger(self.logger)
-
-        self.l2_datapaths = {1, 2}
-        self.l3_datapaths = {3}
+        self.l2_controller = L2Controller()
+        self.l3_controller = L3Controller()
 
     @set_ev_cls(ofp_event.EventOFPStateChange,
-                [MAIN_DISPATCHER, DEAD_DISPATCHER])
+                 [MAIN_DISPATCHER])
     def _state_change_handler(self, ev):
-        datapath = ev.datapath
-        if ev.state == MAIN_DISPATCHER:
-            if datapath.id in self.l2_datapaths:
-                self.l2_controller.register_datapath(datapath)
-            elif datapath.id in self.l3_datapaths:
-                self.l3_controller.register_datapath(datapath)
-        elif ev.state == DEAD_DISPATCHER:
-            if datapath.id in self.l2_datapaths:
-                self.l2_controller.unregister_datapath(datapath)
-            elif datapath.id in self.l3_datapaths:
-                self.l3_controller.unregister_datapath(datapath)
+        dpid = ev.datapath.id
+        ip_addresses = HTTPClient.get(IP_ADDRESSES_ENDPOINT(dpid), None)
+        if ip_addresses:
+            routing_table = HTTPClient.get(IP_TABLES_ENDPOINT(dpid), None)
+            self.l3_controller.register_datapath(ev.datapath, ip_addresses, routing_table)
+        else:
+            self.l2_controller.register_datapath(ev.datapath)
+
     
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
         datapath = ev.msg.datapath
-        # This event handler only configures L2 switches
-        if datapath.id not in self.l2_datapaths:
-            return
-
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 

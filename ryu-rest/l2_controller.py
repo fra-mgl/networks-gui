@@ -2,13 +2,11 @@ from ofctl import add_flow
 from ryu.lib.packet import packet
 from ryu.lib.packet import ethernet
 from ryu.lib.packet import ether_types
-from ryu.app.wsgi import ControllerBase
 
 
-class L2Controller(ControllerBase):
+class L2Controller:
 
-    def __init__(self, req, link, data, **config):
-        super().__init__(req, link, data, **config)
+    def __init__(self):
         self.switches_list = {}
 
     def register_datapath(self, datapath):
@@ -59,8 +57,6 @@ class L2Controller(ControllerBase):
 
         dpid = datapath.id
         self.switches_list.setdefault(dpid, {})
-
-        print(f"packet in {dpid} {src} {dst} {in_port}")
 
         # Learn that 'in_port' is associated to 'src' MAC address
         self.switches_list[dpid][src] = in_port

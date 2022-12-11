@@ -11,8 +11,7 @@ services:
     volumes:
       - db:/var/lib/postgresql/data
   net-conf:
-    build:
-      context: .
+    build: ./go-backend
     depends_on:
       - postgres
     environment:
@@ -27,6 +26,12 @@ services:
     command: ./main
     ports:
       - "4000:4000"
+    entrypoint: /main
+  ryu:
+    build: ./ryu-rest
+    ports:
+      - 6653:6653
+      - 8080:8080
 volumes:
   db:
     driver: local
