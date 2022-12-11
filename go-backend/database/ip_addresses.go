@@ -4,38 +4,45 @@ import (
 	"gorm.io/gorm"
 )
 
-// Database table for OF switches
+// Links between OF switches
 
-type DataPath struct {
-	ID int64 `gorm:"not null;primary_key;"`
+type Link struct {
+	SrcDataPathID int `gorm:"not null"`
+	SrcPortNo     int `gorm:"not null"`
+	DstDataPathID int `gorm:"not null"`
+	DstPortNo     int `gorm:"not null"`
 }
 
-// Database table for IP addresses. Each address is assigned to a particular port
+// Assignment of ip addresses to switches ports
 
-type IpAddress struct {
-	Address string `gorm:"not null;primary_key;"`
-	PortNo  int    `gorm:"not null;"`
-	MAC     string `gorm:"not null;"`
+type SwitchPort struct {
+	DataPathID int    `gorm:"not null;uniqueIndex:switchPort" json:"dpid" binding:"required"`
+	PortNo     int    `gorm:"not null;uniqueIndex:switchPort" json:"port_no" binding:"required"`
+	IpAddress  string `gorm:"not null;uniqueIndex:uniqueIP" json:"ip" binding:"required"`
 }
 
-// Mapping between OF switches, ip addresses assigned to their ports, and related
-// next hop addresses.
-
-type PortData struct {
-	DataPathID    int64     `gorm:"not null;index:,type:hash"`
-	DataPath      DataPath  `gorm:"ForeignKey:DataPathID;"`
-	PortAddress   string    `gorm:"not null;uniqueIndex:uniquePortIP"`
-	PortAddressFK IpAddress `gorm:"ForeignKey:PortAddress;"`
-	NextHop       *string   `gorm:"uniqueIndex:uniqueNextHopIP"`
-	NextHopFK     IpAddress `gorm:"ForeignKey:NextHop;"`
-}
-
-// This function is called by Gorm before saving a record of the 'ip_addresses'
+// This function is called by Gorm before saving a record of the 'switch_port'
 // table. It checks that the input ip is of the form '10.0.0.1/24'
 
-func (ip *IpAddress) BeforeSave(tx *gorm.DB) error {
-	nip := netMaskedIp{ip.Address}
+func (p *SwitchPort) BeforeSave(tx *gorm.DB) error {
+	nip := netMaskedIp{p.IpAddress}
 	return nip.validate()
+}
+
+// This function is a wrapper to a database query to create a 'switch_ports'
+// table record
+
+func (dbConn *DbConn) SaveNetworkConfiguration(ports []SwitchPort) error {
+	// The previous network configuration is deleted
+	rawConn, err := dbConn.gormConn.DB()
+	if err != nil {
+		return err
+	}
+	_, err = rawConn.Exec("delete from switch_ports")
+	if err != nil {
+		return err
+	}
+	return dbConn.gormConn.Create(&ports).Error
 }
 
 type portIpJoin struct {

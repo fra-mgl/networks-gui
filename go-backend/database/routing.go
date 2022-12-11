@@ -6,12 +6,12 @@ package database
 // and a ground network.
 
 type IpTableRecord struct {
-	DataPathID        int64  `gorm:"not null;index:,type:hash"`
 	DestinationSubNet string `gorm:"not null;"`
-	PortMAC           string `gorm:"not null;"`
+	DataPathID        int    `gorm:"not null;index:,type:hash"`
+	PortNo            int
 	PortAddress       string `gorm:"not null;"`
-	NextHopDataPathID *int64
-	NextHopMAC        *string
+	NextHopDataPathID *int
+	NextHopPortNo     *int
 	NextHopAddress    *string
 }
 
@@ -45,12 +45,12 @@ func (dbConn *DbConn) BuildIpTables() error {
 	// For each router, do...
 	for startRouter, links := range graph {
 		// Depth-First-Search
-		parents := make(map[int64]int64)
+		parents := make(map[int]int)
 		for router := range graph {
 			parents[router] = -1
 		}
 		parents[startRouter] = startRouter
-		queue := make([]int64, 0)
+		queue := make([]int, 0)
 
 		// If the 'root' router is directly connected to some ground network, the
 		// ip table entry for that network is immediately written to the database.
@@ -162,7 +162,7 @@ func (dbConn *DbConn) buildNetworkGraph() (map[int64][]IpTableRecord, error) {
 	}
 	for res.Next() {
 		row := IpTableRecord{
-			NextHopDataPathID: new(int64),
+			NextHopDataPathID: new(int),
 			NextHopAddress:    new(string),
 			NextHopMAC:        new(string),
 		}
@@ -187,7 +187,7 @@ func (dbConn *DbConn) buildNetworkGraph() (map[int64][]IpTableRecord, error) {
 		if err != nil {
 			return nil, err
 		}
-		netAddress := netMaskedIp{row.PortAddress}
+		netAddress := ip_addresses.netMaskedIp{row.PortAddress}
 		netAddress, err = netAddress.getNetAddress()
 		if err != nil {
 			return nil, err

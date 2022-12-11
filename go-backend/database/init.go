@@ -28,7 +28,7 @@ func InitDB() *DbConn {
 	}
 
 	// Migrations are applied. That means that overall changes to the db data model are applied
-	err = gormDB.AutoMigrate(&IpAddress{}, &PortData{}, &DataPath{}, &IpTableRecord{})
+	err = gormDB.AutoMigrate(&Link{}, &SwitchPort{}, &IpTableRecord{})
 
 	dbConn := new(DbConn)
 	dbConn.gormConn = gormDB
