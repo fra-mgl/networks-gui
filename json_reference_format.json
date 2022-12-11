@@ -1,0 +1,26 @@
+[
+    {
+        "datapath": 1,
+        "port_no": 1,
+        "mac": "ff:ff:ff:ff:ff:01",
+        "ip": "10.0.1.254/24"
+    },
+    {
+        "datapath": 1,
+        "port_no": 2,
+        "mac": "ff:ff:ff:ff:ff:02",
+        "ip": "10.0.2.1/24"
+    },
+    {
+        "datapath": 2,
+        "port_no": 1,
+        "mac": "ff:ff:ff:ff:ff:03",
+        "ip": "10.0.3.254/24"
+    },
+    {
+        "datapath": 2,
+        "port_no": 2,
+        "mac": "ff:ff:ff:ff:ff:04",
+        "ip": "10.0.2.2/24"
+    }
+]
