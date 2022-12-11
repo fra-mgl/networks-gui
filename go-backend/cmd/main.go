@@ -20,6 +20,7 @@ func main() {
 	router.GET("/dataPathIps/:dpid", dataPathIps(dbConn))
 	router.GET("/getIpTable/:dpid", getIpTable(dbConn))
 	router.GET("/buildIpTables", buildIpTables(dbConn))
+	router.POST("/netConf", configureNetwork(dbConn))
 
 	// Start the server
 	if err := router.Run(":" + PORT); err != nil {
@@ -87,6 +88,23 @@ func buildIpTables(dbConn *database.DbConn) func(*gin.Context) {
 		err := dbConn.BuildIpTables()
 		if err != nil {
 			c.AbortWithError(500, fmt.Errorf("internal error"))
+		} else {
+			c.AbortWithStatus(http.StatusOK)
+		}
+	}
+}
+
+// Saves a new network configuration
+
+func configureNetwork(dbConn *database.DbConn) func(*gin.Context) {
+	return func(c *gin.Context) {
+		portsData := make([]database.SwitchPort, 0)
+		if err := c.BindJSON(&portsData); err != nil {
+			c.AbortWithError(500, err)
+			return
+		}
+		if err := dbConn.SaveNetworkConfiguration(portsData); err != nil {
+			c.AbortWithError(500, err)
 		} else {
 			c.AbortWithStatus(http.StatusOK)
 		}
