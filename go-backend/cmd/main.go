@@ -18,6 +18,7 @@ func main() {
 	router := gin.Default()
 	router.GET("/allDataPathIps", allDataPathIps(dbConn))
 	router.GET("/dataPathIps/:dpid", dataPathIps(dbConn))
+	router.GET("/getIpTable/:dpid", getIpTable(dbConn))
 	router.GET("/buildIpTables", buildIpTables(dbConn))
 
 	// Start the server
@@ -56,6 +57,25 @@ func dataPathIps(dbConn *database.DbConn) func(*gin.Context) {
 			c.AbortWithError(500, fmt.Errorf("internal error"))
 		} else {
 			c.IndentedJSON(http.StatusOK, ipAddresses)
+		}
+	}
+}
+
+// Returns the ip routing table of the given router
+
+func getIpTable(dbConn *database.DbConn) func(*gin.Context) {
+	return func(c *gin.Context) {
+		dpidStr := c.Param("dpid")
+		dpid, err := strconv.Atoi(dpidStr)
+		if err != nil {
+			c.AbortWithError(400, fmt.Errorf("invalid datapath id %s", dpidStr))
+		}
+
+		routingTable, err := dbConn.GetIpTable(int64(dpid))
+		if err != nil {
+			c.AbortWithError(500, fmt.Errorf("internal error"))
+		} else {
+			c.IndentedJSON(http.StatusOK, routingTable)
 		}
 	}
 }
