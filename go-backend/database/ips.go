@@ -25,12 +25,12 @@ type IpAddress struct {
 // next hop addresses.
 
 type PortData struct {
-	DataPathID    int64      `gorm:"not null;index:,type:hash"`
-	DataPath      DataPath   `gorm:"ForeignKey:DataPathID;"`
-	PortAddress   string     `gorm:"not null;uniqueIndex:uniquePortIP"`
-	PortAddressFK IpAddress  `gorm:"ForeignKey:PortAddress;"`
-	NextHop       string     `gorm:"uniqueIndex:uniqueNextHopIP"`
-	NextHopFK     *IpAddress `gorm:"ForeignKey:NextHop;"`
+	DataPathID    int64     `gorm:"not null;index:,type:hash"`
+	DataPath      DataPath  `gorm:"ForeignKey:DataPathID;"`
+	PortAddress   string    `gorm:"not null;uniqueIndex:uniquePortIP"`
+	PortAddressFK IpAddress `gorm:"ForeignKey:PortAddress;"`
+	NextHop       *string   `gorm:"uniqueIndex:uniqueNextHopIP"`
+	NextHopFK     IpAddress `gorm:"ForeignKey:NextHop;"`
 }
 
 // This function is called by Gorm before saving a record of the 'ip_addresses'
