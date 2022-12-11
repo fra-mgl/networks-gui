@@ -1,23 +1,24 @@
 package database
 
 import (
+	"go-backend"
 	"gorm.io/gorm"
 )
 
 // Links between OF switches
 
 type Link struct {
-	SrcDataPathID int `gorm:"not null"`
-	SrcPortNo     int `gorm:"not null"`
-	DstDataPathID int `gorm:"not null"`
-	DstPortNo     int `gorm:"not null"`
+	SrcDataPathID int64 `gorm:"not null"`
+	SrcPortNo     int32 `gorm:"not null"`
+	DstDataPathID int64 `gorm:"not null"`
+	DstPortNo     int32 `gorm:"not null"`
 }
 
 // Assignment of ip addresses to switches ports
 
 type SwitchPort struct {
-	DataPathID int    `gorm:"not null;uniqueIndex:switchPort" json:"dpid" binding:"required"`
-	PortNo     int    `gorm:"not null;uniqueIndex:switchPort" json:"port_no" binding:"required"`
+	DataPathID int64  `gorm:"not null;uniqueIndex:switchPort" json:"dpid" binding:"required"`
+	PortNo     int32  `gorm:"not null;uniqueIndex:switchPort" json:"port_no" binding:"required"`
 	IpAddress  string `gorm:"not null;uniqueIndex:uniqueIP" json:"ip" binding:"required"`
 }
 
@@ -25,12 +26,12 @@ type SwitchPort struct {
 // table. It checks that the input ip is of the form '10.0.0.1/24'
 
 func (p *SwitchPort) BeforeSave(tx *gorm.DB) error {
-	nip := netMaskedIp{p.IpAddress}
-	return nip.validate()
+	nip := go_backend.NetMaskedIp{p.IpAddress}
+	return nip.Validate()
 }
 
-// This function is a wrapper to a database query to create a 'switch_ports'
-// table record
+// This function is a wrapper to a database query to create a batch of
+// 'switch_ports' table records
 
 func (dbConn *DbConn) SaveNetworkConfiguration(ports []SwitchPort) error {
 	// The previous network configuration is deleted
@@ -43,6 +44,12 @@ func (dbConn *DbConn) SaveNetworkConfiguration(ports []SwitchPort) error {
 		return err
 	}
 	return dbConn.gormConn.Create(&ports).Error
+}
+
+// A wrapper to a database query to create a batch of 'links' table records
+
+func (dbConn *DbConn) SaveLinks(link []Link) error {
+	return dbConn.gormConn.Create(&link).Error
 }
 
 type portIpJoin struct {

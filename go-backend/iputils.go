@@ -1,4 +1,4 @@
-package database
+package go_backend
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 // Given two ip addresses and their netmask, the function returns the ip
 // that is part of the larger subnetwork
 
-func largerSubNet(ip1, ip2 ipAddress, net1, net2 int) (ipAddress, int) {
+func largerSubNet(ip1, ip2 IpAddress, net1, net2 int) (IpAddress, int) {
 	if net1 > net2 {
 		return ip2, net2
 	}
@@ -21,7 +21,7 @@ func largerSubNet(ip1, ip2 ipAddress, net1, net2 int) (ipAddress, int) {
 // The function compares two IP addresses and determines if they are part of
 // the same subnetwork
 
-func compareSubNets(ip1, ip2 ipAddress, net1, net2 int) (bool, error) {
+func compareSubNets(ip1, ip2 IpAddress, net1, net2 int) (bool, error) {
 	if net1 > 31 {
 		return false, fmt.Errorf("invalid netmask: %d", net1)
 	}
@@ -30,11 +30,11 @@ func compareSubNets(ip1, ip2 ipAddress, net1, net2 int) (bool, error) {
 	}
 
 	mask := min(net1, net2)
-	binIp1, err := ip1.toBinary()
+	binIp1, err := ip1.ToBinary()
 	if err != nil {
 		return false, fmt.Errorf("invalid IP address: %s", ip1.str)
 	}
-	binIp2, err := ip2.toBinary()
+	binIp2, err := ip2.ToBinary()
 	if err != nil {
 		return false, fmt.Errorf("invalid IP address: %s", ip2.str)
 	}
@@ -49,11 +49,11 @@ func compareSubNets(ip1, ip2 ipAddress, net1, net2 int) (bool, error) {
 
 // Wrapper to a string representation of an IP address of the form 10.0.0.1
 
-type ipAddress struct {
+type IpAddress struct {
 	str string
 }
 
-func (ip *ipAddress) validate() error {
+func (ip *IpAddress) Validate() error {
 	// Check the punctuation
 	splittedIp := strings.Split(ip.str, ".")
 	if len(splittedIp) != 4 {
@@ -73,20 +73,20 @@ func (ip *ipAddress) validate() error {
 // Given an IP address and its net mask, it returns the network address.
 // 10.0.0.1/24 -> 10.0.0.0/24 . The output IP is in binary representation
 
-func (ip *ipAddress) getNetAddress(net int) (ipAddress, error) {
+func (ip *IpAddress) GetNetAddress(net int) (IpAddress, error) {
 	if net > 31 {
-		return ipAddress{}, fmt.Errorf("invalid net mask: %d", net)
+		return IpAddress{}, fmt.Errorf("invalid net mask: %d", net)
 	}
-	if err := ip.validate(); err != nil {
-		return ipAddress{}, nil
+	if err := ip.Validate(); err != nil {
+		return IpAddress{}, nil
 	}
 
 	// The conversion happens using binary representation
-	binaryIp, err := ip.toBinary()
+	binaryIp, err := ip.ToBinary()
 	if err != nil {
-		return ipAddress{}, err
+		return IpAddress{}, err
 	}
-	binaryNetAddr := binaryIpAddress{""}
+	binaryNetAddr := BinaryIpAddress{""}
 	for i := 0; i < net; i++ {
 		binaryNetAddr.str = binaryNetAddr.str + binaryIp.str[i:i+1]
 	}
@@ -94,15 +94,15 @@ func (ip *ipAddress) getNetAddress(net int) (ipAddress, error) {
 		binaryNetAddr.str = binaryNetAddr.str + "0"
 	}
 
-	netAddr, err := binaryNetAddr.toIp()
+	netAddr, err := binaryNetAddr.ToIp()
 	return netAddr, err
 }
 
 // Utility to convert an IP address of the form 10.0.0.1 into its binary equivalent
 
-func (ip *ipAddress) toBinary() (binaryIpAddress, error) {
-	if err := ip.validate(); err != nil {
-		return binaryIpAddress{}, err
+func (ip *IpAddress) ToBinary() (BinaryIpAddress, error) {
+	if err := ip.Validate(); err != nil {
+		return BinaryIpAddress{}, err
 	}
 
 	// The ip string is converted into a 32 bit integer
@@ -110,19 +110,19 @@ func (ip *ipAddress) toBinary() (binaryIpAddress, error) {
 	binaryIp := ""
 	for i := 0; i < 4; i++ {
 		strToInt, _ := strconv.Atoi(splittedIp[i])
-		binaryIp = binaryIp + intToStr(strToInt)
+		binaryIp = binaryIp + IntToStr(strToInt)
 	}
-	return binaryIpAddress{binaryIp}, nil
+	return BinaryIpAddress{binaryIp}, nil
 }
 
 // Wrapper to a string representation of a network masked IP address of the form
 // 10.0.0.1/24
 
-type netMaskedIp struct {
+type NetMaskedIp struct {
 	str string
 }
 
-func (nip *netMaskedIp) validate() error {
+func (nip *NetMaskedIp) Validate() error {
 	// Check that the netmask is present
 	splittedIp := strings.Split(nip.str, "/")
 	if len(splittedIp) != 2 {
@@ -134,8 +134,8 @@ func (nip *netMaskedIp) validate() error {
 		return fmt.Errorf("invalid network mask: %s", nip.str)
 	}
 	// Check that the actual ip address is valid
-	ip := ipAddress{splittedIp[0]}
-	if err := ip.validate(); err != nil {
+	ip := IpAddress{splittedIp[0]}
+	if err := ip.Validate(); err != nil {
 		return err
 	}
 	return nil
@@ -144,12 +144,12 @@ func (nip *netMaskedIp) validate() error {
 // The function converts an IP address of the form 10.0.0.1/24 into (10.0.0.1, 24),
 // where the output ip is string representing a binary digit
 
-func (nip *netMaskedIp) splitIpAndNetMask() (ipAddress, int, error) {
-	if err := nip.validate(); err != nil {
-		return ipAddress{}, 0, err
+func (nip *NetMaskedIp) SplitIpAndNetMask() (IpAddress, int, error) {
+	if err := nip.Validate(); err != nil {
+		return IpAddress{}, 0, err
 	}
 	splittedIp := strings.Split(nip.str, "/")
-	ip := ipAddress{splittedIp[0]}
+	ip := IpAddress{splittedIp[0]}
 	netMask, err := strconv.Atoi(splittedIp[1])
 	return ip, netMask, err
 }
@@ -157,28 +157,28 @@ func (nip *netMaskedIp) splitIpAndNetMask() (ipAddress, int, error) {
 // Given an IP address and its net mask, it returns the network address.
 // 10.0.0.1/24 -> 10.0.0.0/24 . The output IP is in binary representation
 
-func (nip *netMaskedIp) getNetAddress() (netMaskedIp, error) {
-	if err := nip.validate(); err != nil {
-		return netMaskedIp{}, err
+func (nip *NetMaskedIp) GetNetAddress() (NetMaskedIp, error) {
+	if err := nip.Validate(); err != nil {
+		return NetMaskedIp{}, err
 	}
-	rawIp, netMask, err := nip.splitIpAndNetMask()
+	rawIp, netMask, err := nip.SplitIpAndNetMask()
 	if err != nil {
-		return netMaskedIp{}, err
+		return NetMaskedIp{}, err
 	}
-	rawNetIp, err := rawIp.getNetAddress(netMask)
+	rawNetIp, err := rawIp.GetNetAddress(netMask)
 	if err != nil {
-		return netMaskedIp{}, err
+		return NetMaskedIp{}, err
 	}
-	return netMaskedIp{rawNetIp.str + "/" + strconv.Itoa(netMask)}, nil
+	return NetMaskedIp{rawNetIp.str + "/" + strconv.Itoa(netMask)}, nil
 }
 
 // Wrapper to a string representation of a binary IP address
 
-type binaryIpAddress struct {
+type BinaryIpAddress struct {
 	str string
 }
 
-func (bip *binaryIpAddress) validate() error {
+func (bip *BinaryIpAddress) Validate() error {
 	// Check the length of the string
 	if len(bip.str) != 32 {
 		return fmt.Errorf("invalid binary IP address: %s", bip.str)
@@ -194,9 +194,9 @@ func (bip *binaryIpAddress) validate() error {
 
 // Converts the binary representation of an IP address into the common numeric representation
 
-func (bip *binaryIpAddress) toIp() (ipAddress, error) {
-	if err := bip.validate(); err != nil {
-		return ipAddress{}, err
+func (bip *BinaryIpAddress) ToIp() (IpAddress, error) {
+	if err := bip.Validate(); err != nil {
+		return IpAddress{}, err
 	}
 
 	ip := ""
@@ -204,18 +204,18 @@ func (bip *binaryIpAddress) toIp() (ipAddress, error) {
 		if i != 0 {
 			ip = ip + "."
 		}
-		currDigit, err := binaryStrToInt(bip.str[8*i : 8*(i+1)])
+		currDigit, err := BinaryStrToInt(bip.str[8*i : 8*(i+1)])
 		if err != nil {
-			return ipAddress{}, err
+			return IpAddress{}, err
 		}
 		ip = ip + strconv.Itoa(currDigit)
 	}
-	return ipAddress{ip}, nil
+	return IpAddress{ip}, nil
 }
 
 // Utility to convert an integer into its binary representation, as a string
 
-func intToStr(u8 int) string {
+func IntToStr(u8 int) string {
 	res := ""
 	tmp := u8
 	for tmp > 1 {
@@ -233,7 +233,7 @@ func intToStr(u8 int) string {
 
 // Utility to convert a string representation of a binary digit into an integer
 
-func binaryStrToInt(str string) (int, error) {
+func BinaryStrToInt(str string) (int, error) {
 	res := 0
 	for i := 0; i < len(str); i++ {
 		currDigitStr := str[len(str)-i-1 : len(str)-i]
@@ -242,6 +242,38 @@ func binaryStrToInt(str string) (int, error) {
 			return 0, err
 		}
 		res += currDigit * (1 << i)
+	}
+	return res, nil
+}
+
+// Utility to convert an hexadecimal string into an integer
+
+func HexStrToInt(str string) (int64, error) {
+	var res int64 = 0
+	for i := 0; i < len(str); i++ {
+		currDigitStr := str[len(str)-i-1 : len(str)-i]
+		var currDigit int
+		switch currDigitStr {
+		case "F":
+			currDigit = 15
+		case "E":
+			currDigit = 14
+		case "D":
+			currDigit = 13
+		case "C":
+			currDigit = 12
+		case "B":
+			currDigit = 11
+		case "A":
+			currDigit = 10
+		default:
+			digit, err := strconv.Atoi(currDigitStr)
+			if err != nil {
+				return 0, err
+			}
+			currDigit = digit
+		}
+		res += currDigit * (1 << i * 4)
 	}
 	return res, nil
 }
