@@ -316,6 +316,10 @@ public class Main extends Application {
         primaryStage.setMinWidth(windowWidth);
         primaryStage.setMaxWidth(windowWidth);
         System.out.println(layout.getHeight());
+        primaryStage.setOnCloseRequest(event -> {
+            System.out.println("Stage is closing");
+            System.exit(0);
+        });
         primaryStage.show();
     }
 
