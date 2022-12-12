@@ -13,7 +13,7 @@ from ofctl import add_flow
 from notifications import HTTPClient, NotificationsController
 from threading import Semaphore
 
-NETCONF_BACKEND_URL = 'http://127.0.0.1:4000/'
+NETCONF_BACKEND_URL = 'http://net-conf:4000/'
 IP_ADDRESSES_ENDPOINT = NETCONF_BACKEND_URL + 'allDataPathIps'
 IP_TABLES_ENDPOINT = NETCONF_BACKEND_URL + 'allIpTables'
 
