@@ -273,7 +273,7 @@ func HexStrToInt(str string) (int64, error) {
 			}
 			currDigit = digit
 		}
-		res += currDigit * (1 << i * 4)
+		res += int64(currDigit * (1 << i * 4))
 	}
 	return res, nil
 }
