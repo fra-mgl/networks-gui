@@ -48,8 +48,17 @@ func (dbConn *DbConn) SaveNetworkConfiguration(ports []SwitchPort) error {
 
 // A wrapper to a database query to create a batch of 'links' table records
 
-func (dbConn *DbConn) SaveLinks(link []Link) error {
-	return dbConn.gormConn.Create(&link).Error
+func (dbConn *DbConn) SaveLinks(links []Link) error {
+	// The previous network topology is deleted
+	rawConn, err := dbConn.gormConn.DB()
+	if err != nil {
+		return err
+	}
+	_, err = rawConn.Exec("delete from links")
+	if err != nil {
+		return err
+	}
+	return dbConn.gormConn.Create(&links).Error
 }
 
 // The function returns all IP addresses assigned to the ports of an OpenFlow switch .
