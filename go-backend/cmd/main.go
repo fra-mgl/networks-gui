@@ -17,7 +17,7 @@ func main() {
 	router := gin.Default()
 	router.GET("/notification", ryuNotification(dbConn))
 	router.GET("/allDataPathIps", allDataPathIps(dbConn))
-	router.GET("/allIpTables")
+	router.GET("/allIpTables", getAllIpTables(dbConn))
 	router.GET("/dataPathIps/:dpid", dataPathIps(dbConn))
 	router.GET("/ipTable/:dpid", getIpTable(dbConn))
 	router.POST("/netConf", configureNetwork(dbConn))

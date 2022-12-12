@@ -20,7 +20,7 @@ func allDataPathIps(dbConn *database.DbConn) func(*gin.Context) {
 	return func(c *gin.Context) {
 		datapathMap, err := dbConn.GetIPsGroupedByDataPath()
 		if err != nil {
-			c.AbortWithError(500, fmt.Errorf("internal error"))
+			c.AbortWithError(500, err)
 		} else {
 			c.IndentedJSON(http.StatusOK, datapathMap)
 		}
@@ -39,7 +39,7 @@ func dataPathIps(dbConn *database.DbConn) func(*gin.Context) {
 
 		ipAddresses, err := dbConn.GetDataPathIPs(int64(dpid))
 		if err != nil {
-			c.AbortWithError(500, fmt.Errorf("internal error"))
+			c.AbortWithError(500, err)
 		} else {
 			c.IndentedJSON(http.StatusOK, ipAddresses)
 		}
@@ -58,9 +58,22 @@ func getIpTable(dbConn *database.DbConn) func(*gin.Context) {
 
 		routingTable, err := dbConn.GetIpTable(int64(dpid))
 		if err != nil {
-			c.AbortWithError(500, fmt.Errorf("internal error"))
+			c.AbortWithError(500, err)
 		} else {
 			c.IndentedJSON(http.StatusOK, routingTable)
+		}
+	}
+}
+
+// Returns the ip routing tables for all routers in the network
+
+func getAllIpTables(dbConn *database.DbConn) func(ctx *gin.Context) {
+	return func(c *gin.Context) {
+		ipTables, err := dbConn.AllIpTables()
+		if err != nil {
+			c.AbortWithError(500, err)
+		} else {
+			c.IndentedJSON(http.StatusOK, ipTables)
 		}
 	}
 }
