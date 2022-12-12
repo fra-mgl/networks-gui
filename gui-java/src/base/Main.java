@@ -796,15 +796,15 @@ public class Main extends Application {
         configPanel.setAlignment(Pos.CENTER);
         layout.getChildren().add(configPanel);
         boolean valid;
-
-        if(configurationJSON == null){
-            valid = false;
-        }else{
+        valid = false;
+        if(configurationJSON != null && RestAPI.validateNetConf(configurationJSON, network.switchList) == 1){
             // send to api and set valid flag
+//            int result = RestAPI.postNetConf(configurationJSON);
+//            if(result == 200) {
+//                valid = true;
+//            }
             valid = true;
         }
-
-
 
         if (valid){
             // network configuration is valid
@@ -815,13 +815,14 @@ public class Main extends Application {
             configText.setText("Your configuration is not valid.\nPlease upload a new file.");
         }
         Timer timer = new Timer();
+        boolean finalValid = valid;
         TimerTask task = new TimerTask()
         {
             public void run()
             {
 
                 Platform.runLater(()->{
-                            if(valid){
+                            if(finalValid){
                                 Platform.runLater(()->{
                                     configStage.close();
                                     s1_Background.getChildren().remove(configBox);

@@ -8,7 +8,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.List;
+import java.util.*;
 
 public class RestAPI {
 
@@ -146,6 +146,78 @@ public class RestAPI {
             e.printStackTrace();
             return null;
         }
+    }
+    static int postNetConf(String requestBody){
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(URL + "/netConf"))
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                    .build();
+            HttpClient client = HttpClient.newHttpClient();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+//            System.out.println(response.statusCode());
+//            System.out.println(response.body());
+            if(response.statusCode() != 200){
+                System.err.println("EXEP - RestAPI(postNetConf) - ERROR: not 200");
+                throw new Exception("Error - not 200");
+            }
+            return response.statusCode();
+        } catch (Exception e){
+            System.err.println("EXEP - RestAPI(postNetConf)");
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    static int validateNetConf(String conf, Map<Integer, Switch> switches){
+        List<ConfigItem> l = new ArrayList<>();
+        System.out.println("Configuration:\n" + conf);
+        try{
+            l.addAll(Arrays.asList(gson.fromJson(conf, ConfigItem[].class)));
+        }catch (Exception e){
+            System.err.println("EXEC - gson: json format not valid");
+            return -1;
+        }
+
+        Map<Integer,Integer> portCounter = new TreeMap<>();
+        // mapping : switch's dpid, number of ports
+        for (Map.Entry<Integer, Switch> entry : switches.entrySet()) {
+            portCounter.put(entry.getKey(), 0);
+        }
+        int dpid;
+        for (ConfigItem i: l) {
+            dpid = i.getDpid();
+            portCounter.put(dpid, portCounter.get((dpid)) +1);
+        }
+        boolean valid = true;
+
+        for (Map.Entry<Integer, Integer> entry : portCounter.entrySet()) {
+            if(portCounter.get(entry.getKey()) != switches.get(entry.getKey()).getPortNumber()){
+                valid = false;
+                break;
+            }
+        }
+
+        if (valid) {
+            return 1;
+        }else {
+            return -1;
+        }
+    }
+}
+
+class ConfigItem{
+    /* EXAMPLE
+        "dpid": "0000000000000001",
+        "port_no": "00000001",
+        "ip": "10.0.1.254/24"
+     */
+    @Expose private String dpid;
+    @Expose private String port_no;
+    @Expose private String ip;
+
+    public int getDpid(){
+        return Integer.parseInt(dpid);
     }
 }
 

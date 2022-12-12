@@ -50,6 +50,7 @@ public class Switch extends NetItem{
     public Switch getSwitchFromLink(int i){
         return switchLinkList.get(i);
     }
+    public int getPortNumber(){return ports.size();}
 
     @Override
     public String toString() {
