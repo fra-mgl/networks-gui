@@ -52,41 +52,19 @@ func (dbConn *DbConn) SaveLinks(link []Link) error {
 	return dbConn.gormConn.Create(&link).Error
 }
 
-type portIpJoin struct {
-	dataPathID int64
-	ip         string
-	portNo     int
-}
+// The function returns all IP addresses assigned to the ports of an OpenFlow switch .
+// They are provided in the format { 'port number' : 'ip address' }
 
-// The function returns all IP addresses owned by a OpenFlow switch, and related next hop
-// addresses. They are provided in the format { 'port number' : 'ip address' }
-
-func (dbConn *DbConn) GetDataPathIPs(dp int64) (map[int]string, error) {
-	// join tables 'port_data', 'ip_addresses' to get the all the ip addresses
-	// of the selected switch
-	joinResult := make([]portIpJoin, 0)
-	rawConn, err := dbConn.gormConn.DB()
-	if err != nil {
+func (dbConn *DbConn) GetDataPathIPs(dp int64) (map[int32]string, error) {
+	ports := make([]SwitchPort, 0)
+	if err := dbConn.gormConn.Find(&ports, "data_path_id = ?", dp).Error; err != nil {
 		return nil, err
-	}
-	query := `select data_path_id, address, port_no from port_data, ip_addresses where port_data.port_address = ip_addresses.address and port_data.data_path_id = $1;`
-	res, err := rawConn.Query(query, dp)
-	if err != nil {
-		return nil, err
-	}
-	for res.Next() {
-		row := portIpJoin{}
-		err = res.Scan(&row.dataPathID, &row.ip, &row.portNo)
-		if err != nil {
-			return nil, err
-		}
-		joinResult = append(joinResult, row)
 	}
 
 	// build the desired output
-	portMapping := make(map[int]string)
-	for _, el := range joinResult {
-		portMapping[el.portNo] = el.ip
+	portMapping := make(map[int32]string)
+	for _, port := range ports {
+		portMapping[port.PortNo] = port.IpAddress
 	}
 	return portMapping, nil
 }
@@ -94,35 +72,19 @@ func (dbConn *DbConn) GetDataPathIPs(dp int64) (map[int]string, error) {
 // The function returns a map that relates OpenFlow switches, identified by their
 // data path ID, to the ip addresses of their ports.
 
-func (dbConn *DbConn) GetIPsGroupedByDataPath() (map[int64]map[int]string, error) {
-	// join tables 'port_data', 'ip_addresses' to get the ip addresses of
-	// all ports for all OF switches
-	joinResult := make([]portIpJoin, 0)
-	rawConn, err := dbConn.gormConn.DB()
-	if err != nil {
+func (dbConn *DbConn) GetIPsGroupedByDataPath() (map[int64]map[int32]string, error) {
+	ports := make([]SwitchPort, 0)
+	if err := dbConn.gormConn.Find(&ports).Error; err != nil {
 		return nil, err
-	}
-	res, err := rawConn.Query(`select data_path_id, address, port_no from port_data, ip_addresses where port_data.port_address = ip_addresses.address;`)
-	if err != nil {
-		return nil, err
-	}
-	for res.Next() {
-		row := portIpJoin{}
-		err = res.Scan(&row.dataPathID, &row.ip, &row.portNo)
-		if err != nil {
-			return nil, err
-		}
-		joinResult = append(joinResult, row)
 	}
 
-	// Build the desired output by performing a sort of 'nested loop join'
-	output := make(map[int64]map[int]string)
-	for _, el := range joinResult {
-		_, ok := output[el.dataPathID]
-		if !ok {
-			output[el.dataPathID] = make(map[int]string)
+	// Build the desired output
+	output := make(map[int64]map[int32]string)
+	for _, port := range ports {
+		if _, ok := output[port.DataPathID]; !ok {
+			output[port.DataPathID] = make(map[int32]string)
 		}
-		output[el.dataPathID][el.portNo] = el.ip
+		output[port.DataPathID][port.PortNo] = port.IpAddress
 	}
 	return output, nil
 }
