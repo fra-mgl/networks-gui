@@ -17,7 +17,7 @@ from http_client import HTTPClient
 NETCONF_BACKEND_URL = 'http://localhost:4000/'
 IP_ADDRESSES_ENDPOINT = NETCONF_BACKEND_URL + 'allDataPathsIps'
 IP_TABLES_ENDPOINT = NETCONF_BACKEND_URL + 'allIpTables'
-NOTIFICATION_CONSUMER_ENDPOINT = ('notification', 8000)
+NOTIFICATION_CONSUMER_ENDPOINT = ('127.0.0.1', 8000)
 
 class App(app_manager.RyuApp):
 
@@ -115,14 +115,22 @@ class App(app_manager.RyuApp):
     # controller thread to receive notifications from the network 
     # configuration service
 
-    def notification_consumer_server(self):
+    def notification_consumer_server(app):
 
         # When a notification is pushed by the network configuration
         # service, the thread sets signals the main controller
         class Handler(server.BaseHTTPRequestHandler):
-            def do_Get(req):
-                self.configured = True
-                super(Handler, req).do_Get()
+            def do_GET(self):
+                if self.path == '/notification':
+                    nonlocal app
+                    app.configured = True
+                    self.send_response(200)
+                    self.send_header('Content-type','text/html')
+                    self.end_headers()
+                    message = "Hello world!"
+                    self.wfile.write(bytes(message, "utf8"))
+                else:
+                    self.send_response(404)
 
         s = server.HTTPServer(NOTIFICATION_CONSUMER_ENDPOINT, Handler)
         s.serve_forever()
