@@ -22,7 +22,6 @@ func main() {
 
 	// Set up the REST API
 	router := gin.Default()
-	router.GET("/notification", ryuNotification(dbConn))
 	router.GET("/allDataPathIps", allDataPathIps(dbConn))
 	router.GET("/allIpTables", getAllIpTables(dbConn))
 	router.GET("/dataPathIps/:dpid", dataPathIps(dbConn))
@@ -140,15 +139,7 @@ func configureNetwork(dbConn *database.DbConn) func(*gin.Context) {
 			// A goroutine is spawned to build the ip tables for the switches
 			// and notify Ryu of the available L3 configuration
 			go func() {
-				err := dbConn.BuildIpTables()
-				if err != nil {
-					panic(err)
-				}
-				httpClient := http.Client{Timeout: time.Duration(1) * time.Second}
-				_, err = httpClient.Get(RYU_NOTIFICATION_ENDPOINT)
-				if err != nil {
-					panic(err)
-				}
+				l3configGoRoutine(dbConn)
 			}()
 
 			c.AbortWithStatus(http.StatusOK)
@@ -156,19 +147,13 @@ func configureNetwork(dbConn *database.DbConn) func(*gin.Context) {
 	}
 }
 
-// When the ryu controller sends a notification to the Go backend, it answers
-// by requesting to the controller the links between the switches in the network
+// The function should be called as a goroutine, because it panics
+// in case of errors. It performs queries the Ryu controller to know the links
+// among routers in the network, then it computes the routing tables and notifies
+// the controller
 
-func ryuNotification(dbConn *database.DbConn) func(*gin.Context) {
-	return func(c *gin.Context) {
-		// Request to Ryu to get information about links between switches
-		go requestLinks(dbConn)
-		// ACK to Ryu
-		c.AbortWithStatus(http.StatusOK)
-	}
-}
-
-func requestLinks(dbConn *database.DbConn) {
+func l3configGoRoutine(dbConn *database.DbConn) {
+	// Simple struct that represent the expected json format
 	type portData struct {
 		DpId   string `json:"dpid" binding:"required"`
 		PortNo string `json:"port_no" binding:"required"`
@@ -176,6 +161,7 @@ func requestLinks(dbConn *database.DbConn) {
 		Name   string `json:"name" binding:"required"`
 	}
 
+	// Query the Ryu controller for link information between routers
 	httpClient := http.Client{Timeout: time.Duration(1) * time.Second}
 	res, err := httpClient.Get(RYU_LINKS_ENDPOINT)
 	if err != nil {
@@ -219,6 +205,16 @@ func requestLinks(dbConn *database.DbConn) {
 		links = append(links, newLink)
 	}
 	if err = dbConn.SaveLinks(links); err != nil {
+		panic(err)
+	}
+
+	// Now build the ip routing tables, and then notify the Ryu controller
+	err = dbConn.BuildIpTables()
+	if err != nil {
+		panic(err)
+	}
+	_, err = httpClient.Get(RYU_NOTIFICATION_ENDPOINT)
+	if err != nil {
 		panic(err)
 	}
 }
