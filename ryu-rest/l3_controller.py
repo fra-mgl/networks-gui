@@ -153,11 +153,11 @@ class L3Controller:
 
     # Utility to get the datapath id of the gateway for a given
     # ip address
-    def get_gateway_dpid(self, ip):
+    def get_gateway_dpid_and_port(self, ip):
         for dp in self.datapaths:
             ip_table = self.ip_table(dp)
             if ip_table[ip] is not None and ip_table[ip]['dst_ip'] == '':
-                return dp
+                return dp, ip_table[ip]['src_port_no']
 
 # Simple wrapper to record information about the ports of an OF switch
 

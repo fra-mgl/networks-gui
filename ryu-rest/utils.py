@@ -7,6 +7,7 @@ IPV4 = ipv4.ipv4.__name__
 ARP = arp.arp.__name__
 
 def ip_to_bstr(ip):
+    ip = ip.split('/')[0]
     splitted_ip = ip.split('.')
     bstr = ""
     for i in range(4):

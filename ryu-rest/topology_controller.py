@@ -60,7 +60,7 @@ class TopologyController(ControllerBase):
                 requirements={'dpid': dpid_lib.DPID_PATTERN})
     def mac_table(self, req, **kwargs):
         if not self.app.configured:
-            return Response(body=json.dumps({}))
+            return Response(content_type='application/json', body=json.dumps({}))
 
         try:
             dpid = int(kwargs['dpid'])
@@ -79,7 +79,7 @@ class TopologyController(ControllerBase):
                 requirements={'dpid': dpid_lib.DPID_PATTERN})
     def ip_table(self, req, **kwargs):
         if not self.app.configured:
-            return Response(body=json.dumps({}))
+            return Response(content_type='application/json', body=json.dumps({}))
 
         try:
             dpid = int(kwargs['dpid'])
@@ -176,6 +176,7 @@ class TopologyController(ControllerBase):
         dst_dpid = None
         dst_mac = None
         for host in hosts:
+            host = host.to_dict()
             if host['ipv4']:
                 if host['ipv4'][0] == src_ip:
                     src_dpid = dpid_lib.str_to_dpid(host['port']['dpid'])
@@ -187,8 +188,10 @@ class TopologyController(ControllerBase):
             return Response(status=404)
 
         # Get the datapath ids of the gateways
-        src_gateway_dpid = self.app.l3_controller.get_gateway_dpid(src_ip)
-        dst_gateway_dpid= self.app.l3_controller.get_gateway_dpid(dst_ip)
+        src_gateway_dpid, src_gateway_port = self.app.l3_controller.get_gateway_dpid_and_port(src_ip)
+        dst_gateway_dpid, dst_gateway_port = self.app.l3_controller.get_gateway_dpid_and_port(dst_ip)
+        src_gateway_mac = self.app.l3_controller.datapaths[src_gateway_dpid]['ports'][src_gateway_port].mac
+        dst_gateway_mac = self.app.l3_controller.datapaths[dst_gateway_dpid]['ports'][dst_gateway_port].mac
 
         path = [src_dpid]
         gw_to_dst_path = [dst_dpid]
@@ -196,31 +199,33 @@ class TopologyController(ControllerBase):
         curr_dpid = src_dpid
         while curr_dpid != src_gateway_dpid:
             curr_dpid = self.get_next_switch(curr_dpid, 
-                    self.l2_controller.datapaths[curr_dpid][src_mac])
+                    self.app.l2_controller.datapaths[curr_dpid][src_gateway_mac])
             path.append(curr_dpid)
         
         # Now compute the path between the layer 3 switches
         curr_dpid = src_gateway_dpid
         while curr_dpid != dst_gateway_dpid:
             curr_dpid = self.get_next_switch(curr_dpid,
-                    self.l3_controller.datapaths[curr_dpid]['ip_table'][src_ip])
+                    self.app.l3_controller.datapaths[curr_dpid]['ip_table'][src_ip])
             path.append(curr_dpid)
         
         # Now compute from the from the destination host to its gateway
         curr_dpid = dst_dpid
         while curr_dpid != dst_gateway_dpid:
             curr_dpid = self.get_next_switch(curr_dpid, 
-                    self.l2_controller.datapaths[curr_dpid][dst_mac])
+                    self.app.l2_controller.datapaths[curr_dpid][dst_gateway_mac])
             gw_to_dst_path = [curr_dpid] + gw_to_dst_path
 
         # the final path
         path = path + gw_to_dst_path
         path = [dpid_lib.dpid_to_str(dpid) for dpid in path]
-        return Response(body=json.dumps(path))
+        return Response(status=200, content_type='application/json',
+                body=json.dumps(path))
     
     def get_next_switch(self, prev_dp_id, out_port):
         links = get_link(self.app, prev_dp_id)
         for link in links:
+            link = link.to_dict()
             if hexstr_to_int(link['src']['port_no']) == out_port:
                 return dpid_lib.str_to_dpid(link['dst']['dpid'])
         
