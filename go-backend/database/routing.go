@@ -1,5 +1,7 @@
 package database
 
+import go_backend "go-backend"
+
 // Database relation that records iptables entries for the OF switches.
 // It also represents links between ports of different routers. When
 // the `NextHop` fields are nil, the record represents a link between a router
@@ -7,11 +9,11 @@ package database
 
 type IpTableRecord struct {
 	DestinationSubNet string `gorm:"not null;"`
-	DataPathID        int    `gorm:"not null;index:,type:hash"`
-	PortNo            int
+	DataPathID        int64  `gorm:"not null;index:,type:hash"`
+	PortNo            int32  `gorm:"not null;"`
 	PortAddress       string `gorm:"not null;"`
-	NextHopDataPathID *int
-	NextHopPortNo     *int
+	NextHopDataPathID *int64
+	NextHopPortNo     *int32
 	NextHopAddress    *string
 }
 
@@ -45,12 +47,12 @@ func (dbConn *DbConn) BuildIpTables() error {
 	// For each router, do...
 	for startRouter, links := range graph {
 		// Depth-First-Search
-		parents := make(map[int]int)
+		parents := make(map[int64]int64)
 		for router := range graph {
 			parents[router] = -1
 		}
 		parents[startRouter] = startRouter
-		queue := make([]int, 0)
+		queue := make([]int64, 0)
 
 		// If the 'root' router is directly connected to some ground network, the
 		// ip table entry for that network is immediately written to the database.
@@ -103,41 +105,92 @@ func (dbConn *DbConn) BuildIpTables() error {
 	return nil
 }
 
+// Struct representing the output json format of an ip routing table record
+
 type jsonIpTableEntry struct {
-	SrcMAC string `json:"src_mac"`
-	SrcIp  string `json:"src_ip"`
-	DstMAC string `json:"dst_mac"`
-	DstIp  string `json:"dst_ip"`
+	SrcPortNo int32  `json:"src_port_no"`
+	SrcIp     string `json:"src_ip"`
+	DstPortNo int32  `json:"dst_port_no"`
+	DstIp     string `json:"dst_ip"`
 }
 
-// Queries the ip routing table of the given switch. The output is represented as
-// [ { 'destination network' : { 'src_mac', 'src_ip', 'dst_mac', 'dst_ip' } } ]
+// Gets the ip routing tables of all routers in the network. The output is represented as:
+// {
+//	   'dpid':
+// 		   {
+//	 		   'destination network' : {
+//	 				'src_port_no',
+//	 				 'src_ip',
+//	 				 'dst_port_no',
+//	 				 'dst_ip'
+//	 			}
+//	 		}
+// }
 
-func (dbConn *DbConn) GetIpTable(dpid int64) ([]map[string]jsonIpTableEntry, error) {
+func (dbConn *DbConn) AllIpTables() (map[int64]map[string]jsonIpTableEntry, error) {
+	ipTableRecords := make([]IpTableRecord, 0)
+	if err := dbConn.gormConn.Find(&ipTableRecords).Error; err != nil {
+		return nil, err
+	}
+
+	output := make(map[int64]map[string]jsonIpTableEntry, 0)
+	for _, record := range ipTableRecords {
+		if _, ok := output[record.DataPathID]; !ok {
+			output[record.DataPathID] = make(map[string]jsonIpTableEntry)
+		}
+		// The json object is built
+		var dstPortNo int32
+		var dstIp string
+		if record.isGround() {
+			dstPortNo = 0
+			dstIp = ""
+		} else {
+			dstPortNo = *record.NextHopPortNo
+			dstIp = *record.NextHopAddress
+		}
+		output[record.DataPathID][record.DestinationSubNet] = jsonIpTableEntry{
+			SrcPortNo: record.PortNo,
+			SrcIp:     record.PortAddress,
+			DstPortNo: dstPortNo,
+			DstIp:     dstIp,
+		}
+	}
+	return output, nil
+}
+
+// Queries the ip routing table of the given switch. The output is represented as:
+// {
+//	   'destination network' : {
+//	 	  'src_port_no',
+//	      'src_ip',
+//	 	  'dst_port_no',
+//	 	  'dst_ip'
+//	   }
+// }
+
+func (dbConn *DbConn) GetIpTable(dpid int64) (map[string]jsonIpTableEntry, error) {
 	ipTableRecords := make([]IpTableRecord, 0)
 	if err := dbConn.gormConn.Find(&ipTableRecords, "data_path_id = ?", dpid).Error; err != nil {
 		return nil, err
 	}
 
-	output := make([]map[string]jsonIpTableEntry, 0)
+	output := make(map[string]jsonIpTableEntry, 0)
 	for _, record := range ipTableRecords {
-		entry := make(map[string]jsonIpTableEntry)
-		var dstMAC string
+		var dstPortNo int32
 		var dstIp string
-		if record.NextHopMAC == nil {
-			dstMAC = ""
+		if record.isGround() {
+			dstPortNo = 0
 			dstIp = ""
 		} else {
-			dstMAC = *record.NextHopMAC
+			dstPortNo = *record.NextHopPortNo
 			dstIp = *record.NextHopAddress
 		}
-		entry[record.DestinationSubNet] = jsonIpTableEntry{
-			SrcMAC: record.PortMAC,
-			SrcIp:  record.PortAddress,
-			DstMAC: dstMAC,
-			DstIp:  dstIp,
+		output[record.DestinationSubNet] = jsonIpTableEntry{
+			SrcPortNo: record.PortNo,
+			SrcIp:     record.PortAddress,
+			DstPortNo: dstPortNo,
+			DstIp:     dstIp,
 		}
-		output = append(output, entry)
 	}
 	return output, nil
 }
@@ -152,52 +205,52 @@ func (dbConn *DbConn) buildNetworkGraph() (map[int64][]IpTableRecord, error) {
 	}
 
 	// First query the links between routers
-	query := `select port1.data_path_id, ip1.address, ip1.mac, port2.data_path_id, ip2.address, ip2.mac
-			  from port_data as port1, port_data as port2, ip_addresses as ip1, ip_addresses as ip2
-			  where port1.next_hop = port2.port_address and port1.port_address = ip1.address and
-			  port2.port_address = ip2.address`
+	query := `select port1.data_path_id, port1.port_no, port1.address, port2.data_path_id, port2.port_no, port2.address,
+			  from links, switch_ports as port1, switch_ports as port2
+			  where links.src_data_path_id = port1.data_path_id and links.dst_data_path_id = port2.data_path_id`
 	res, err := rawConn.Query(query)
 	if err != nil {
 		return nil, err
 	}
 	for res.Next() {
 		row := IpTableRecord{
-			NextHopDataPathID: new(int),
+			NextHopDataPathID: new(int64),
+			NextHopPortNo:     new(int32),
 			NextHopAddress:    new(string),
-			NextHopMAC:        new(string),
 		}
-		err = res.Scan(&row.DataPathID, &row.PortAddress, &row.PortMAC,
-			row.NextHopDataPathID, row.NextHopAddress, row.NextHopMAC)
+		err = res.Scan(&row.DataPathID, &row.PortNo, &row.PortAddress,
+			row.NextHopDataPathID, row.NextHopPortNo, row.NextHopAddress)
 		if err != nil {
 			return nil, err
 		}
 		links = append(links, row)
 	}
 
-	// Then query the links between routers and their adjacent ground subnets
-	query = `select port.data_path_id, ip.address, ip.mac from port_data as port, 
-             ip_addresses as ip where port.next_hop is null and port.port_address = ip.address`
+	// Then find out, among all routers, which ports have been assigned an IP address, but
+	// are not connected to another router. Those ports lead to ground networks
+	query = `select port.data_path_id, port.port_no, port.address from switch_ports where 
+             (port.data_path_id, port.port_no) not in (select links.src_data_path_id, links.src_port_no from links)`
 	res, err = rawConn.Query(query)
 	if err != nil {
 		return nil, err
 	}
 	for res.Next() {
 		row := IpTableRecord{}
-		err = res.Scan(&row.DataPathID, &row.PortAddress, &row.PortMAC)
+		err = res.Scan(&row.DataPathID, &row.PortNo, &row.PortAddress)
 		if err != nil {
 			return nil, err
 		}
-		netAddress := ip_addresses.netMaskedIp{row.PortAddress}
-		netAddress, err = netAddress.getNetAddress()
+		netAddress := go_backend.NetMaskedIp{Str: row.PortAddress}
+		netAddress, err = netAddress.GetNetAddress()
 		if err != nil {
 			return nil, err
 		}
-		row.DestinationSubNet = netAddress.str
+		row.DestinationSubNet = netAddress.Str
 		links = append(links, row)
 	}
 
-	// The graph is built by mapping routers to their links to other routers
-	// or ground subnetworks
+	// The graph is built by mapping routers to their links to other routers, and to
+	// their direct links to ground subnetworks
 	graph := make(map[int64][]IpTableRecord)
 	for _, link := range links {
 		if _, ok := graph[link.DataPathID]; !ok {
