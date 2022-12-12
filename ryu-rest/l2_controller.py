@@ -7,13 +7,13 @@ from ryu.lib.packet import ether_types
 class L2Controller:
 
     def __init__(self):
-        self.switches_list = {}
+        self.datapaths = {}
 
     def register_datapath(self, datapath):
-        self.switches_list[datapath.id] = {}
+        self.datapaths[datapath.id] = {}
 
     def unregister_datapath(self, datapath):
-        self.switches_list[datapath.id]
+        self.datapaths[datapath.id]
 
     # The first time a switch receives a packet to forward from
     # MAC address A to MAC address B, it doesn't know which output port
@@ -56,12 +56,12 @@ class L2Controller:
         src = eth.src
 
         dpid = datapath.id
-        self.switches_list.setdefault(dpid, {})
+        self.datapaths.setdefault(dpid, {})
 
         # Learn that 'in_port' is associated to 'src' MAC address
-        self.switches_list[dpid][src] = in_port
-        if dst in self.switches_list[dpid]:
-            out_port = self.switches_list[dpid][dst]
+        self.datapaths[dpid][src] = in_port
+        if dst in self.datapaths[dpid]:
+            out_port = self.datapaths[dpid][dst]
         else:
             out_port = ofproto.OFPP_FLOOD
 

@@ -14,22 +14,26 @@ class TopologyController(ControllerBase):
 
     @route('topology', '/topology/l2switches', methods=['GET'])
     def list_l2switches(self, req, **kwargs):
-        return self._l2_switches(req, **kwargs)
+        # If the network has yet to be configured for L3 forwarding,
+        # all switches are considered as l2 switches
 
-    @route('topology', '/topology/l2switches/{dpid}',
-           methods=['GET'], requirements={'dpid': dpid_lib.DPID_PATTERN})
-    def get_l2switch(self, req, **kwargs):
-        return self._l2_switches(req, **kwargs)
+        if self.app.configured:
+            return self._l2_switches(req, **kwargs)
+        else:
+            switches = get_switch(self.app, None)
+            body = json.dumps([switch.to_dict() for switch in switches])
+            return Response(content_type='application/json', body=body)
 
     @route('topology', '/topology/l3switches',
            methods=['GET'])
     def list_l3switches(self, req, **kwargs):
-        return self._l3_switches(req, **kwargs)
-
-    @route('topology', '/topology/l3switches/{dpid}',
-           methods=['GET'], requirements={'dpid': dpid_lib.DPID_PATTERN})
-    def get_l3switch(self, req, **kwargs):
-        return self._l3_switches(req, **kwargs)
+        # If the network has yet to be configured for L3 forwarding,
+        # all switches are considered as L2. So the response is empty
+        if self.app.configured:
+            return self._l3_switches(req, **kwargs)
+        else:
+            return Response(content_type='application/json', 
+            body=json.dumps([]))
 
     @route('topology', '/topology/links',
            methods=['GET'])
@@ -54,15 +58,18 @@ class TopologyController(ControllerBase):
     @route('mactable', '/mactable/{dpid}', methods=['GET'],
                 requirements={'dpid': dpid_lib.DPID_PATTERN})
     def mac_table(self, req, **kwargs):
+        if not self.app.configured:
+            return Response(body=json.dumps({}))
+
         try:
             dpid = int(kwargs['dpid'])
         except ValueError:
             return Response(status=400)
 
-        if dpid not in self.app.l2_controller.switches_list:
+        if dpid not in self.app.l2_controller.datapaths:
             return Response(status=404)
 
-        mac_table_raw = self.app.l2_controller.switches_list.get(dpid, {})
+        mac_table_raw = self.app.l2_controller.datapaths.get(dpid, {})
         mac_table = [{"mac": key, "port": port} for (key, port) in mac_table_raw.items()]
         body = json.dumps(mac_table)
         return Response(content_type='application/json', text=body)
@@ -70,16 +77,24 @@ class TopologyController(ControllerBase):
     @route('iptable', '/iptable/{dpid}', methods=['GET'],
                 requirements={'dpid': dpid_lib.DPID_PATTERN})
     def ip_table(self, req, **kwargs):
+        if not self.app.configured:
+            return Response(body=json.dumps({}))
+
         try:
             dpid = int(kwargs['dpid'])
         except ValueError:
             return Response(status=400)
 
-        if dpid not in self.app.l3_controller.routers_list:
+        if dpid not in self.app.l3_controller.datapaths:
             return Response(status=404)
 
-        ip_table_raw = self.app.l3_controller.routers_list[dpid][0].address_data
-        ip_table = [{"destination": key, "gateway": val.default_gw} for (key, val) in ip_table_raw.items()]
+        # Get the IP table from the controller
+        ip_table_raw = self.app.l3_controller.ip_table(dpid)
+        if ip_table_raw is None:
+            ip_table_raw = {}
+        
+        # Trim the unnecessary information
+        ip_table = [{"destination": key, "gateway": val['src_ip']} for (key, val) in ip_table_raw.items()]
         body = json.dumps(ip_table)
         return Response(content_type='application/json', text=body)
 
@@ -90,7 +105,7 @@ class TopologyController(ControllerBase):
         switches = get_switch(self.app, dpid)
         l2_switches = []
         for switch in switches:
-            if switch.dp.id in self.app.l2_datapaths:
+            if switch.dp.id in self.app.l2_controller.datapaths:
                 l2_switches.append(switch)
         body = json.dumps([switch.to_dict() for switch in l2_switches])
         return Response(content_type='application/json', body=body)
@@ -100,27 +115,27 @@ class TopologyController(ControllerBase):
         if 'dpid' in kwargs:
             dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
         if dpid is None:
-            l3_switches = self.app.l3_controller.routers_list
+            l3_switches = self.app.l3_controller.datapaths.keys()
         else:
-            try:
-                l3_switches = {dpid: self.app.l3_controller.routers_list[dpid]}
-            except KeyError:
-                l3_switches = {}
+            if dpid in self.app.l3_controller.datapaths:
+                l3_switches = [dpid]
+            else:
+                l3_switches = []
         
         l3_switches_data = [
             {
-                "dpid": dpid_lib.dpid_to_str(_dpid),
+                "dpid": dpid_lib.dpid_to_str(dpid),
                 "ports": [
                     {
-                        "dpid": dpid_lib.dpid_to_str(_dpid),
-                        "hw_addr": "",
-                        "name": address.eth_name,
-                        "port_no": address.default_gw
+                        "dpid": dpid_lib.dpid_to_str(dpid),
+                        "hw_addr": port.mac,
+                        "name": "",
+                        "port_no": port.ip
                     }
-                    for address in router[0].address_data.values()
+                    for port in self.l3_controller.ports(dpid).values()
                 ]
             }
-            for (_dpid, router) in l3_switches.items()
+            for dpid in l3_switches
         ]
         body = json.dumps(l3_switches_data)
         return Response(content_type='application/json', body=body)

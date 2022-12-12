@@ -3,6 +3,7 @@ from ryu.lib.packet import packet, packet_base
 from ryu.ofproto import ether
 from ryu.lib.packet import ethernet
 from ryu.lib.packet import ether_types
+from ryu.lib import dpid as dpid_lib
 from ryu.lib import mac
 from ofctl import add_flow, send_arp, send_packet
 from utils import ARP, IPV4
@@ -31,7 +32,7 @@ class L3Controller:
 
         # Register datapath ports
         for port in datapath.ports.values():
-            if str(port.port_no) in ip_addresses:
+            if dpid_lib.dpid_to_str(port.port_no) in ip_addresses:
                 ip = ip_addresses[port.port_no]
                 self.datapaths[datapath.id]['ports'][port.port_no] = Port(
                     port.hw_addr, ip['ip']
