@@ -1,6 +1,6 @@
 package database
 
-import netconf "go-backend"
+import "netconf"
 
 // Database relation that records iptables entries for the OF switches.
 // It also represents links between ports of different routers. When
