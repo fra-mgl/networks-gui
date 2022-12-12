@@ -12,35 +12,47 @@ from iptables import IpTable
 class L3Controller:
 
     def __init__(self):
-        self.ports = {}
-        self.iptables = {}
-        self.packet_buffers = {}
+        self.datapaths = {}
+    def ip_table(self, dpid):
+        return self.datapaths[dpid]['ip_table']
+    def ports(self, dpid):
+        return self.datapaths[dpid]['ports']
+    def packet_buffers(self, dpid):
+        return self.datapaths[dpid]['packet_buffers']
 
     def register_datapath(self, datapath, ip_addresses, ip_table):
+        # For each known datapath, the controller keeps a data structure
+        # with relevant information
+        self.datapaths[datapath.id] = {
+            'ports': {},
+            'ip_table': {},
+            'packet_buffers': {}
+        }
+
         # Register datapath ports
-        self.ports[datapath.id] = {}
         for port in datapath.ports.values():
             if str(port.port_no) in ip_addresses:
                 ip = ip_addresses[port.port_no]
-                self.ports[datapath.id][port.port_no] = Port(
-                    port.name, port.hw_addr, port.port_no, ip['ip'], ip['netmask']
+                self.datapaths[datapath.id]['ports'][port.port_no] = Port(
+                    port.hw_addr, ip['ip']
                 )
 
         # Initialize datapath ip table
-        self.iptables[datapath.id] = IpTable()
+        _ip_table = IpTable()
         for key in ip_table:
-            self.iptables[datapath.id] = ip_table[key]
-
-        # Initially all packet buffers are empty
-        self.packet_buffers[datapath.id] = {}
+            _ip_table[key] = ip_table[key]
+        self.datapaths[datapath.id]['ip_table'] = _ip_table
 
     def buffer_packet(self, dpid, ip, packet):
-        if ip in self.packet_buffers[dpid]:
-            self.packet_buffers[dpid][ip].append(packet)
+        # The packet is added in its queue. If there is no
+        # queue for the packet's destination IP, create one
+        if ip in self.packet_buffers(dpid):
+            self.packet_buffers(dpid)[ip].append(packet)
         else:
-            self.packet_buffers[dpid][ip] = [packet]
+            self.packet_buffers(dpid)[ip] = [packet]
 
     def packet_in_handler(self, msg):
+        # The way the packet is handled depends on its layer 3 protocol
         pkt = packet.Packet(msg.data)
         header_list = dict((p.protocol_name, p)
                            for p in pkt.protocols
@@ -53,7 +65,7 @@ class L3Controller:
             self.packet_in_ip(msg, header_list[IPV4])
 
     def packet_in_arp(self, in_port, datapath, arp_packet):
-        port = self.ports[datapath.id][in_port]
+        port = self.ports(datapath.id)[in_port]
 
         # check wether the destination IP is equal to the IP
         # assigned to the input port
@@ -83,8 +95,8 @@ class L3Controller:
                 add_flow(datapath, 1, match, actions)
 
                 # flush out buffered packets for that IP
-                for buffered_packet in self.packet_buffers[datapath.id][src_ip]:
-                    send_packet(datapath, port.no, buffered_packet)
+                for buffered_packet in self.packet_buffers(datapath.id)[src_ip]:
+                    send_packet(datapath, in_port, buffered_packet)
 
     # The function is called when the OF switch receives for the first
     # time a packet for an host in one of its ground networks. The switch
@@ -96,7 +108,7 @@ class L3Controller:
 
         # If an ARP request has already been issued fo the desired
         # IP address, just wait for the response
-        if dst_ip not in self.packet_buffers[datapath.id]:
+        if dst_ip not in self.packet_buffers(datapath.id):
             send_arp(datapath, arp.ARP_REQUEST, src_mac, src_ip,
                      mac.BROADCAST_STR, dst_ip, port_no)
 
@@ -105,17 +117,19 @@ class L3Controller:
     def packet_in_ip(self, msg, ip_packet):
         datapath = msg.datapath
         dst_ip = ip_packet.dst
-        route = self.iptables[datapath.id][dst_ip]
+        route = self.iptables(datapath.id)[dst_ip]
 
         if route is None:
             # TODO teach the switch to drop packets for which it does not
             # know a route
             pass
-        elif route['dst_mac'] == '':
+        elif route['dst_ip'] == '':
             # The switch can directly forward the packet to the
             # host, but first it needs to learn the host's MAC
-            self.learn_host_mac(msg, route['src_mac'], route['src_ip'],
-                                route['port_no'], dst_ip)
+            out_port = route['src_port_no']
+            src_mac = self.ports(datapath.id)[out_port].mac
+            self.learn_host_mac(msg, src_mac, route['src_ip'],
+                                out_port, dst_ip)
         else:
             # The controller teaches the switch the rule for
             # packets destined to this subnet
@@ -130,18 +144,18 @@ class L3Controller:
             add_flow(datapath, 1, match, actions)
 
             # The controller also forwards the packet to the switch
-            eth_header = ethernet.ethernet(route['dst_mac'], route['src_mac'], ether.ETH_TYPE_IP)
+            out_port = route['src_port_no']
+            src_mac = self.ports(datapath.id)[out_port].mac
+            dst_mac = self.ports(datapath.id)[route['dst_port_no']].mac
+            eth_header = ethernet.ethernet(dst_mac, src_mac, ether.ETH_TYPE_IP)
             ip_packet.add_protocol(eth_header)
             ip_packet.serialize()
-            send_packet(datapath, route['port_no'], ip_packet)
+            send_packet(datapath, out_port, ip_packet)
 
 # Simple wrapper to record information about the ports of an OF switch
 
 class Port:
-    def __init__(self, port_name, port_mac, port_no, ip, netmask):
-        self.name = port_name
+    def __init__(self, port_mac, ip):
         self.mac = port_mac
-        self.no = port_no
         self.ip = ip
-        self.netmask = netmask
 
