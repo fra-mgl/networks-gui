@@ -5,24 +5,31 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
-import javafx.stage.Popup;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import javafx.scene.image.ImageView;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Stream;
 
 
 public class Main extends Application {
@@ -34,6 +41,9 @@ public class Main extends Application {
     private static final double windowWidth = networkDim + textWidth;
     private static final double windowHeight = networkDim;
     private static final int HBoxPadding = 20;
+    static final Image giovannino = new Image("/media/giovannino_1024.png");
+    private ImageView giovanninoImage;
+
 
     private Network network;
 
@@ -45,6 +55,9 @@ public class Main extends Application {
     private Text tableText;
     private VBox specs;
 
+    private GridPane s1_Background;
+
+    private VBox configBox;
     private GridPane rightSide;
     private GridPane specsBox;
     private GridPane exploreBox;
@@ -61,15 +74,47 @@ public class Main extends Application {
     private Button bExpStart;
     private boolean isExplore;
 
+    private String configurationJSON;
+    private boolean confRepeat;
+    private Button bConfUpload;
+
 
 
     @Override
     public void start(Stage primaryStage) throws Exception {
 
+        StackPane basicPane = new StackPane();
+
+        giovanninoImage = new ImageView();
+        giovanninoImage.setImage(giovannino);
+        giovanninoImage.setFitWidth(200);
+        giovanninoImage.setPreserveRatio(true);
+        giovanninoImage.setSmooth(true);
+        giovanninoImage.setCache(true);
+
         /* BUTTONS */
         bSpecs = new Button("Specs");
         bExplore = new Button("Explore");
         bRefresh = new Button("Refresh");
+        /* BUTTONS' EVENT HANDLERS */
+        bSpecs.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                switchToSpecsBox();
+            }
+        });
+        bExplore.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                switchToExploreBox();
+            }
+        });
+        bRefresh.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                refreshNetwork();
+            }
+        });
 
         HBox buttonsBox = new HBox(bSpecs, bExplore, bRefresh);
         buttonsBox.setBackground(new Background(new BackgroundFill(Color.CADETBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -118,18 +163,18 @@ public class Main extends Application {
         p5.setBackground(new Background(new BackgroundFill(Color.GREEN, CornerRadii.EMPTY, Insets.EMPTY)));
 
         /* LAYOUT */
-        GridPane layout = new GridPane();
+        s1_Background = new GridPane();
         ColumnConstraints col1 = new ColumnConstraints();
         ColumnConstraints col2 = new ColumnConstraints();
         col1.setMinWidth(networkDim);
         col1.setMaxWidth(networkDim);
         col2.setMinWidth(textWidth);
         col2.setMaxWidth(textWidth);
-        layout.getColumnConstraints().addAll(col1, col2);
+        s1_Background.getColumnConstraints().addAll(col1, col2);
         RowConstraints row1 = new RowConstraints();
         row1.setMinHeight(networkDim);
         row1.setMaxHeight(networkDim);
-        layout.getRowConstraints().add(row1);
+        s1_Background.getRowConstraints().add(row1);
 
         rightSide = new GridPane();
         rightSide.getColumnConstraints().addAll(col2);
@@ -140,6 +185,7 @@ public class Main extends Application {
         rowDX2.setMinHeight(buttonsHeight);
         rowDX2.setMaxHeight(buttonsHeight);
         rightSide.getRowConstraints().addAll(rowDX1, rowDX2);
+        rightSide.add(buttonsBox, 0, 1); // buttons
 
         /* SPECSBOX */
         specsBox = new GridPane();
@@ -249,11 +295,41 @@ public class Main extends Application {
 //        exploreBox.add(p4, 0,3);
 
 
+        /* NETWORK CONFIGURATION DIALOG WINDOW */
+        Text titleConf = new Text("Configure your network\n\nUpload a JSON file\n");
+        titleConf.setTextAlignment(TextAlignment.CENTER);
+        bConfUpload = new Button("Upload file");
+        configBox = new VBox(titleConf, bConfUpload);
+        configBox.setAlignment(Pos.CENTER);
+        configBox.setSpacing(30);
+        bConfUpload.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                configureNetwork(primaryStage);
+            }
+        });
+
+
+        /* SCENE 0: start */
+        HBox s0_Start_Box = new HBox();
+        StackPane s0_Start_Backgroung = new StackPane(s0_Start_Box);
+        Text s0_Start_Title = new Text("\u03C0Net");
+        s0_Start_Box.getChildren().addAll(s0_Start_Title, giovanninoImage);
+        s0_Start_Box.setSpacing(10);
+        s0_Start_Box.setAlignment(Pos.CENTER);
+        s0_Start_Box.setPadding(new Insets(100,100,100,100));
+        s0_Start_Backgroung.setMinHeight(windowHeight);
+        s0_Start_Backgroung.setMaxHeight(windowHeight);
+        s0_Start_Backgroung.setMinWidth(windowWidth);
+        s0_Start_Backgroung.setMaxWidth(windowWidth);
+
+
+
         /* INIT */
         network = new Network(networkDim, networkDim);
-        layout.add(network.netStack, 0, 0);
-        layout.add(rightSide, 1, 0);
-        rightSide.add(buttonsBox, 0, 1); // buttons
+        s1_Background.add(network.netStack, 0, 0);
+        s1_Background.add(configBox, 1, 0);
+
 
         /* explore */
 //        rightSide.add(exploreBox,0,0);
@@ -273,28 +349,6 @@ public class Main extends Application {
 
 
 
-        /* BUTTONS' EVENT HANDLERS */
-        bSpecs.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                switchToSpecsBox();
-            }
-        });
-        bExplore.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                switchToExploreBox();
-            }
-        });
-        bRefresh.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                refreshNetwork();
-            }
-        });
-
-
-
         /* PRINT NETITEM */
         for (int i : network.routerList.keySet()) {
             System.out.println(network.routerList.get(i));
@@ -306,20 +360,39 @@ public class Main extends Application {
             System.out.println(network.hostList.get(i));
         }
 
+        basicPane.getChildren().add(s0_Start_Backgroung);
 
         /* STAGE */
         primaryStage.setResizable(false);
         primaryStage.setTitle("Networks GUI");
-        primaryStage.setScene(new Scene(layout));
+        primaryStage.setScene(new Scene(basicPane));
         primaryStage.setMinHeight(windowHeight);
         primaryStage.setMaxHeight(windowHeight);
         primaryStage.setMinWidth(windowWidth);
         primaryStage.setMaxWidth(windowWidth);
-        System.out.println(layout.getHeight());
+//        System.out.println(layout.getHeight());
         primaryStage.setOnCloseRequest(event -> {
             System.out.println("Stage is closing");
             System.exit(0);
         });
+
+        /* TIMERS */
+        Timer timer = new Timer();
+        TimerTask task = new TimerTask()
+        {
+            public void run()
+            {
+
+                Platform.runLater(()->{
+                            basicPane.getChildren().clear();
+                            basicPane.getChildren().add(s1_Background);
+                        }
+                );
+            }
+
+        };
+        timer.schedule(task,2000l);
+
         primaryStage.show();
     }
 
@@ -673,4 +746,109 @@ public class Main extends Application {
         refreshStage.initStyle(StageStyle.UNDECORATED);
         refreshStage.show();
     }
+
+    static private String openAndReadFile(File f){
+        StringBuilder contentBuilder = new StringBuilder();
+
+        try (Stream<String> stream = Files.lines(Path.of(f.getAbsolutePath()), StandardCharsets.UTF_8)) {
+
+            stream.forEach(s -> contentBuilder.append(s).append("\n"));
+        } catch (IOException e) {
+            System.err.println("EXEC - openANdReadFile: impossible to open/read the file");
+            return "";
+        }
+
+        String fileContent = contentBuilder.toString();
+        System.out.println(fileContent);
+        return fileContent;
+    }
+
+    private void configureNetwork(Stage ps){
+        Stage configStage = new Stage();
+        String configurationJSON = new String();
+
+        FileChooser chooseFile = new FileChooser();
+        try {
+            File file = chooseFile.showOpenDialog(ps);
+            if (file.exists()) {
+                configurationJSON = openAndReadFile(file);
+            } else {
+                configurationJSON = null;
+            }
+        }catch (NullPointerException e){
+            e.getMessage();
+        }
+
+        StackPane layout = new StackPane();
+        configStage.setScene(new Scene(layout));
+        configStage.initStyle(StageStyle.UNDECORATED);
+        configStage.setMinHeight(500);
+        configStage.setMaxHeight(500);
+        configStage.setMinWidth(500);
+        configStage.setMaxWidth(500);
+
+        Text configText = new Text();
+        configText.setTextAlignment(TextAlignment.CENTER);
+        HBox configPanel = new HBox();
+        configPanel.getChildren().clear();
+        configPanel.getChildren().addAll(configText, giovanninoImage);
+        configPanel.setSpacing(5);
+        configPanel.setAlignment(Pos.CENTER);
+        layout.getChildren().add(configPanel);
+        boolean valid;
+
+        if(configurationJSON == null){
+            valid = false;
+        }else{
+            // send to api and set valid flag
+            valid = true;
+        }
+
+
+
+        if (valid){
+            // network configuration is valid
+            configText.setText("Your configuration is valid!\n\nYour topology will be\ndisplayed in a moment!");
+
+        }else{
+            // network configuration is NOT valid
+            configText.setText("Your configuration is not valid.\nPlease upload a new file.");
+        }
+        Timer timer = new Timer();
+        TimerTask task = new TimerTask()
+        {
+            public void run()
+            {
+
+                Platform.runLater(()->{
+                            if(valid){
+                                Platform.runLater(()->{
+                                    configStage.close();
+                                    s1_Background.getChildren().remove(configBox);
+                                    s1_Background.add(rightSide, 1, 0);
+                                    refreshNetwork();
+                                });
+                            }else{
+                                Platform.runLater(()->{
+                                    configStage.close();
+                                    bConfUpload.fireEvent(new ActionEvent());
+                                });
+                            }
+                        }
+                );
+            }
+
+        };
+        timer.schedule(task,2000l);
+
+        configStage.show();
+    }
+    private void waitSeconds(int s){
+        try {
+            TimeUnit.SECONDS.sleep(s);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
+
