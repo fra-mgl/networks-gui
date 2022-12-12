@@ -11,7 +11,7 @@ services:
     volumes:
       - db:/var/lib/postgresql/data
   net-conf:
-    build: ./go-backend
+    build: ./net-conf
     depends_on:
       - postgres
     environment:
