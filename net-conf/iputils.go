@@ -241,7 +241,7 @@ func BinaryStrToInt(str string) (int, error) {
 		if err != nil {
 			return 0, err
 		}
-		res += currDigit * (1 << i)
+		res += currDigit << i
 	}
 	return res, nil
 }
@@ -273,7 +273,7 @@ func HexStrToInt(str string) (int64, error) {
 			}
 			currDigit = digit
 		}
-		res += int64(currDigit * (1 << i * 4))
+		res += int64(currDigit << (i * 4))
 	}
 	return res, nil
 }
