@@ -218,7 +218,7 @@ class TopologyController(ControllerBase):
 
         # the final path
         path = path + gw_to_dst_path
-        path = [dpid_lib.dpid_to_str(dpid) for dpid in path]
+        path = {"path": [dpid for dpid in path]}
         return Response(status=200, content_type='application/json',
                 body=json.dumps(path))
     
