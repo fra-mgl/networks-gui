@@ -151,6 +151,14 @@ class L3Controller:
             ip_packet.serialize()
             send_packet(datapath, out_port, ip_packet)
 
+    # Utility to get the datapath id of the gateway for a given
+    # ip address
+    def get_gateway_dpid(self, ip):
+        for dp in self.datapaths:
+            ip_table = self.ip_table(dp)
+            if ip_table[ip] is not None and ip_table[ip]['dst_ip'] == '':
+                return dp
+
 # Simple wrapper to record information about the ports of an OF switch
 
 class Port:

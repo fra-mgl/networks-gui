@@ -22,7 +22,6 @@ def ip_to_bstr(ip):
         bstr = bstr + curr_bstr
     return bstr
 
-
 def same_subnet(gw_ip, gw_netmask, src_ip):
     src_ip_bstr = ip_to_bstr(src_ip)
     gw_ip_bstr = ip_to_bstr(gw_ip)
@@ -31,3 +30,10 @@ def same_subnet(gw_ip, gw_netmask, src_ip):
         if src_ip_bstr[i] != gw_ip_bstr[i]:
             return False
     return True
+
+def hexstr_to_int(hstr):
+    result = 0
+    for i in range(len(hstr)):
+        digit = hstr[len(hstr) - 1 - i]
+        result += digit << (i << 2)
+    return result

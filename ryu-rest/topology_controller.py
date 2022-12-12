@@ -5,6 +5,7 @@ from ryu.app.wsgi import Response
 from ryu.app.wsgi import route
 from ryu.lib import dpid as dpid_lib
 from ryu.topology.api import get_switch, get_link, get_host
+from utils import hexstr_to_int
 
 
 class TopologyController(ControllerBase):
@@ -155,3 +156,71 @@ class TopologyController(ControllerBase):
         hosts = get_host(self.app, dpid)
         body = json.dumps([host.to_dict() for host in hosts])
         return Response(content_type='application/json', body=body)
+
+    @route('explore', '/explore/{src_ip}/{dst_ip}', methods=['GET'])
+    def explore(self, req, **kwargs):
+        try:
+            src_ip = kwargs['src_ip']
+            dst_ip = kwargs['dst_ip']
+        except KeyError:
+            return Response(status=400)
+        
+        # Check that source and destination are not the same
+        if src_ip == dst_ip:
+            return Response(status=400)
+        
+        # Get the id of the L2 switches directly linked to the hosts
+        hosts = get_host(self.app)
+        src_mac = None
+        src_dpid = None
+        dst_dpid = None
+        dst_mac = None
+        for host in hosts:
+            if host['ipv4']:
+                if host['ipv4'][0] == src_ip:
+                    src_dpid = dpid_lib.str_to_dpid(host['port']['dpid'])
+                    src_mac = host['mac']
+                elif host['ipv4'][0] == dst_ip:
+                    dst_dpid = dpid_lib.str_to_dpid(host['port']['dpid'])
+                    dst_mac = host['mac']
+        if src_dpid is None or dst_dpid is None:
+            return Response(status=404)
+
+        # Get the datapath ids of the gateways
+        src_gateway_dpid = self.app.l3_controller.get_gateway_dpid(src_ip)
+        dst_gateway_dpid= self.app.l3_controller.get_gateway_dpid(dst_ip)
+
+        path = [src_dpid]
+        gw_to_dst_path = [dst_dpid]
+        # From the source host to the gateway the path only traverses l2 switches
+        curr_dpid = src_dpid
+        while curr_dpid != src_gateway_dpid:
+            curr_dpid = self.get_next_switch(curr_dpid, 
+                    self.l2_controller.datapaths[curr_dpid][src_mac])
+            path.append(curr_dpid)
+        
+        # Now compute the path between the layer 3 switches
+        curr_dpid = src_gateway_dpid
+        while curr_dpid != dst_gateway_dpid:
+            curr_dpid = self.get_next_switch(curr_dpid,
+                    self.l3_controller.datapaths[curr_dpid]['ip_table'][src_ip])
+            path.append(curr_dpid)
+        
+        # Now compute from the from the destination host to its gateway
+        curr_dpid = dst_dpid
+        while curr_dpid != dst_gateway_dpid:
+            curr_dpid = self.get_next_switch(curr_dpid, 
+                    self.l2_controller.datapaths[curr_dpid][dst_mac])
+            gw_to_dst_path = [curr_dpid] + gw_to_dst_path
+
+        # the final path
+        path = path + gw_to_dst_path
+        path = [dpid_lib.dpid_to_str(dpid) for dpid in path]
+        return Response(body=json.dumps(path))
+    
+    def get_next_switch(self, prev_dp_id, out_port):
+        links = get_link(self.app, prev_dp_id)
+        for link in links:
+            if hexstr_to_int(link['src']['port_no']) == out_port:
+                return dpid_lib.str_to_dpid(link['dst']['dpid'])
+        
