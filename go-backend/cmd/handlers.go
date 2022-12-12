@@ -65,19 +65,6 @@ func getIpTable(dbConn *database.DbConn) func(*gin.Context) {
 	}
 }
 
-// Builds the ip tables for all routers in the network
-
-func buildIpTables(dbConn *database.DbConn) func(*gin.Context) {
-	return func(c *gin.Context) {
-		err := dbConn.BuildIpTables()
-		if err != nil {
-			c.AbortWithError(500, fmt.Errorf("internal error"))
-		} else {
-			c.AbortWithStatus(http.StatusOK)
-		}
-	}
-}
-
 // Saves a new network configuration
 
 func configureNetwork(dbConn *database.DbConn) func(*gin.Context) {
@@ -87,9 +74,24 @@ func configureNetwork(dbConn *database.DbConn) func(*gin.Context) {
 			c.AbortWithError(500, err)
 			return
 		}
+		// The input network configuration is saved
 		if err := dbConn.SaveNetworkConfiguration(portsData); err != nil {
 			c.AbortWithError(500, err)
 		} else {
+			// A goroutine is spawned to build the ip tables for the switches
+			// and notify Ryu of the available L3 configuration
+			go func() {
+				err := dbConn.BuildIpTables()
+				if err != nil {
+					panic(err)
+				}
+				httpClient := http.Client{Timeout: time.Duration(1) * time.Second}
+				_, err = httpClient.Get(RYU_NOTIFICATION_ENDPOINT)
+				if err != nil {
+					panic(err)
+				}
+			}()
+
 			c.AbortWithStatus(http.StatusOK)
 		}
 	}
@@ -116,7 +118,7 @@ type portData struct {
 
 func requestLinks(dbConn *database.DbConn) {
 	httpClient := http.Client{Timeout: time.Duration(1) * time.Second}
-	res, err := httpClient.Get(RYU_ENDPOINT)
+	res, err := httpClient.Get(RYU_LINKS_ENDPOINT)
 	if err != nil {
 		panic(err)
 	}
