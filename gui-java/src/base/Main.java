@@ -391,7 +391,7 @@ public class Main extends Application {
             }
 
         };
-        timer.schedule(task,2000l);
+        timer.schedule(task,100l);
 
         primaryStage.show();
     }
@@ -707,16 +707,16 @@ public class Main extends Application {
     }
 
     private void checkLinkRR(Router src, Router dst) {
-        if (src.getRouterFromLink(dst.getIdR()) == null && dst.getRouterFromLink(src.getIdR()) == null) {
+        if (src.searchInSRouterLinks(dst.getIdR()) == false && dst.searchInSRouterLinks(src.getIdR()) == false) {
             // link has never been saved
-            network.routerList.get(src).addRouterLink(network.routerList.get(dst.getIdR()));
+            network.routerList.get(src.getIdR()).addRouterLink(network.routerList.get(dst.getIdR()));
         }
     }
 
     private void checkLinkSS(Switch src, Switch dst) {
-        if (src.getSwitchFromLink(dst.getIdS()) == null && dst.getSwitchFromLink(src.getIdS()) == null) {
+        if (src.searchInSwitchLinks(dst.getIdS()) == false && dst.searchInSwitchLinks(src.getIdS()) == false) {
             // link has never been saved
-            network.switchList.get(src).addSwitchLink(network.switchList.get(dst.getIdS()));
+            network.switchList.get(src.getIdS()).addSwitchLink(network.switchList.get(dst.getIdS()));
         }
     }
 
@@ -796,7 +796,7 @@ public class Main extends Application {
         configPanel.setAlignment(Pos.CENTER);
         layout.getChildren().add(configPanel);
         boolean valid;
-        valid = false;
+        valid = true; // mettere a false
         if(configurationJSON != null && RestAPI.validateNetConf(configurationJSON, network.switchList) == 1){
             // send to api and set valid flag
 //            int result = RestAPI.postNetConf(configurationJSON);

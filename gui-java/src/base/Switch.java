@@ -27,9 +27,9 @@ public class Switch extends NetItem{
         switchLinkList = new ArrayList<>();
     }
 
-    public Switch(String s){
+    public Switch(int s){
         super(icon);
-        this.name = s;
+        this.id_s = s;
     }
 
     public void addHostLink(Host i){
@@ -49,6 +49,13 @@ public class Switch extends NetItem{
     }
     public Switch getSwitchFromLink(int i){
         return switchLinkList.get(i);
+    }
+    public boolean searchInSwitchLinks(int dpid){
+        if(switchLinkList.contains(new Switch(dpid))){
+            return true;
+        }else{
+            return false;
+        }
     }
     public int getPortNumber(){return ports.size();}
 

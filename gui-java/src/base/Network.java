@@ -91,7 +91,7 @@ public class Network {
         connectionsAnchor.getChildren().clear();
         linkList.clear();
 
-        double deltaRouterAlpha = 360.0 / routerList.size();
+        double deltaRouterAlpha;
         double iRouterAngle;
         double startBeta;
         double deltaSwitchBeta;
@@ -103,6 +103,18 @@ public class Network {
         Switch tmpSwitch;
         Router tmpRouter;
         int counter = 0;
+
+        boolean fakeRouter = false;
+        if (routerList.size() == 0){
+            fakeRouter = true;
+            Router fakeR = new Router(0);
+
+            for (Map.Entry<Integer, Switch> entry : switchList.entrySet()) {
+                fakeR.addSwitchLink(entry.getValue());
+            }
+            routerList.put(0, fakeR);
+        }
+        deltaRouterAlpha = 360.0 / routerList.size();
         for(Integer i : routerList.keySet()){
             /* compute coords for each router */
             tmpRouter = routerList.get(i);
@@ -115,8 +127,10 @@ public class Network {
                 tmpRouter.computeCoords(iRouterAngle, routerRadius, centerX, centerY);
             }
             /* for each router, check linked router and compure link */
-            for(int j = 0; j < tmpRouter.getRouterLinkNumber(); j++){
-                linkList.add(new Link(tmpRouter.getCenterX(), tmpRouter.getCenterY(), tmpRouter.getRouterFromLink(j).getCenterX(), tmpRouter.getRouterFromLink(j).getCenterY()));
+            if(!fakeRouter) {
+                for (int j = 0; j < tmpRouter.getRouterLinkNumber(); j++) {
+                    linkList.add(new Link(tmpRouter.getCenterX(), tmpRouter.getCenterY(), tmpRouter.getRouterFromLink(j).getCenterX(), tmpRouter.getRouterFromLink(j).getCenterY()));
+                }
             }
 
             /* for each router, check linked switch and compute coords */
@@ -127,7 +141,9 @@ public class Network {
                 jSwitchAngle = startBeta + ((2*j)+1) * deltaSwitchBeta;
                 tmpSwitch.setAngle(jSwitchAngle);
                 tmpSwitch.computeCoords(jSwitchAngle, switchRadius, centerX, centerY);
-                linkList.add(new Link(tmpRouter.getCenterX(), tmpRouter.getCenterY(), tmpSwitch.getCenterX(), tmpSwitch.getCenterY()));
+                if(!fakeRouter) {
+                    linkList.add(new Link(tmpRouter.getCenterX(), tmpRouter.getCenterY(), tmpSwitch.getCenterX(), tmpSwitch.getCenterY()));
+                }
                 /* now this switch is linked to hosts - let's compute all coords and links */
                 startGamma = jSwitchAngle - deltaSwitchBeta; // set in the middle
                 deltaHostGamma = deltaSwitchBeta / (tmpSwitch.getHostLinkNumber());
@@ -152,11 +168,13 @@ public class Network {
         /* add all elements to corresponding stackpane */
         itemsAnchor.getChildren().addAll(hostList);
         itemsAnchor.getChildren().addAll(switchList.values());
-        itemsAnchor.getChildren().addAll(routerList.values());
 
-        for (int i : routerList.keySet()) {
-            AnchorPane.setTopAnchor(routerList.get(i), routerList.get(i).getAnchorY());
-            AnchorPane.setLeftAnchor(routerList.get(i), routerList.get(i).getAnchorX());
+        if(!fakeRouter) {
+            itemsAnchor.getChildren().addAll(routerList.values());
+            for (int i : routerList.keySet()) {
+                AnchorPane.setTopAnchor(routerList.get(i), routerList.get(i).getAnchorY());
+                AnchorPane.setLeftAnchor(routerList.get(i), routerList.get(i).getAnchorX());
+            }
         }
         for (int i : switchList.keySet()) {
             AnchorPane.setTopAnchor(switchList.get(i), switchList.get(i).getAnchorY());
@@ -166,6 +184,7 @@ public class Network {
             AnchorPane.setTopAnchor(host, host.getAnchorY());
             AnchorPane.setLeftAnchor(host, host.getAnchorX());
         }
+        connectionsAnchor.getChildren().clear();
         for (Link link : linkList) {
             connectionsAnchor.getChildren().add(link);
             AnchorPane.setTopAnchor(link, link.getAnchorY());

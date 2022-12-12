@@ -24,14 +24,13 @@ public class Router extends NetItem{
         routerLinkList = new ArrayList<>();
         switchLinkList = new ArrayList<>();
     }
-//    public Router(int i){
-//        super(icon);
-//        id_r = i;
-//        dpid = ((Integer)i).toString();
-//        ports = new ArrayList<>();
-//        routerLinkList = new ArrayList<>();
-//        switchLinkList = new ArrayList<>();
-//    }
+    public Router(int i){
+        super(icon);
+        id_r = i;
+        ports = new ArrayList<>();
+        routerLinkList = new ArrayList<>();
+        switchLinkList = new ArrayList<>();
+    }
 
     @Override
     public String toString() {
@@ -132,5 +131,13 @@ public class Router extends NetItem{
     }
     public void addSwitchLink(Switch i){
         this.switchLinkList.add(i);
+    }
+
+    public boolean searchInSRouterLinks(int dpid){
+        if(routerLinkList.contains(new Router(dpid))){
+            return true;
+        }else{
+            return false;
+        }
     }
 }
