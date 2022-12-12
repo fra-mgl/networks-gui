@@ -13,8 +13,8 @@ import (
 )
 
 const PORT = "4000"
-const RYU_LINKS_ENDPOINT = "http://localhost:8080/topology/links"
-const RYU_NOTIFICATION_ENDPOINT = "http://localhost:8080/notification"
+const RYU_LINKS_ENDPOINT = "http://ryu:8080/topology/links"
+const RYU_NOTIFICATION_ENDPOINT = "http://ryu:8080/notification"
 
 func main() {
 	// Get a database connection
@@ -104,14 +104,37 @@ func getAllIpTables(dbConn *database.DbConn) func(ctx *gin.Context) {
 // Saves a new network configuration
 
 func configureNetwork(dbConn *database.DbConn) func(*gin.Context) {
+	type portData struct {
+		DataPathID string  `json:"dpid" binding:"required"`
+		PortNo     string  `json:"port_no" binding:"required"`
+		IpAddress  string `json:"ip" binding:"required"`
+	}
+
 	return func(c *gin.Context) {
-		portsData := make([]database.SwitchPort, 0)
+		portsData := make([]portData, 0)
 		if err := c.BindJSON(&portsData); err != nil {
 			c.AbortWithError(400, err)
 			return
 		}
+		switchesPorts := make([]database.SwitchPort, len(portsData))
+		for i, port := range portsData {
+			dpid, err := netconf.HexStrToInt(port.DataPathID)
+			if err != nil {
+				c.AbortWithError(400, err)
+				return
+			}
+			portNo, err := netconf.HexStrToInt(port.PortNo)
+			if err != nil {
+				c.AbortWithError(400, err)
+				return
+			}
+			switchesPorts[i].DataPathID = dpid
+			switchesPorts[i].PortNo = int32(portNo)
+			switchesPorts[i].IpAddress = port.IpAddress
+		}
+
 		// The input network configuration is saved
-		if err := dbConn.SaveNetworkConfiguration(portsData); err != nil {
+		if err := dbConn.SaveNetworkConfiguration(switchesPorts); err != nil {
 			c.AbortWithError(500, err)
 		} else {
 			// A goroutine is spawned to build the ip tables for the switches
@@ -145,14 +168,14 @@ func ryuNotification(dbConn *database.DbConn) func(*gin.Context) {
 	}
 }
 
-type portData struct {
-	DpId   string `json:"dpid" binding:"required"`
-	PortNo string `json:"port_no" binding:"required"`
-	HwAddr string `json:"hw_addr" binding:"required"`
-	Name   string `json:"name" binding:"required"`
-}
-
 func requestLinks(dbConn *database.DbConn) {
+	type portData struct {
+		DpId   string `json:"dpid" binding:"required"`
+		PortNo string `json:"port_no" binding:"required"`
+		HwAddr string `json:"hw_addr" binding:"required"`
+		Name   string `json:"name" binding:"required"`
+	}
+
 	httpClient := http.Client{Timeout: time.Duration(1) * time.Second}
 	res, err := httpClient.Get(RYU_LINKS_ENDPOINT)
 	if err != nil {

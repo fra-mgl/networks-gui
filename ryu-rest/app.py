@@ -14,7 +14,7 @@ from topology_controller import TopologyController
 from ofctl import add_flow
 from notifications import HTTPClient, NotificationsController
 
-NETCONF_BACKEND_URL = 'http://localhost:4000/'
+NETCONF_BACKEND_URL = 'http://net-conf:4000/'
 IP_ADDRESSES_ENDPOINT = NETCONF_BACKEND_URL + 'allDataPathsIps'
 IP_TABLES_ENDPOINT = NETCONF_BACKEND_URL + 'allIpTables'
 
