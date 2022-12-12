@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"go-backend/database"
+	"netconf/database"
 )
 
 const PORT = "4000"

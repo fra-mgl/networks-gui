@@ -1,8 +1,8 @@
 package database
 
 import (
-	netconf "go-backend"
 	"gorm.io/gorm"
+	"netconf"
 )
 
 // Links between OF switches

@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	netconf "go-backend"
-	"go-backend/database"
 	"io"
 	"net/http"
+	"netconf"
+	"netconf/database"
 	"strconv"
 	"time"
 )
