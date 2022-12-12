@@ -1,4 +1,4 @@
-package go_backend
+package netconf
 
 import (
 	"fmt"
@@ -254,17 +254,17 @@ func HexStrToInt(str string) (int64, error) {
 		currDigitStr := str[len(str)-i-1 : len(str)-i]
 		var currDigit int
 		switch currDigitStr {
-		case "F":
+		case "F", "f":
 			currDigit = 15
-		case "E":
+		case "E", "e":
 			currDigit = 14
-		case "D":
+		case "D", "d":
 			currDigit = 13
-		case "C":
+		case "C", "c":
 			currDigit = 12
-		case "B":
+		case "B", "b":
 			currDigit = 11
-		case "A":
+		case "A", "a":
 			currDigit = 10
 		default:
 			digit, err := strconv.Atoi(currDigitStr)

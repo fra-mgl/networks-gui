@@ -1,7 +1,7 @@
 package database
 
 import (
-	"go-backend"
+	netconf "go-backend"
 	"gorm.io/gorm"
 )
 
@@ -26,7 +26,7 @@ type SwitchPort struct {
 // table. It checks that the input ip is of the form '10.0.0.1/24'
 
 func (p *SwitchPort) BeforeSave(tx *gorm.DB) error {
-	nip := go_backend.NetMaskedIp{Str: p.IpAddress}
+	nip := netconf.NetMaskedIp{Str: p.IpAddress}
 	return nip.Validate()
 }
 

@@ -1,6 +1,6 @@
 package database
 
-import go_backend "go-backend"
+import netconf "go-backend"
 
 // Database relation that records iptables entries for the OF switches.
 // It also represents links between ports of different routers. When
@@ -240,7 +240,7 @@ func (dbConn *DbConn) buildNetworkGraph() (map[int64][]IpTableRecord, error) {
 		if err != nil {
 			return nil, err
 		}
-		netAddress := go_backend.NetMaskedIp{Str: row.PortAddress}
+		netAddress := netconf.NetMaskedIp{Str: row.PortAddress}
 		netAddress, err = netAddress.GetNetAddress()
 		if err != nil {
 			return nil, err

@@ -127,22 +127,22 @@ func ryuNotification(dbConn *database.DbConn) func(*gin.Context) {
 		// The database records are built
 		links := make([]database.Link, 0)
 		for _, item := range jsonBody {
-			srcDpID, err := go_backend.HexStrToInt(item["src"].DpId)
+			srcDpID, err := netconf.HexStrToInt(item["src"].DpId)
 			if err != nil {
 				c.AbortWithError(500, nil)
 				panic(err)
 			}
-			srcPort, err := go_backend.HexStrToInt(item["src"].PortNo)
+			srcPort, err := netconf.HexStrToInt(item["src"].PortNo)
 			if err != nil {
 				c.AbortWithError(500, nil)
 				panic(err)
 			}
-			dstDpID, err := go_backend.HexStrToInt(item["dst"].DpId)
+			dstDpID, err := netconf.HexStrToInt(item["dst"].DpId)
 			if err != nil {
 				c.AbortWithError(500, nil)
 				panic(err)
 			}
-			dstPort, err := go_backend.HexStrToInt(item["dst"].PortNo)
+			dstPort, err := netconf.HexStrToInt(item["dst"].PortNo)
 			if err != nil {
 				c.AbortWithError(500, nil)
 				panic(err)
