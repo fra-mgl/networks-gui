@@ -53,7 +53,7 @@ def deployNetwork():
     # 10.0.2.0/255 network
     h3.cmd('ifconfig H3-eth0 10.0.2.1 netmask 255.255.255.0')
     h3.cmd('ifconfig H3-eth0 up')
-    h4.cmd('ifconfig H4-eth0 20.0.2.2 netmask 255.255.255.0')
+    h4.cmd('ifconfig H4-eth0 10.0.2.2 netmask 255.255.255.0')
     h4.cmd('ifconfig H4-eth0 up')
     # router 2 default gateway
     h3.cmd('ip route add default via 10.0.2.254 dev H3-eth0')
