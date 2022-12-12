@@ -175,6 +175,7 @@ func l3configGoRoutine(dbConn *database.DbConn) {
 	if err = json.Unmarshal(response, &jsonBody); err != nil {
 		panic(err)
 	}
+	
 	// The database records are built
 	links := make([]database.Link, 0)
 	for _, item := range jsonBody {

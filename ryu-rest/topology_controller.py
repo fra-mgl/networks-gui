@@ -17,7 +17,7 @@ class TopologyController(ControllerBase):
         # If the network has yet to be configured for L3 forwarding,
         # all switches are considered as l2 switches
 
-        if self.app.configured:
+        if self.app.finished_configuration:
             return self._l2_switches(req, **kwargs)
         else:
             switches = get_switch(self.app, None)
@@ -29,7 +29,7 @@ class TopologyController(ControllerBase):
     def list_l3switches(self, req, **kwargs):
         # If the network has yet to be configured for L3 forwarding,
         # all switches are considered as L2. So the response is empty
-        if self.app.configured:
+        if self.app.finished_configuration:
             return self._l3_switches(req, **kwargs)
         else:
             return Response(content_type='application/json', 
@@ -132,7 +132,7 @@ class TopologyController(ControllerBase):
                         "name": "",
                         "port_no": port.ip
                     }
-                    for port in self.l3_controller.ports(dpid).values()
+                    for port in self.app.l3_controller.ports(dpid).values()
                 ]
             }
             for dpid in l3_switches

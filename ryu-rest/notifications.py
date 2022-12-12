@@ -12,7 +12,7 @@ NOTIFICATION_CONSUMER_ENDPOINT = ('127.0.0.1', 8000)
 class HTTPClient:
     
     @classmethod
-    def get(url, params):
+    def get(cls, url, params):
         response = requests.get(url=url, params=params)
         if response.status_code != 200:
             raise Exception(f"server {url} responded with: {response.status_code}")

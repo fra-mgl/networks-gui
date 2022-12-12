@@ -32,11 +32,9 @@ class L3Controller:
 
         # Register datapath ports
         for port in datapath.ports.values():
-            if dpid_lib.dpid_to_str(port.port_no) in ip_addresses:
-                ip = ip_addresses[port.port_no]
-                self.datapaths[datapath.id]['ports'][port.port_no] = Port(
-                    port.hw_addr, ip['ip']
-                )
+            if str(port.port_no) in ip_addresses:
+                ip = ip_addresses[str(port.port_no)]
+                self.datapaths[datapath.id]['ports'][port.port_no] = Port(port.hw_addr, ip)
 
         # Initialize datapath ip table
         _ip_table = IpTable()
