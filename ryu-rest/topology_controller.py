@@ -13,22 +13,22 @@ class TopologyController(ControllerBase):
         self.app = data['app']
 
     @route('topology', '/topology/l2switches', methods=['GET'])
-    def list_switches(self, req, **kwargs):
+    def list_l2switches(self, req, **kwargs):
         return self._l2_switches(req, **kwargs)
 
-    @route('topology', '/topology/routers/{dpid}',
+    @route('topology', '/topology/l2switches/{dpid}',
            methods=['GET'], requirements={'dpid': dpid_lib.DPID_PATTERN})
-    def get_switch(self, req, **kwargs):
+    def get_l2switch(self, req, **kwargs):
         return self._l2_switches(req, **kwargs)
 
     @route('topology', '/topology/l3switches',
            methods=['GET'])
-    def list_switches(self, req, **kwargs):
+    def list_l3switches(self, req, **kwargs):
         return self._l3_switches(req, **kwargs)
 
     @route('topology', '/topology/l3switches/{dpid}',
            methods=['GET'], requirements={'dpid': dpid_lib.DPID_PATTERN})
-    def get_switch(self, req, **kwargs):
+    def get_l3switch(self, req, **kwargs):
         return self._l3_switches(req, **kwargs)
 
     @route('topology', '/topology/links',
