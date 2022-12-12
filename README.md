@@ -17,6 +17,3 @@ These are the original sources:
     - Routers icons:\
     [Internet icons created by Freepik - Flaticon](https://www.flaticon.com/free-icons/internet)
 
-2. Loading gif\
-ConnectedWizard, CC BY-SA 4.0, via Wikimedia Commons\
-[link](https://creativecommons.org/licenses/by-sa/4.0)

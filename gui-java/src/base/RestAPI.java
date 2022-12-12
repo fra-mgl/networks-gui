@@ -150,7 +150,7 @@ public class RestAPI {
     static int postNetConf(String requestBody){
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(URL + "/netConf"))
+                    .uri(URI.create("http://localhost:4000/netConf"))
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                     .build();
             HttpClient client = HttpClient.newHttpClient();
@@ -179,12 +179,18 @@ public class RestAPI {
             return -1;
         }
 
+        int dpid;
+        Map<Integer, Switch> routers = new TreeMap<>();
+        for (ConfigItem ci: l) {
+            dpid = ci.getDpid();
+            routers.put(dpid, switches.get(dpid));
+        }
         Map<Integer,Integer> portCounter = new TreeMap<>();
         // mapping : switch's dpid, number of ports
-        for (Map.Entry<Integer, Switch> entry : switches.entrySet()) {
+        for (Map.Entry<Integer, Switch> entry : routers.entrySet()) {
             portCounter.put(entry.getKey(), 0);
         }
-        int dpid;
+
         for (ConfigItem i: l) {
             dpid = i.getDpid();
             portCounter.put(dpid, portCounter.get((dpid)) +1);
@@ -192,7 +198,7 @@ public class RestAPI {
         boolean valid = true;
 
         for (Map.Entry<Integer, Integer> entry : portCounter.entrySet()) {
-            if(portCounter.get(entry.getKey()) != switches.get(entry.getKey()).getPortNumber()){
+            if(portCounter.get(entry.getKey()) != routers.get(entry.getKey()).getPortNumber()){
                 valid = false;
                 break;
             }
@@ -233,8 +239,7 @@ class Port{
         return "Port" +
                 "\n\t\tdpid='" + dpid + '\'' +
                 ",\n\t\tport_no='" + port_no + '\'' +
-                ",\n\t\thw_addr='" + hw_addr + '\'' +
-                ",\n\t\tname='" + name + '\'';
+                ",\n\t\thw_addr='" + hw_addr + '\'';
     }
 
     public String toStringRouter() {

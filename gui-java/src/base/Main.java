@@ -42,7 +42,9 @@ public class Main extends Application {
     private static final double windowHeight = networkDim;
     private static final int HBoxPadding = 20;
     static final Image giovannino = new Image("/media/giovannino_1024.png");
+    static final Image logo = new Image("/media/piNet_full.png");
     private ImageView giovanninoImage;
+    private ImageView logoImage;
 
 
     private Network network;
@@ -92,6 +94,12 @@ public class Main extends Application {
         giovanninoImage.setSmooth(true);
         giovanninoImage.setCache(true);
 
+        logoImage = new ImageView();
+        logoImage.setImage(logo);
+        logoImage.setFitWidth(500);
+        logoImage.setPreserveRatio(true);
+        logoImage.setSmooth(true);
+        logoImage.setCache(true);
         /* BUTTONS */
         bSpecs = new Button("Specs");
         bExplore = new Button("Explore");
@@ -311,13 +319,13 @@ public class Main extends Application {
 
 
         /* SCENE 0: start */
-        HBox s0_Start_Box = new HBox();
-        StackPane s0_Start_Backgroung = new StackPane(s0_Start_Box);
-        Text s0_Start_Title = new Text("\u03C0Net");
-        s0_Start_Box.getChildren().addAll(s0_Start_Title, giovanninoImage);
-        s0_Start_Box.setSpacing(10);
-        s0_Start_Box.setAlignment(Pos.CENTER);
-        s0_Start_Box.setPadding(new Insets(100,100,100,100));
+//        HBox s0_Start_Box = new HBox();
+        StackPane s0_Start_Backgroung = new StackPane(logoImage);
+//        Text s0_Start_Title = new Text("\u03C0Net");
+//        s0_Start_Box.getChildren().addAll(s0_Start_Title, logoImage);
+//        s0_Start_Box.setSpacing(10);
+//        s0_Start_Box.setAlignment(Pos.CENTER);
+//        s0_Start_Box.setPadding(new Insets(100,100,100,100));
         s0_Start_Backgroung.setMinHeight(windowHeight);
         s0_Start_Backgroung.setMaxHeight(windowHeight);
         s0_Start_Backgroung.setMinWidth(windowWidth);
@@ -391,7 +399,7 @@ public class Main extends Application {
             }
 
         };
-        timer.schedule(task,100l);
+        timer.schedule(task,5000l);
 
         primaryStage.show();
     }
@@ -796,14 +804,13 @@ public class Main extends Application {
         configPanel.setAlignment(Pos.CENTER);
         layout.getChildren().add(configPanel);
         boolean valid;
-        valid = true; // mettere a false
+        valid = false;
         if(configurationJSON != null && RestAPI.validateNetConf(configurationJSON, network.switchList) == 1){
             // send to api and set valid flag
-//            int result = RestAPI.postNetConf(configurationJSON);
-//            if(result == 200) {
-//                valid = true;
-//            }
-            valid = true;
+            int result = RestAPI.postNetConf(configurationJSON);
+            if(result == 200) {
+                valid = true;
+            }
         }
 
         if (valid){
