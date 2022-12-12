@@ -107,7 +107,7 @@ func configureNetwork(dbConn *database.DbConn) func(*gin.Context) {
 	return func(c *gin.Context) {
 		portsData := make([]database.SwitchPort, 0)
 		if err := c.BindJSON(&portsData); err != nil {
-			c.AbortWithError(500, err)
+			c.AbortWithError(400, err)
 			return
 		}
 		// The input network configuration is saved

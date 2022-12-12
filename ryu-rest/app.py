@@ -12,12 +12,11 @@ from l2_controller import L2Controller
 from l3_controller import L3Controller
 from topology_controller import TopologyController
 from ofctl import add_flow
-from http_client import HTTPClient
+from notifications import HTTPClient, NotificationsController
 
 NETCONF_BACKEND_URL = 'http://localhost:4000/'
 IP_ADDRESSES_ENDPOINT = NETCONF_BACKEND_URL + 'allDataPathsIps'
 IP_TABLES_ENDPOINT = NETCONF_BACKEND_URL + 'allIpTables'
-NOTIFICATION_CONSUMER_ENDPOINT = ('127.0.0.1', 8000)
 
 class App(app_manager.RyuApp):
 
@@ -28,19 +27,17 @@ class App(app_manager.RyuApp):
     def __init__(self, *args, **kwargs):
         super(App, self).__init__(*args, **kwargs)
         # When the ryu application starts, the controller
-        # waits for L3 configuration from the network configuration service
+        # waits for L3 configuration from the network configuration service.
         self.configured = False
         self.waiting_l3_configuration = True
-        hub.spawn(self.notification_consumer_server)
 
         # A data structure to keep track of switches that are
         # waiting to be configured
         self.not_configured_datapaths = dict()
-
         # The topology REST API
         wsgi = kwargs['wsgi']
         wsgi.register(TopologyController, {'app': self})
-
+        wsgi.register(NotificationsController, {'app': self})
         # The controller responsible of configuring L2 switches
         self.l2_controller = L2Controller()
 
@@ -110,33 +107,3 @@ class App(app_manager.RyuApp):
                     self.l3_controller.packet_in_handler(ev.msg)
                 else:
                     raise Exception(f"Unknown datapath {ev.msg.datapath.id}\n")
-
-    # Simple HTTP server thread that exposes an endpoint to allow the main
-    # controller thread to receive notifications from the network 
-    # configuration service
-
-    def notification_consumer_server(app):
-
-        # When a notification is pushed by the network configuration
-        # service, the thread sets signals the main controller
-        class Handler(server.BaseHTTPRequestHandler):
-            def do_GET(self):
-                if self.path == '/notification':
-                    nonlocal app
-                    app.configured = True
-                    self.send_response(200)
-                    self.send_header('Content-type','text/html')
-                    self.end_headers()
-                    message = "Hello world!"
-                    self.wfile.write(bytes(message, "utf8"))
-                else:
-                    self.send_response(404)
-
-        s = server.HTTPServer(NOTIFICATION_CONSUMER_ENDPOINT, Handler)
-        s.serve_forever()
-
-    # HTTP server that allows clients to subscribe to notifications
-    # that ryu pushes when the physical network configuration changes
-
-    def notification_producer_server(self):
-        pass
