@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"go-backend"
+	netconf "go-backend"
 	"go-backend/database"
 	"io"
 	"net/http"
@@ -99,69 +99,65 @@ func configureNetwork(dbConn *database.DbConn) func(*gin.Context) {
 // by requesting to the controller the links between the switches in the network
 
 func ryuNotification(dbConn *database.DbConn) func(*gin.Context) {
-	type portData struct {
-		DpId   string `json:"dpid" binding:"required"`
-		PortNo string `json:"port_no" binding:"required"`
-		HwAddr string `json:"hw_addr" binding:"required"`
-		Name   string `json:"name" binding:"required"`
-	}
 	return func(c *gin.Context) {
-		// A request to ryu is made
-		httpClient := http.Client{Timeout: time.Duration(1) * time.Second}
-		res, err := httpClient.Get(RYU_ENDPOINT)
-		if err != nil {
-			c.AbortWithError(500, nil)
-			panic(err)
-		}
-		response, err := io.ReadAll(res.Body)
-		if err != nil {
-			c.AbortWithError(500, nil)
-			panic(err)
-		}
-		jsonBody := make([]map[string]portData, 0)
-		if err = json.Unmarshal(response, &jsonBody); err != nil {
-			c.AbortWithError(500, nil)
-			panic(err)
-		}
-
-		// The database records are built
-		links := make([]database.Link, 0)
-		for _, item := range jsonBody {
-			srcDpID, err := netconf.HexStrToInt(item["src"].DpId)
-			if err != nil {
-				c.AbortWithError(500, nil)
-				panic(err)
-			}
-			srcPort, err := netconf.HexStrToInt(item["src"].PortNo)
-			if err != nil {
-				c.AbortWithError(500, nil)
-				panic(err)
-			}
-			dstDpID, err := netconf.HexStrToInt(item["dst"].DpId)
-			if err != nil {
-				c.AbortWithError(500, nil)
-				panic(err)
-			}
-			dstPort, err := netconf.HexStrToInt(item["dst"].PortNo)
-			if err != nil {
-				c.AbortWithError(500, nil)
-				panic(err)
-			}
-
-			newLink := database.Link{
-				SrcDataPathID: srcDpID,
-				SrcPortNo:     int32(srcPort),
-				DstDataPathID: dstDpID,
-				DstPortNo:     int32(dstPort),
-			}
-			links = append(links, newLink)
-		}
-		if err = dbConn.SaveLinks(links); err != nil {
-			c.AbortWithError(500, nil)
-			panic(err)
-		}
-
-		// Finally, send a response to Ryu
+		// Request to Ryu to get information about links between switches
+		go requestLinks(dbConn)
+		// ACK to Ryu
 		c.AbortWithStatus(http.StatusOK)
+	}
+}
+
+type portData struct {
+	DpId   string `json:"dpid" binding:"required"`
+	PortNo string `json:"port_no" binding:"required"`
+	HwAddr string `json:"hw_addr" binding:"required"`
+	Name   string `json:"name" binding:"required"`
+}
+
+func requestLinks(dbConn *database.DbConn) {
+	httpClient := http.Client{Timeout: time.Duration(1) * time.Second}
+	res, err := httpClient.Get(RYU_ENDPOINT)
+	if err != nil {
+		panic(err)
+	}
+	response, err := io.ReadAll(res.Body)
+	if err != nil {
+		panic(err)
+	}
+	jsonBody := make([]map[string]portData, 0)
+	if err = json.Unmarshal(response, &jsonBody); err != nil {
+		panic(err)
+	}
+
+	// The database records are built
+	links := make([]database.Link, 0)
+	for _, item := range jsonBody {
+		srcDpID, err := netconf.HexStrToInt(item["src"].DpId)
+		if err != nil {
+			panic(err)
+		}
+		srcPort, err := netconf.HexStrToInt(item["src"].PortNo)
+		if err != nil {
+			panic(err)
+		}
+		dstDpID, err := netconf.HexStrToInt(item["dst"].DpId)
+		if err != nil {
+			panic(err)
+		}
+		dstPort, err := netconf.HexStrToInt(item["dst"].PortNo)
+		if err != nil {
+			panic(err)
+		}
+
+		newLink := database.Link{
+			SrcDataPathID: srcDpID,
+			SrcPortNo:     int32(srcPort),
+			DstDataPathID: dstDpID,
+			DstPortNo:     int32(dstPort),
+		}
+		links = append(links, newLink)
+	}
+	if err = dbConn.SaveLinks(links); err != nil {
+		panic(err)
 	}
 }
