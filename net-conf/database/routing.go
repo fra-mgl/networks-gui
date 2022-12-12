@@ -205,7 +205,7 @@ func (dbConn *DbConn) buildNetworkGraph() (map[int64][]IpTableRecord, error) {
 	}
 
 	// First query the links between routers
-	query := `select port1.data_path_id, port1.port_no, port1.address, port2.data_path_id, port2.port_no, port2.address,
+	query := `select port1.data_path_id, port1.port_no, port1.ip_address, port2.data_path_id, port2.port_no, port2.ip_address
 			  from links, switch_ports as port1, switch_ports as port2
 			  where links.src_data_path_id = port1.data_path_id and links.dst_data_path_id = port2.data_path_id`
 	res, err := rawConn.Query(query)
@@ -228,7 +228,7 @@ func (dbConn *DbConn) buildNetworkGraph() (map[int64][]IpTableRecord, error) {
 
 	// Then find out, among all routers, which ports have been assigned an IP address, but
 	// are not connected to another router. Those ports lead to ground networks
-	query = `select port.data_path_id, port.port_no, port.address from switch_ports where 
+	query = `select port.data_path_id, port.port_no, port.ip_address from switch_ports as port where 
              (port.data_path_id, port.port_no) not in (select links.src_data_path_id, links.src_port_no from links)`
 	res, err = rawConn.Query(query)
 	if err != nil {
