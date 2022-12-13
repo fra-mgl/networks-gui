@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=net-conf
+      - POSTGRES_PASSWORD=dumb-password
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
+  net-conf:
+    build: ./net-conf
+    depends_on:
+      - postgres
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=net-conf
+      - POSTGRES_USER=net-conf
+      - POSTGRES_PASSWORD=dumb-password
+    links:
+      - postgres
+    restart: always
+    command: ./main
+    ports:
+      - "4000:4000"
+    entrypoint: /main
+  ryu:
+    build: ./ryu-rest
+    ports:
+      - 6653:6653
+      - 8080:8080
+volumes:
+  db:
+    driver: local
