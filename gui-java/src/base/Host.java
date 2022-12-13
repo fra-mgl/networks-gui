@@ -50,7 +50,13 @@ public class Host extends NetItem{
 
     @Override
     public String toString() {
-        return mac;
+//        return ipv4.get(0);
+        try{
+            return ipv4.get(0);
+        }catch(IndexOutOfBoundsException e){
+            return null;
+        }
+        //return mac;
     }
 
     public void setSwitch(){
@@ -84,6 +90,10 @@ public class Host extends NetItem{
     }
 
     public String getIPv4(){
-        return ipv4.get(0);
+        try{
+            return ipv4.get(0);
+        }catch(IndexOutOfBoundsException e){
+            return null;
+        }
     }
 }

@@ -126,12 +126,6 @@ public class Network {
             }else {
                 tmpRouter.computeCoords(iRouterAngle, routerRadius, centerX, centerY);
             }
-            /* for each router, check linked router and compure link */
-            if(!fakeRouter) {
-                for (int j = 0; j < tmpRouter.getRouterLinkNumber(); j++) {
-                    linkList.add(new Link(tmpRouter.getCenterX(), tmpRouter.getCenterY(), tmpRouter.getRouterFromLink(j).getCenterX(), tmpRouter.getRouterFromLink(j).getCenterY()));
-                }
-            }
 
             /* for each router, check linked switch and compute coords */
             startBeta = iRouterAngle - deltaRouterAlpha/2.0; // set in the middle
@@ -157,6 +151,15 @@ public class Network {
             }
         }
 
+        /*now we can compute links between routers - because their coords are already set*/
+        if (!fakeRouter) {
+            for (Integer i : routerList.keySet()) {
+                tmpRouter = routerList.get(i);
+                for (int j = 0; j < tmpRouter.getRouterLinkNumber(); j++) {
+                    linkList.add(new Link(tmpRouter.getCenterX(), tmpRouter.getCenterY(), tmpRouter.getRouterFromLink(j).getCenterX(), tmpRouter.getRouterFromLink(j).getCenterY()));
+                }
+            }
+        }
         /*now we can compute links between switches - because their coords are already set*/
         for(Integer i : switchList.keySet()){
             tmpSwitch = switchList.get(i);

@@ -265,7 +265,12 @@ public class Main extends Application {
             @Override
             public void changed(ObservableValue observableValue, Object o, Object h) {
                 exploreSrc = (Host) h;
-                List<Host> tmp = new ArrayList<>(network.hostList);
+                List<Host> tmp = new ArrayList<>();
+                for (Host h1 :network.hostList) {
+                    if(h1.getIPv4() != null){
+                        tmp.add(h1);
+                    }
+                }
                 tmp.remove(h);
                 dst.getItems().clear();
                 dst.getItems().addAll(tmp);
@@ -286,6 +291,7 @@ public class Main extends Application {
             public void handle(ActionEvent actionEvent) {
                 bExpStart.setDisable(true);
 
+                /* EXPLORE: COMPUTE PATH */
 
                 // API request
                 ExplorePath path = RestAPI.getPath(exploreSrc.getIPv4(), exploreDst.getIPv4());
@@ -611,7 +617,7 @@ public class Main extends Application {
                         if (network.hostList.get(finalI).getIpv4().size() == 0) {
                             str = new StringBuilder("IPv4:");
                         } else {
-                            str = new StringBuilder("IP4:\n");
+                            str = new StringBuilder("IPV4:\n");
                             for (String p : network.hostList.get(finalI).getIpv4()) {
                                 str.append("\t" + p + "\n");
                             }
@@ -723,7 +729,13 @@ public class Main extends Application {
         src.setMaxWidth(w);
         dst.setMinWidth(w);
         dst.setMaxWidth(w);
-        src.getItems().addAll(network.hostList);
+        List<Host> tmp = new ArrayList<>();
+        for (Host h:network.hostList) {
+            if(h.getIPv4() != null){
+                tmp.add(h);
+            }
+        }
+        src.getItems().addAll(tmp);
 
 
     }
