@@ -9,19 +9,33 @@ def deployNetwork():
     net = Mininet(topo=None, controller=RemoteController)
 
     # remote Ryu controller
-    net.addController('C1')
+    c1 = net.addController('C1')
     # 5 routers
     r1 = net.addSwitch('R1', dpid="0000000000000001")
     r2 = net.addSwitch('R2', dpid="0000000000000002")
     r3 = net.addSwitch('R3', dpid="0000000000000003")
     r4 = net.addSwitch('R4', dpid="0000000000000004")
     r5 = net.addSwitch('R5', dpid="0000000000000005")
+
+    r1.start( [c1] )
+    r2.start( [c1] )
+    r3.start( [c1] )
+    r4.start( [c1] )
+    r5.start( [c1] )
+    
     # 5 switches
     s1 = net.addSwitch('S1', dpid="0000000000000006")
     s2 = net.addSwitch('S2', dpid="0000000000000007")
     s3 = net.addSwitch('S3', dpid="0000000000000008")
     s4 = net.addSwitch('S4', dpid="0000000000000009")
     s5 = net.addSwitch('S5', dpid="000000000000000A")
+
+    s1.start( [c1] )
+    s2.start( [c1] )
+    s3.start( [c1] )
+    s4.start( [c1] )
+    s5.start( [c1] )
+
     # 5 hosts
     h1 = net.addHost('H1', ip='10.0.1.1/24')
     h2 = net.addHost('H2', ip='10.0.2.1/24')
