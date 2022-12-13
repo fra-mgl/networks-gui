@@ -171,19 +171,15 @@ class TopologyController(ControllerBase):
         
         # Get the id of the L2 switches directly linked to the hosts
         hosts = get_host(self.app)
-        src_mac = None
         src_dpid = None
         dst_dpid = None
-        dst_mac = None
         for host in hosts:
             host = host.to_dict()
             if host['ipv4']:
                 if host['ipv4'][0] == src_ip:
                     src_dpid = dpid_lib.str_to_dpid(host['port']['dpid'])
-                    src_mac = host['mac']
                 elif host['ipv4'][0] == dst_ip:
                     dst_dpid = dpid_lib.str_to_dpid(host['port']['dpid'])
-                    dst_mac = host['mac']
         if src_dpid is None or dst_dpid is None:
             return Response(status=404)
 

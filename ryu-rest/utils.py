@@ -23,6 +23,15 @@ def ip_to_bstr(ip):
         bstr = bstr + curr_bstr
     return bstr
 
+def netmask_to_str(netmask):
+    netmask = 0xFFFFFFFF - ((1 << (32 - netmask)) - 1)
+    digit1 = (netmask & (255 << 24)) >> 24
+    digit2 = (netmask & (255 << 16)) >> 16
+    digit3 = (netmask & (255 << 8)) >> 8
+    digit4 = netmask & 255
+    netmask_str = str(digit1) + '.' + str(digit2) + '.' + str(digit3) + '.' + str(digit4)
+    return netmask_str
+
 def ip_to_int(ip):
     ip = ip.split('/')[0]
     splitted_ip = ip.split('.')
