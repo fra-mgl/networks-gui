@@ -116,7 +116,7 @@ class L3Controller:
 
                 # flush out buffered packets for that IP
                 for buffered_packet in self.packet_buffers(datapath.id)[src_ip]:
-                    send_packet(datapath, in_port, buffered_packet)
+                    send_packet(datapath, in_port, buffered_packet, port.mac, src_mac)
 
     # The function is called when the OF switch receives for the first
     # time a packet for an host in one of its ground networks. The switch
