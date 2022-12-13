@@ -74,7 +74,7 @@ func (dbConn *DbConn) BuildIpTables() error {
 		for len(queue) != 0 {
 			currRouter := queue[0]
 			queue = queue[1:] // dequeue
-			
+
 			for _, link := range graph[currRouter] {
 				if link.isGround() && currRouter != startRouter {
 					subNet := link.DestinationSubNet
@@ -108,10 +108,11 @@ func (dbConn *DbConn) BuildIpTables() error {
 // Struct representing the output json format of an ip routing table record
 
 type jsonIpTableEntry struct {
-	SrcPortNo int32  `json:"src_port_no"`
-	SrcIp     string `json:"src_ip"`
-	DstPortNo int32  `json:"dst_port_no"`
-	DstIp     string `json:"dst_ip"`
+	SrcPortNo     int32  `json:"src_port_no"`
+	SrcIp         string `json:"src_ip"`
+	DstPortNo     int32  `json:"dst_port_no"`
+	DstIp         string `json:"dst_ip"`
+	DstDataPathId int64  `json:"dst_dpid"`
 }
 
 // Gets the ip routing tables of all routers in the network. The output is represented as:
@@ -123,6 +124,7 @@ type jsonIpTableEntry struct {
 //	 				 'src_ip',
 //	 				 'dst_port_no',
 //	 				 'dst_ip'
+// 					 'dst_dpid'
 //	 			}
 //	 		}
 // }
@@ -141,18 +143,22 @@ func (dbConn *DbConn) AllIpTables() (map[int64]map[string]jsonIpTableEntry, erro
 		// The json object is built
 		var dstPortNo int32
 		var dstIp string
+		var dstDpId int64
 		if record.isGround() {
 			dstPortNo = 0
 			dstIp = ""
+			dstDpId = 0
 		} else {
 			dstPortNo = *record.NextHopPortNo
 			dstIp = *record.NextHopAddress
+			dstDpId = *record.NextHopDataPathID
 		}
 		output[record.DataPathID][record.DestinationSubNet] = jsonIpTableEntry{
-			SrcPortNo: record.PortNo,
-			SrcIp:     record.PortAddress,
-			DstPortNo: dstPortNo,
-			DstIp:     dstIp,
+			SrcPortNo:     record.PortNo,
+			SrcIp:         record.PortAddress,
+			DstPortNo:     dstPortNo,
+			DstIp:         dstIp,
+			DstDataPathId: dstDpId,
 		}
 	}
 	return output, nil
@@ -178,18 +184,21 @@ func (dbConn *DbConn) GetIpTable(dpid int64) (map[string]jsonIpTableEntry, error
 	for _, record := range ipTableRecords {
 		var dstPortNo int32
 		var dstIp string
+		var dstDpId int64
 		if record.isGround() {
 			dstPortNo = 0
 			dstIp = ""
+			dstDpId = 0
 		} else {
 			dstPortNo = *record.NextHopPortNo
 			dstIp = *record.NextHopAddress
 		}
 		output[record.DestinationSubNet] = jsonIpTableEntry{
-			SrcPortNo: record.PortNo,
-			SrcIp:     record.PortAddress,
-			DstPortNo: dstPortNo,
-			DstIp:     dstIp,
+			SrcPortNo:     record.PortNo,
+			SrcIp:         record.PortAddress,
+			DstPortNo:     dstPortNo,
+			DstIp:         dstIp,
+			DstDataPathId: dstDpId,
 		}
 	}
 	return output, nil
