@@ -1,3 +1,6 @@
+import struct
+import socket
+
 from ryu.ofproto import ether
 from ryu.lib.packet import packet
 from ryu.lib.packet import arp
@@ -13,6 +16,10 @@ def send_arp(datapath, arp_opcode, src_mac,
     arp_proto = ether.ETH_TYPE_IP
     hlen = 6
     plen = 4
+    src_ip = src_ip.split('/')[0]
+    dst_ip = dst_ip.split('/')[0]
+    src_ip = struct.unpack("!I", socket.inet_aton(src_ip))[0]
+    dst_ip = struct.unpack("!I", socket.inet_aton(dst_ip))[0]
 
     pkt = packet.Packet()
     e = ethernet.ethernet(dst_mac, src_mac, ether_proto)

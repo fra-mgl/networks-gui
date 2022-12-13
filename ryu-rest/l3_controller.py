@@ -1,9 +1,11 @@
+import struct
+import socket
+
 from ryu.lib.packet import arp
 from ryu.lib.packet import packet, packet_base
 from ryu.ofproto import ether
 from ryu.lib.packet import ethernet
 from ryu.lib.packet import ether_types
-from ryu.lib import dpid as dpid_lib
 from ryu.lib import mac
 from ofctl import add_flow, send_arp, send_packet
 from utils import ARP, IPV4
@@ -68,7 +70,7 @@ class L3Controller:
 
         # check wether the destination IP is equal to the IP
         # assigned to the input port
-        if arp_packet.dst_ip == port.ip:
+        if arp_packet.dst_ip == port.ip.split('/')[0]:
             if arp_packet.opcode == arp.ARP_REQUEST:
                 # send an ARP reply with the port mac address
                 src_mac = port.mac
@@ -84,12 +86,12 @@ class L3Controller:
 
                 # teach the router to send packets to the learned host
                 parser = datapath.ofproto_parser
+                src_ip_bin = struct.unpack("!I", socket.inet_aton(src_ip))[0]
                 match = parser.OFPMatch(eth_type=ether_types.ETH_TYPE_IP,
-                                        ipv4_dst=src_ip)
+                                        ipv4_dst=src_ip_bin)
                 actions = []
-                actions.append(parser.OFPActionDecNwTtl())
                 actions.append(parser.OFPActionSetField(eth_src=port.mac))
-                actions.append(parser.OFPActionSetField(eth_src=src_mac))
+                actions.append(parser.OFPActionSetField(eth_dst=src_mac))
                 actions.append(parser.OFPActionOutput(in_port, 0))
                 add_flow(datapath, 1, match, actions)
 
@@ -116,7 +118,7 @@ class L3Controller:
     def packet_in_ip(self, msg, ip_packet):
         datapath = msg.datapath
         dst_ip = ip_packet.dst
-        route = self.iptables(datapath.id)[dst_ip]
+        route = self.ip_table(datapath.id)[dst_ip]
 
         if route is None:
             # TODO teach the switch to drop packets for which it does not
@@ -132,24 +134,31 @@ class L3Controller:
         else:
             # The controller teaches the switch the rule for
             # packets destined to this subnet
+            src_port = self.ports(datapath.id)[route['src_port_no']]
+            src_mac = src_port.mac
+            dst_mac = self.ports(datapath.id)[route['dst_port_no']].mac
+
             parser = datapath.ofproto_parser
+            dst_ip_bin = struct.unpack("!I", socket.inet_aton(dst_ip))[0]
             match = parser.OFPMatch(eth_type=ether_types.ETH_TYPE_IP,
-                                    ipv4_dst=dst_ip)
+                                    ipv4_dst=dst_ip_bin)
             actions = []
-            actions.append(parser.OFPActionDecNwTtl())
-            actions.append(parser.OFPActionSetField(eth_src=mac))
-            actions.append(parser.OFPActionSetField(eth_src=route['src_mac']))
-            actions.append(parser.OFPActionOutput(route['port_no'], 0))
+            actions.append(parser.OFPActionSetField(eth_src=src_mac))
+            actions.append(parser.OFPActionSetField(eth_dst=dst_mac))
+            actions.append(parser.OFPActionOutput(route['src_port_no'], 0))
             add_flow(datapath, 1, match, actions)
 
             # The controller also forwards the packet to the switch
             out_port = route['src_port_no']
             src_mac = self.ports(datapath.id)[out_port].mac
             dst_mac = self.ports(datapath.id)[route['dst_port_no']].mac
+
+            pkt = packet.Packet()
+            pkt.add_protocol(ip_packet)
             eth_header = ethernet.ethernet(dst_mac, src_mac, ether.ETH_TYPE_IP)
-            ip_packet.add_protocol(eth_header)
-            ip_packet.serialize()
-            send_packet(datapath, out_port, ip_packet)
+            pkt.add_protocol(eth_header)
+            pkt.serialize()
+            send_packet(datapath, out_port, pkt)
 
     # Utility to get the datapath id of the gateway for a given
     # ip address

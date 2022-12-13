@@ -33,7 +33,7 @@ class IpTable(dict):
             return None
 
         binary_ip = ip_to_bstr(__key)
-        for key in self.keys():
+        for key, value in self.items():
             network_ip, netmask = key.split('/')
             netmask = int(netmask)
             network_ip = ip_to_bstr(network_ip)
@@ -43,5 +43,5 @@ class IpTable(dict):
                     break
                 i += 1
             if i == netmask:
-                return super(IpTable, self).__getitem__(key)
+                return value
         return None

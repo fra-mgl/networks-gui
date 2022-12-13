@@ -23,6 +23,16 @@ def ip_to_bstr(ip):
         bstr = bstr + curr_bstr
     return bstr
 
+def ip_to_int(ip):
+    ip = ip.split('/')[0]
+    splitted_ip = ip.split('.')
+    res = 0
+    for i in range(4):
+        curr_digit = int(splitted_ip[3 - i])
+        curr_digit = curr_digit << (i << 8) # curr_digit * (256 ** i)
+        res = res + curr_digit
+    return res
+
 def same_subnet(gw_ip, gw_netmask, src_ip):
     src_ip_bstr = ip_to_bstr(src_ip)
     gw_ip_bstr = ip_to_bstr(gw_ip)
@@ -35,6 +45,20 @@ def same_subnet(gw_ip, gw_netmask, src_ip):
 def hexstr_to_int(hstr):
     result = 0
     for i in range(len(hstr)):
-        digit = hstr[len(hstr) - 1 - i]
+        str_digit = hstr[len(hstr) - 1 - i]
+        if str_digit.upper() == 'A':
+            digit = 10
+        elif str_digit.upper() == 'B':
+            digit = 11
+        elif str_digit.upper() == 'C':
+            digit = 12
+        elif str_digit.upper() == 'D':
+            digit = 13
+        elif str_digit.upper() == 'E':
+            digit = 14
+        elif str_digit.upper() == 'F':
+            digit = 15
+        else:
+            digit = int(str_digit)
         result += digit << (i << 2)
     return result
