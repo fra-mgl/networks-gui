@@ -24,14 +24,13 @@ public class Router extends NetItem{
         routerLinkList = new ArrayList<>();
         switchLinkList = new ArrayList<>();
     }
-//    public Router(int i){
-//        super(icon);
-//        id_r = i;
-//        dpid = ((Integer)i).toString();
-//        ports = new ArrayList<>();
-//        routerLinkList = new ArrayList<>();
-//        switchLinkList = new ArrayList<>();
-//    }
+    public Router(int i){
+        super(icon);
+        id_r = i;
+        ports = new ArrayList<>();
+        routerLinkList = new ArrayList<>();
+        switchLinkList = new ArrayList<>();
+    }
 
     @Override
     public String toString() {
@@ -56,7 +55,7 @@ public class Router extends NetItem{
 
     public void setName(){
         try{
-            int number = Integer.parseInt(dpid);
+            int number = Integer.parseInt(dpid, 16);
             this.name = "r"+number;
         }
         catch (NumberFormatException ex){
@@ -65,7 +64,7 @@ public class Router extends NetItem{
     }
     public void setID(){
         try{
-            int number = Integer.parseInt(dpid);
+            int number = Integer.parseInt(dpid, 16);
             this.id_r = number;
         }
         catch (NumberFormatException ex){
@@ -106,7 +105,7 @@ public class Router extends NetItem{
     public int getIdFromDpid(){
         /* needed tihs because in this phase, id cannot be set*/
         try{
-            int number = Integer.parseInt(dpid);
+            int number = Integer.parseInt(dpid, 16);
             return number;
         }
         catch (NumberFormatException ex){
@@ -132,5 +131,13 @@ public class Router extends NetItem{
     }
     public void addSwitchLink(Switch i){
         this.switchLinkList.add(i);
+    }
+
+    public boolean searchInSRouterLinks(int dpid){
+        if(routerLinkList.contains(new Router(dpid))){
+            return true;
+        }else{
+            return false;
+        }
     }
 }

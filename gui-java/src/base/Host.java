@@ -50,12 +50,18 @@ public class Host extends NetItem{
 
     @Override
     public String toString() {
-        return mac;
+//        return ipv4.get(0);
+        try{
+            return ipv4.get(0);
+        }catch(IndexOutOfBoundsException e){
+            return null;
+        }
+        //return mac;
     }
 
     public void setSwitch(){
         try{
-            int number = Integer.parseInt(this.port.getDpid());
+            int number = Integer.parseInt(this.port.getDpid(), 16);
             switch_l = number;
         }
         catch (NumberFormatException ex){
@@ -81,5 +87,13 @@ public class Host extends NetItem{
 
     public Port getPort() {
         return port;
+    }
+
+    public String getIPv4(){
+        try{
+            return ipv4.get(0);
+        }catch(IndexOutOfBoundsException e){
+            return null;
+        }
     }
 }

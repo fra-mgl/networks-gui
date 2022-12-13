@@ -27,9 +27,9 @@ public class Switch extends NetItem{
         switchLinkList = new ArrayList<>();
     }
 
-    public Switch(String s){
+    public Switch(int s){
         super(icon);
-        this.name = s;
+        this.id_s = s;
     }
 
     public void addHostLink(Host i){
@@ -50,6 +50,14 @@ public class Switch extends NetItem{
     public Switch getSwitchFromLink(int i){
         return switchLinkList.get(i);
     }
+    public boolean searchInSwitchLinks(int dpid){
+        if(switchLinkList.contains(new Switch(dpid))){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    public int getPortNumber(){return ports.size();}
 
     @Override
     public String toString() {
@@ -70,7 +78,7 @@ public class Switch extends NetItem{
 
     public void setName(){
         try{
-            int number = Integer.parseInt(dpid);
+            int number = Integer.parseInt(dpid, 16);
 //            System.out.println(number);
             this.name = "s"+number;
         }
@@ -81,7 +89,7 @@ public class Switch extends NetItem{
 
     public void setID(){
         try{
-            int number = Integer.parseInt(dpid);
+            int number = Integer.parseInt(dpid, 16);
             this.id_s = number;
         }
         catch (NumberFormatException ex){
@@ -121,7 +129,7 @@ public class Switch extends NetItem{
     public int getIdFromDpid(){
         /* needed tihs because in this phase, id cannot be set*/
         try{
-            int number = Integer.parseInt(dpid);
+            int number = Integer.parseInt(dpid, 16);
             return number;
         }
         catch (NumberFormatException ex){
