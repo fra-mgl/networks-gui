@@ -6,7 +6,7 @@ from ryu.app.wsgi import Response
 from ryu.app.wsgi import route
 
 NOTIFICATION_CONSUMER_ENDPOINT = ('127.0.0.1', 8000)
-NETCONF_BACKEND_URL = 'http://localhost:4000/'
+NETCONF_BACKEND_URL = 'http://ryu-rest:4000/'
 IP_ADDRESSES_ENDPOINT = NETCONF_BACKEND_URL + 'allDataPathIps'
 IP_TABLES_ENDPOINT = NETCONF_BACKEND_URL + 'allIpTables'
 
