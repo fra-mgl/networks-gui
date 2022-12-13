@@ -17,10 +17,10 @@ def deployNetwork():
     s1 = net.addSwitch('S1', dpid="0000000000000003")
     s2 = net.addSwitch('S2', dpid="0000000000000004")
     # 4 hosts
-    h1 = net.addHost('H1')
-    h2 = net.addHost('H2')
-    h3 = net.addHost('H3')
-    h4 = net.addHost('H4')
+    h1 = net.addHost('H1', ip='10.0.1.1/24')
+    h2 = net.addHost('H2', ip='10.0.1.2/24')
+    h3 = net.addHost('H3', ip='10.0.2.1/24')
+    h4 = net.addHost('H4', ip='10.0.2.2')
 
     # network nodes are linked together
 

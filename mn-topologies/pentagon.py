@@ -23,11 +23,11 @@ def deployNetwork():
     s4 = net.addSwitch('S4', dpid="0000000000000009")
     s5 = net.addSwitch('S5', dpid="000000000000000A")
     # 5 hosts
-    h1 = net.addHost('H1')
-    h2 = net.addHost('H2')
-    h3 = net.addHost('H3')
-    h4 = net.addHost('H4')
-    h5 = net.addHost('H5')
+    h1 = net.addHost('H1', ip='10.0.1.1/24')
+    h2 = net.addHost('H2', ip='10.0.2.1/24')
+    h3 = net.addHost('H3', ip='10.0.3.1/24')
+    h4 = net.addHost('H4', ip='10.0.4.1/24')
+    h5 = net.addHost('H5', ip='10.0.5.1/24')
 
     # network nodes are linked together
 
