@@ -17,8 +17,7 @@ class TopologyController(ControllerBase):
     def list_l2switches(self, req, **kwargs):
         # If the network has yet to be configured for L3 forwarding,
         # all switches are considered as l2 switches
-
-        if self.app.finished_configuration:
+        if self.app.configured:
             return self._l2_switches(req, **kwargs)
         else:
             switches = get_switch(self.app, None)
@@ -30,7 +29,7 @@ class TopologyController(ControllerBase):
     def list_l3switches(self, req, **kwargs):
         # If the network has yet to be configured for L3 forwarding,
         # all switches are considered as L2. So the response is empty
-        if self.app.finished_configuration:
+        if self.app.configured:
             return self._l3_switches(req, **kwargs)
         else:
             return Response(content_type='application/json', 
@@ -61,7 +60,6 @@ class TopologyController(ControllerBase):
     def mac_table(self, req, **kwargs):
         if not self.app.configured:
             return Response(content_type='application/json', body=json.dumps({}))
-
         try:
             dpid = int(kwargs['dpid'])
         except ValueError:
@@ -80,7 +78,6 @@ class TopologyController(ControllerBase):
     def ip_table(self, req, **kwargs):
         if not self.app.configured:
             return Response(content_type='application/json', body=json.dumps({}))
-
         try:
             dpid = int(kwargs['dpid'])
         except ValueError:
