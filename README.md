@@ -23,6 +23,7 @@ Steps to setup your environment:
 * `/mactable/{datapath_id}`: mac table of a layer 2 OF switch.
 * `/iptable/{datapath_id}`: ip routing table of a layer 3 OF switch
 
+---
 
 ## Mininet emulation
 
@@ -31,3 +32,20 @@ To run the emulation, simply issue the command:
 $ sudo python3 mn.py
 ```
 Make sure to also have the Ryu controller running.
+
+---
+
+## Credits
+1. All icons have been edited, according to Flaticon licence.\
+These are the original sources:
+
+    - Host icons:\
+    [Ui icons created by rukanicon - Flaticon](https://www.flaticon.com/free-icons/ui)
+
+
+    - Switches icons:\
+    [Network-switch icons created by Chattapat - Flaticon](https://www.flaticon.com/free-icons/network-switch)
+
+
+    - Routers icons:\
+    [Internet icons created by Freepik - Flaticon](https://www.flaticon.com/free-icons/internet)
