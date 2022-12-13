@@ -32,8 +32,14 @@ def send_arp(datapath, arp_opcode, src_mac,
 
 # Function to send a packet from the controller to an OF switch
 
-def send_packet(datapath, output_port, pkt):
-    actions = [datapath.ofproto_parser.OFPActionOutput(output_port, 0)]
+def send_packet(datapath, output_port, pkt, src_mac=None, dst_mac=None):
+    actions = []
+    if src_mac is not None:
+        actions.append(datapath.ofproto_parser.OFPActionSetField(eth_src=src_mac))
+    if src_mac is not None:
+        actions.append(datapath.ofproto_parser.OFPActionSetField(eth_dst=dst_mac))
+        
+    actions.append(datapath.ofproto_parser.OFPActionOutput(output_port, 0))
     datapath.send_packet_out(buffer_id=datapath.ofproto.OFP_NO_BUFFER,
                              in_port=datapath.ofproto.OFPP_CONTROLLER,
                              actions=actions, data=pkt.data)
