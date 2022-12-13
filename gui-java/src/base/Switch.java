@@ -78,7 +78,7 @@ public class Switch extends NetItem{
 
     public void setName(){
         try{
-            int number = Integer.parseInt(dpid);
+            int number = Integer.parseInt(dpid, 16);
 //            System.out.println(number);
             this.name = "s"+number;
         }
@@ -89,7 +89,7 @@ public class Switch extends NetItem{
 
     public void setID(){
         try{
-            int number = Integer.parseInt(dpid);
+            int number = Integer.parseInt(dpid, 16);
             this.id_s = number;
         }
         catch (NumberFormatException ex){
@@ -129,7 +129,7 @@ public class Switch extends NetItem{
     public int getIdFromDpid(){
         /* needed tihs because in this phase, id cannot be set*/
         try{
-            int number = Integer.parseInt(dpid);
+            int number = Integer.parseInt(dpid, 16);
             return number;
         }
         catch (NumberFormatException ex){

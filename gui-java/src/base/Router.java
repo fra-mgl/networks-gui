@@ -55,7 +55,7 @@ public class Router extends NetItem{
 
     public void setName(){
         try{
-            int number = Integer.parseInt(dpid);
+            int number = Integer.parseInt(dpid, 16);
             this.name = "r"+number;
         }
         catch (NumberFormatException ex){
@@ -64,7 +64,7 @@ public class Router extends NetItem{
     }
     public void setID(){
         try{
-            int number = Integer.parseInt(dpid);
+            int number = Integer.parseInt(dpid, 16);
             this.id_r = number;
         }
         catch (NumberFormatException ex){
@@ -105,7 +105,7 @@ public class Router extends NetItem{
     public int getIdFromDpid(){
         /* needed tihs because in this phase, id cannot be set*/
         try{
-            int number = Integer.parseInt(dpid);
+            int number = Integer.parseInt(dpid, 16);
             return number;
         }
         catch (NumberFormatException ex){

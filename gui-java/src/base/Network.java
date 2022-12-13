@@ -15,7 +15,7 @@ public class Network {
     private double height;
     public StackPane netStack;
     private AnchorPane graphAnchor;
-    private AnchorPane connectionsAnchor;
+    public AnchorPane connectionsAnchor;
     private AnchorPane itemsAnchor;
     private Circle graphStage;
     private static final double graphPadding = 50.0;
@@ -54,8 +54,8 @@ public class Network {
         graphStage = new Circle(circleRadius, Color.CADETBLUE);
         /* reduce a bit hostRadius to let hosts to be inside the circle */
         hostRadius = circleRadius - circleRadius * 0.15;
-        switchRadius = circleRadius * 0.66;
-        routerRadius = circleRadius * 0.33;
+        switchRadius = circleRadius * 0.60;
+        routerRadius = circleRadius * 0.30;
         graphStage.setCenterX(width / 2.0);
         graphStage.setCenterY(height / 2.0);
 
@@ -206,6 +206,13 @@ class Link extends Line{
         super(v, v1, v2, v3);
 
         this.setStrokeWidth(3.0);
+        computeAnchors();
+    }
+
+    public Link(double v, double v1, double v2, double v3, Color c) {
+        super(v, v1, v2, v3);
+        this.setStroke(c);
+        this.setStrokeWidth(5.0);
         computeAnchors();
     }
 

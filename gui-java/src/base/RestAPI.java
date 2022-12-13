@@ -26,14 +26,14 @@ public class RestAPI {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 //            System.out.println(response.statusCode());
             if(response.statusCode() != 200){
-                System.err.println("EXEP - RestAPI(getSwitch) - ERROR: not 200");
+                System.err.println("EXC - RestAPI(getSwitch) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
 //            System.out.println(json);
             return gson.fromJson(json, Switch[].class);
         } catch (Exception e){
-            System.err.println("EXEP - RestAPI(getSwitch)");
+            System.err.println("EXC - RestAPI(getSwitch)");
             e.printStackTrace();
             return null;
         }
@@ -47,14 +47,14 @@ public class RestAPI {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 //            System.out.println(response.statusCode());
             if(response.statusCode() != 200){
-                System.err.println("EXEP - RestAPI(getRouter) - ERROR: not 200");
+                System.err.println("EXC - RestAPI(getRouter) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
 //            System.out.println(json);
             return gson.fromJson(json, Router[].class);
         } catch (Exception e){
-            System.err.println("EXEP - RestAPI(getRouter)");
+            System.err.println("EXC - RestAPI(getRouter)");
             e.printStackTrace();
             return null;
         }
@@ -68,14 +68,14 @@ public class RestAPI {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 //            System.out.println(response.statusCode());
             if(response.statusCode() != 200){
-                System.err.println("EXEP - RestAPI(getHosts) - ERROR: not 200");
+                System.err.println("EXC - RestAPI(getHosts) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
             System.out.println(json);
             return gson.fromJson(json, Host[].class);
         } catch (Exception e){
-            System.err.println("EXEP - RestAPI(getHosts)");
+            System.err.println("EXC - RestAPI(getHosts)");
             e.printStackTrace();
             return null;
         }
@@ -90,14 +90,14 @@ public class RestAPI {
 //            System.out.println(response.statusCode());
 //            System.out.println(response.body());
             if(response.statusCode() != 200){
-                System.err.println("EXEP - RestAPI(getLinks) - ERROR: not 200");
+                System.err.println("EXC - RestAPI(getLinks) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
 //            System.out.println(json);
             return gson.fromJson(json, LinkJson[].class);
         } catch (Exception e){
-            System.err.println("EXEP - RestAPI(getLinks)");
+            System.err.println("EXC - RestAPI(getLinks)");
             e.printStackTrace();
             return null;
         }
@@ -113,14 +113,14 @@ public class RestAPI {
 //            System.out.println(response.statusCode());
 //            System.out.println(response.body());
             if(response.statusCode() != 200){
-                System.err.println("EXEP - RestAPI(getMAcTable) - ERROR: not 200");
+                System.err.println("EXC - RestAPI(getMAcTable) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
 //            System.out.println(json);
             return gson.fromJson(json, TableEntrySwitch[].class);
         } catch (Exception e){
-            System.err.println("EXEP - RestAPI(getMacTable)");
+            System.err.println("EXC - RestAPI(getMacTable)");
             e.printStackTrace();
             return null;
         }
@@ -135,14 +135,14 @@ public class RestAPI {
 //            System.out.println(response.statusCode());
 //            System.out.println(response.body());
             if(response.statusCode() != 200){
-                System.err.println("EXEP - RestAPI(getIPTable) - ERROR: not 200");
+                System.err.println("EXC - RestAPI(getIPTable) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
 //            System.out.println(json);
             return gson.fromJson(json, TableEntryRouter[].class);
         } catch (Exception e){
-            System.err.println("EXEP - RestAPI(getIPTable)");
+            System.err.println("EXC - RestAPI(getIPTable)");
             e.printStackTrace();
             return null;
         }
@@ -158,12 +158,12 @@ public class RestAPI {
 //            System.out.println(response.statusCode());
 //            System.out.println(response.body());
             if(response.statusCode() != 200){
-                System.err.println("EXEP - RestAPI(postNetConf) - ERROR: not 200");
+                System.err.println("EXC - RestAPI(postNetConf) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             return response.statusCode();
         } catch (Exception e){
-            System.err.println("EXEP - RestAPI(postNetConf)");
+            System.err.println("EXC - RestAPI(postNetConf)");
             e.printStackTrace();
             return -1;
         }
@@ -175,7 +175,7 @@ public class RestAPI {
         try{
             l.addAll(Arrays.asList(gson.fromJson(conf, ConfigItem[].class)));
         }catch (Exception e){
-            System.err.println("EXEC - gson: json format not valid");
+            System.err.println("EXC - gson: json format not valid");
             return -1;
         }
 
@@ -210,6 +210,31 @@ public class RestAPI {
             return -1;
         }
     }
+
+    static ExplorePath getPath(String src, String dst){
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI("http://localhost:8080/explore/" + src + "/" + dst))
+                    .GET().build();
+            HttpClient client = HttpClient.newHttpClient();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+//            System.out.println(response.statusCode());
+//            System.out.println(response.body());
+            if(response.statusCode() != 200){
+                System.err.println("EXC - RestAPI(getPath) - ERROR: not 200");
+                throw new Exception("Error - not 200");
+            }
+            String json = response.body();
+//            System.out.println(json);
+            return gson.fromJson(json, ExplorePath.class);
+        } catch (Exception e){
+            System.err.println("EXC - RestAPI(getPath)");
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    
 }
 
 class ConfigItem{
@@ -223,7 +248,7 @@ class ConfigItem{
     @Expose private String ip;
 
     public int getDpid(){
-        return Integer.parseInt(dpid);
+        return Integer.parseInt(dpid, 16);
     }
 }
 
@@ -266,7 +291,7 @@ class LinkJson{
 
     public int getSrc(){
         try{
-            int number = Integer.parseInt(src.getDpid());
+            int number = Integer.parseInt(src.getDpid(), 16);
             return number;
         }
         catch (NumberFormatException ex){
@@ -276,7 +301,7 @@ class LinkJson{
     }
     public int getDst(){
         try{
-            int number = Integer.parseInt(dst.getDpid());
+            int number = Integer.parseInt(dst.getDpid(), 16);
             return number;
         }
         catch (NumberFormatException ex){
@@ -304,5 +329,13 @@ class TableEntryRouter{
     @Override
     public String toString() {
         return "destination: " + destination + "\tgateway: " + gateway;
+    }
+}
+
+class ExplorePath{
+    @Expose List<Integer> path = new ArrayList<>();
+
+    public List<Integer> getList(){
+        return path;
     }
 }

@@ -65,7 +65,7 @@ public class Main extends Application {
     private GridPane exploreBox;
     private ChoiceBox src;
     private ChoiceBox dst;
-    private Text explorePath;
+//    private Text explorePath;
 
     private Button bSpecs;
     private Button bExplore;
@@ -120,7 +120,7 @@ public class Main extends Application {
         bRefresh.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                refreshNetwork();
+                refreshWindow();
             }
         });
 
@@ -249,14 +249,15 @@ public class Main extends Application {
         HBox bExpButtons = new HBox(bExpStart, bExpClean);
         bExpButtons.setAlignment(Pos.CENTER);
         bExpButtons.setSpacing(30);
-        explorePath = new Text("");
-        VBox expPathBox = new VBox(new Text("PATH"), explorePath);
-        expPathBox.setAlignment(Pos.TOP_CENTER);
-        expPathBox.setPadding(new Insets(HBoxPadding, 0, 0, 0));
-        expPathBox.setSpacing(30);
+//        explorePath = new Text("");
+//        VBox expPathBox = new VBox(new Text("PATH"), explorePath);
+//        expPathBox.setAlignment(Pos.TOP_CENTER);
+//        expPathBox.setPadding(new Insets(HBoxPadding, 0, 0, 0));
+//        expPathBox.setSpacing(30);
         bExpClean.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
+                refreshNetwork();
                 resetExplore();
             }
         });
@@ -284,18 +285,52 @@ public class Main extends Application {
             @Override
             public void handle(ActionEvent actionEvent) {
                 bExpStart.setDisable(true);
-                explorePath.setText("GIVEN PATH");
 
-                /* URASE GLI HOST SALVATI E QUELLO CHE VIENE
-                RITORNATO PER CREARE IL PATH E TROVARE I LINK
-                DA COLORARE
-                 */
+
+                // API request
+                ExplorePath path = RestAPI.getPath(exploreSrc.getIPv4(), exploreDst.getIPv4());
+
+                double xS, yS, xD, yD;
+
+                for(int i = 0; i < path.getList().size()-1; i ++){
+                    if(network.switchList.containsKey(path.getList().get(i))){
+                        xS = network.switchList.get(path.getList().get(i)).getCenterX();
+                        yS = network.switchList.get(path.getList().get(i)).getCenterY();
+                    }else{
+                        xS = network.routerList.get(path.getList().get(i)).getCenterX();
+                        yS = network.routerList.get(path.getList().get(i)).getCenterY();
+                    }
+                    if(network.switchList.containsKey(path.getList().get(i+1))){
+                        xD = network.switchList.get(path.getList().get(i+1)).getCenterX();
+                        yD = network.switchList.get(path.getList().get(i+1)).getCenterY();
+                    }else{
+                        xD = network.routerList.get(path.getList().get(i+1)).getCenterX();
+                        yD = network.routerList.get(path.getList().get(i+1)).getCenterY();
+                    }
+                    network.connectionsAnchor.getChildren().add(new Link(xS,yS,xD,yD,Color.RED));
+                }
+                /* link src - gateway */
+                xS = exploreSrc.getCenterX();
+                yS = exploreSrc.getCenterY();
+                xD = network.switchList.get(path.getList().get(0)).getCenterX();
+                yD = network.switchList.get(path.getList().get(0)).getCenterY();
+                network.connectionsAnchor.getChildren().add(new Link(xS,yS,xD,yD,Color.RED));
+                /* link dst - gateway */
+                xS = exploreDst.getCenterX();
+                yS = exploreDst.getCenterY();
+                xD = network.switchList.get(path.getList().get(path.getList().size()-1)).getCenterX();
+                yD = network.switchList.get(path.getList().get(path.getList().size()-1)).getCenterY();
+                network.connectionsAnchor.getChildren().add(new Link(xS,yS,xD,yD,Color.RED));
+
+
+//                explorePath.setText("GIVEN PATH");
+
 
             }
         });
         exploreBox.add(titleExpBox, 0, 0);
         exploreBox.add(bExpButtons, 0, 1);
-        exploreBox.add(expPathBox, 0, 2);
+//        exploreBox.add(expPathBox, 0, 2);
 //        exploreBox.add(bExpStart, 0,3);
 //        exploreBox.add(p1, 0,0);
 //        exploreBox.add(p2, 0,1);
@@ -657,12 +692,15 @@ public class Main extends Application {
 
         network.displayAlgorithm();
 
+    }
+
+    private void refreshWindow(){
+        refreshNetwork();
         if (isExplore) {
             switchToSpecsBox();
         } else {
             resetSpecs();
         }
-
     }
 
     private void resetSpecs() {
@@ -676,7 +714,7 @@ public class Main extends Application {
     private void resetExplore() {
         src.getItems().clear();
         dst.getItems().clear();
-        explorePath.setText("");
+//        explorePath.setText("");
         src.setDisable(false);
         dst.setDisable(true);
         bExpStart.setDisable(true);
@@ -850,13 +888,6 @@ public class Main extends Application {
         timer.schedule(task,2000l);
 
         configStage.show();
-    }
-    private void waitSeconds(int s){
-        try {
-            TimeUnit.SECONDS.sleep(s);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
 }
 
