@@ -195,12 +195,15 @@ class TopologyController(ControllerBase):
                     self.app.l2_controller.datapaths[curr_dpid][src_gateway_mac])
             path.append(curr_dpid)
 
-        # Now compute the path between the layer 3 switches
-        curr_dpid = src_gateway_dpid
-        while curr_dpid != dst_gateway_dpid:
-            curr_dpid = self.get_next_switch(curr_dpid,
-                    self.app.l3_controller.datapaths[curr_dpid]['ip_table'][dst_ip]['src_port_no'])
-            path.append(curr_dpid)
+        if src_gateway_dpid != dst_gateway_dpid:
+            # Now compute the path between the layer 3 switches
+            curr_dpid = src_gateway_dpid
+            while curr_dpid != dst_gateway_dpid:
+                curr_dpid = self.get_next_switch(curr_dpid,
+                        self.app.l3_controller.datapaths[curr_dpid]['ip_table'][dst_ip]['src_port_no'])
+                path.append(curr_dpid)
+        else:
+            path.pop()
         
         # Now compute the path from the from the destination host to its gateway
         curr_dpid = dst_dpid
