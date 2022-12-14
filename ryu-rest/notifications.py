@@ -1,8 +1,7 @@
 import requests
 import json
-from threading import Thread
-from time import sleep
 
+from ryu.lib import hub
 from ryu.app.wsgi import ControllerBase
 from ryu.app.wsgi import Response
 from ryu.app.wsgi import route
@@ -52,26 +51,30 @@ class NotificationsController(ControllerBase):
         return Response(body=json.dumps({"message": "Configuration applied!"}))
 
 # A thread that periodically polls the network to check wether new
-# hosts have entered the network
+# hosts have entered the network. The function returns a closure
 
-class TopologyWatcherThread(Thread):
+def topology_watcher_thread(app):
 
-    def __init__(self, app, group, target, name, args, kwargs, *, daemon):
-        super().__init__(group, target, name, args, kwargs, daemon=daemon)
-        self.app = app
-        self.hosts_mac = {host.to_dict()['mac'] for host in get_host(app)}
-    
     # Every 7 seconds the hosts checks if some host have left the network
     # or some have entered the network. If that's the case it sends a GET
     # request to the client GUI
 
-    def run(self):
+    def run():
+        nonlocal app
+
+        hosts_mac = {host.to_dict()['mac'] for host in get_host(app)}
         while True:
-            sleep(7)
-            current_hosts_mac = {host.to_dict()['mac'] for host in get_host(self.app)}
-            if not self.hosts_mac == self.hosts_mac.intersection(current_hosts_mac):
-                HTTPClient.get(CLIENT_GUI_URL, None)
-            self.hosts_mac = current_hosts_mac
+            hub.sleep(7)
+            current_hosts_mac = {host.to_dict()['mac'] for host in get_host(app)}
+            if hosts_mac != hosts_mac.union(current_hosts_mac):
+                try:
+                    HTTPClient.get(CLIENT_GUI_URL, None)
+                except requests.exceptions.ConnectionError:
+                    # The client is not connected
+                    pass
+            hosts_mac = current_hosts_mac
+    
+    return run
 
 # Simple client to perform HTTP requests
 

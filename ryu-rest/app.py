@@ -6,11 +6,12 @@ from ryu.controller.handler import MAIN_DISPATCHER, CONFIG_DISPATCHER
 from ryu.ofproto import ofproto_v1_3
 # DON'T REMOVE THIS IMPORT
 from ryu.topology.api import get_switch, get_link, get_host
+from ryu.lib import hub
 from l2_controller import L2Controller
 from l3_controller import L3Controller
 from topology_controller import TopologyController
 from ofctl import add_flow
-from notifications import NotificationsController, TopologyWatcherThread
+from notifications import NotificationsController, topology_watcher_thread
 
 class App(app_manager.RyuApp):
 
@@ -42,8 +43,7 @@ class App(app_manager.RyuApp):
         self.l3_controller = L3Controller()
 
         # The topology watcher thread is spawned
-        watcher_thread = TopologyWatcherThread(self)
-        watcher_thread.start()
+        watcher_thread = hub.spawn(topology_watcher_thread(self))
 
     @set_ev_cls(ofp_event.EventOFPStateChange,
                  [MAIN_DISPATCHER])
