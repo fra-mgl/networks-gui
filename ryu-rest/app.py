@@ -10,7 +10,7 @@ from l2_controller import L2Controller
 from l3_controller import L3Controller
 from topology_controller import TopologyController
 from ofctl import add_flow
-from notifications import NotificationsController
+from notifications import NotificationsController, TopologyWatcherThread
 
 class App(app_manager.RyuApp):
 
@@ -27,15 +27,23 @@ class App(app_manager.RyuApp):
         # A data structure to keep track of switches that are
         # waiting to be configured
         self.not_configured_datapaths = dict()
+
         # The topology REST API
         wsgi = kwargs['wsgi']
         wsgi.register(TopologyController, {'app': self})
+
+        # The notification controller
         wsgi.register(NotificationsController, {'app': self})
+
         # The controller responsible of configuring L2 switches
         self.l2_controller = L2Controller()
 
         # The controller responsible of configuring L3 switches
         self.l3_controller = L3Controller()
+
+        # The topology watcher thread is spawned
+        watcher_thread = TopologyWatcherThread(self)
+        watcher_thread.start()
 
     @set_ev_cls(ofp_event.EventOFPStateChange,
                  [MAIN_DISPATCHER])
@@ -46,7 +54,6 @@ class App(app_manager.RyuApp):
             raise Exception(f"A new switch entered the network, dpid: {ev.datapath.id}")
         else:
             self.not_configured_datapaths[ev.datapath.id] = ev.datapath
-
     
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):

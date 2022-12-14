@@ -1,14 +1,18 @@
 import requests
 import json
+from threading import Thread
+from time import sleep
 
 from ryu.app.wsgi import ControllerBase
 from ryu.app.wsgi import Response
 from ryu.app.wsgi import route
+from ryu.topology.api import get_host
 
 NOTIFICATION_CONSUMER_ENDPOINT = ('127.0.0.1', 8000)
 NETCONF_BACKEND_URL = 'http://net-conf:4000/'
 IP_ADDRESSES_ENDPOINT = NETCONF_BACKEND_URL + 'allDataPathIps'
 IP_TABLES_ENDPOINT = NETCONF_BACKEND_URL + 'allIpTables'
+CLIENT_GUI_URL = 'http://localhost:7777'
 
 # Controller that exposes an endpoint to allow the main
 # controller to receive notifications from the network
@@ -46,6 +50,28 @@ class NotificationsController(ControllerBase):
         self.app.not_configured_datapaths = None
         self.app.configured = True
         return Response(body=json.dumps({"message": "Configuration applied!"}))
+
+# A thread that periodically polls the network to check wether new
+# hosts have entered the network
+
+class TopologyWatcherThread(Thread):
+
+    def __init__(self, app, group, target, name, args, kwargs, *, daemon):
+        super().__init__(group, target, name, args, kwargs, daemon=daemon)
+        self.app = app
+        self.hosts_mac = {host.to_dict()['mac'] for host in get_host(app)}
+    
+    # Every 7 seconds the hosts checks if some host have left the network
+    # or some have entered the network. If that's the case it sends a GET
+    # request to the client GUI
+
+    def run(self):
+        while True:
+            sleep(7)
+            current_hosts_mac = {host.to_dict()['mac'] for host in get_host(self.app)}
+            if not self.hosts_mac == self.hosts_mac.intersection(current_hosts_mac):
+                HTTPClient.get(CLIENT_GUI_URL, None)
+            self.hosts_mac = current_hosts_mac
 
 # Simple client to perform HTTP requests
 
