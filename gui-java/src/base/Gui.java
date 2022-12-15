@@ -758,6 +758,7 @@ public class Gui extends Application {
         if (!isExplore) {
             rightSide.getChildren().remove(specsBox);
             rightSide.add(exploreBox, 0, 0);
+            refreshWindow();
             resetExplore();
             isExplore = true;
             bSpecs.setDisable(false);
