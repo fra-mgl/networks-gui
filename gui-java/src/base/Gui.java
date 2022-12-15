@@ -10,6 +10,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
@@ -21,18 +23,18 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import javafx.scene.image.ImageView;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.List;
 import java.util.stream.Stream;
 
 
-public class Main extends Application {
+public class Gui extends Application {
 
     /**/ private Pane p0;
     private static final double networkDim = 800.0;
@@ -41,8 +43,8 @@ public class Main extends Application {
     private static final double windowWidth = networkDim + textWidth;
     private static final double windowHeight = networkDim;
     private static final int HBoxPadding = 20;
-    static final Image giovannino = new Image("/media/giovannino_1024.png");
-    static final Image logo = new Image("/media/piNet_full.png");
+    final Image giovannino = new Image("/base/images/giovannino_1024.png");
+    final Image logo = new Image("/base/images/piNet_full.png");
     private ImageView giovanninoImage;
     private ImageView logoImage;
 
@@ -453,7 +455,7 @@ public class Main extends Application {
         Thread sentinel = new Thread(()->{
             while(true){
                 Sem.sWait();
-                Platform.runLater(Main::receiveUpdate);
+                Platform.runLater(Gui::receiveUpdate);
                 Sem.tPost();
             }
         });

@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Host extends NetItem{
 
-    static final Image icon = new Image("/media/host_edit.png");
+    static final Image icon = new Image("/base/images/host_edit.png");
 
     @Expose
     private String mac;
