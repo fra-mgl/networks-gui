@@ -32,7 +32,8 @@ services:
     ports:
       - 6653:6653
       - 8080:8080
-      - 7777:7777
+    expose:
+      - 7777
 volumes:
   db:
     driver: local
