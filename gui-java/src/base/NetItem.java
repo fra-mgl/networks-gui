@@ -1,22 +1,14 @@
 package base;
 
-import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
+
 
 public class NetItem extends ImageView {
 
     static final int SIZE = 64;
     static final int HALF_SIZE = SIZE/2;
-
-//    transient protected String name;
     transient private double angle;
-
-//    static public NetItem fromString(String json){
-//
-//    }
 
     /* centerPoint = (centerX, centerY) -> represents the center of the frame
     *  anchorPoint = (anchorX, anchorY) -> coordinates when set position in anchor frame
@@ -28,8 +20,6 @@ public class NetItem extends ImageView {
 
     public NetItem(Image icon) {
         this.setImage(icon);
-//        Rectangle2D viewportRect = new Rectangle2D(50, 50, 50, 50);
-//        this.setViewport(viewportRect);
         this.setFitWidth(SIZE);
         this.setFitHeight(SIZE);
         this.angle = 0.0;

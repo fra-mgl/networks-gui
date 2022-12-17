@@ -24,13 +24,11 @@ public class RestAPI {
                     .GET().build();
             HttpClient client = HttpClient.newHttpClient();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//            System.out.println(response.statusCode());
             if(response.statusCode() != 200){
                 System.err.println("EXC - RestAPI(getSwitch) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
-//            System.out.println(json);
             return gson.fromJson(json, Switch[].class);
         } catch (Exception e){
             System.err.println("EXC - RestAPI(getSwitch)");
@@ -45,13 +43,11 @@ public class RestAPI {
                     .GET().build();
             HttpClient client = HttpClient.newHttpClient();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//            System.out.println(response.statusCode());
             if(response.statusCode() != 200){
                 System.err.println("EXC - RestAPI(getRouter) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
-//            System.out.println(json);
             return gson.fromJson(json, Router[].class);
         } catch (Exception e){
             System.err.println("EXC - RestAPI(getRouter)");
@@ -66,13 +62,11 @@ public class RestAPI {
                     .GET().build();
             HttpClient client = HttpClient.newHttpClient();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//            System.out.println(response.statusCode());
             if(response.statusCode() != 200){
                 System.err.println("EXC - RestAPI(getHosts) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
-            System.out.println(json);
             return gson.fromJson(json, Host[].class);
         } catch (Exception e){
             System.err.println("EXC - RestAPI(getHosts)");
@@ -87,14 +81,11 @@ public class RestAPI {
                     .GET().build();
             HttpClient client = HttpClient.newHttpClient();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//            System.out.println(response.statusCode());
-//            System.out.println(response.body());
             if(response.statusCode() != 200){
                 System.err.println("EXC - RestAPI(getLinks) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
-//            System.out.println(json);
             return gson.fromJson(json, LinkJson[].class);
         } catch (Exception e){
             System.err.println("EXC - RestAPI(getLinks)");
@@ -110,14 +101,11 @@ public class RestAPI {
                     .GET().build();
             HttpClient client = HttpClient.newHttpClient();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//            System.out.println(response.statusCode());
-//            System.out.println(response.body());
             if(response.statusCode() != 200){
                 System.err.println("EXC - RestAPI(getMAcTable) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
-//            System.out.println(json);
             return gson.fromJson(json, TableEntrySwitch[].class);
         } catch (Exception e){
             System.err.println("EXC - RestAPI(getMacTable)");
@@ -132,14 +120,11 @@ public class RestAPI {
                     .GET().build();
             HttpClient client = HttpClient.newHttpClient();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//            System.out.println(response.statusCode());
-//            System.out.println(response.body());
             if(response.statusCode() != 200){
                 System.err.println("EXC - RestAPI(getIPTable) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
-//            System.out.println(json);
             return gson.fromJson(json, TableEntryRouter[].class);
         } catch (Exception e){
             System.err.println("EXC - RestAPI(getIPTable)");
@@ -155,8 +140,6 @@ public class RestAPI {
                     .build();
             HttpClient client = HttpClient.newHttpClient();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//            System.out.println(response.statusCode());
-//            System.out.println(response.body());
             if(response.statusCode() != 200){
                 System.err.println("EXC - RestAPI(postNetConf) - ERROR: not 200");
                 throw new Exception("Error - not 200");
@@ -171,7 +154,6 @@ public class RestAPI {
 
     static int validateNetConf(String conf, Map<Integer, Switch> switches){
         List<ConfigItem> l = new ArrayList<>();
-        System.out.println("Configuration:\n" + conf);
         try{
             l.addAll(Arrays.asList(gson.fromJson(conf, ConfigItem[].class)));
         }catch (Exception e){
@@ -218,14 +200,11 @@ public class RestAPI {
                     .GET().build();
             HttpClient client = HttpClient.newHttpClient();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//            System.out.println(response.statusCode());
-//            System.out.println(response.body());
             if(response.statusCode() != 200){
                 System.err.println("EXC - RestAPI(getPath) - ERROR: not 200");
                 throw new Exception("Error - not 200");
             }
             String json = response.body();
-//            System.out.println(json);
             return gson.fromJson(json, ExplorePath.class);
         } catch (Exception e){
             System.err.println("EXC - RestAPI(getPath)");

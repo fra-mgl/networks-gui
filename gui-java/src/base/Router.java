@@ -10,8 +10,7 @@ import java.util.Objects;
 public class Router extends NetItem{
     private String name;
     private int id_r;
-    @Expose
-    private String dpid;
+    @Expose private String dpid;
     @Expose private List<Port> ports;
 
     static final Image icon = new Image("/base/images/router_edit.png");
@@ -103,7 +102,7 @@ public class Router extends NetItem{
     }
 
     public int getIdFromDpid(){
-        /* needed tihs because in this phase, id cannot be set*/
+        /* used when id cannot be set*/
         try{
             int number = Integer.parseInt(dpid, 16);
             return number;

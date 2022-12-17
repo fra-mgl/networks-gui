@@ -36,7 +36,6 @@ import java.util.stream.Stream;
 
 public class Gui extends Application {
 
-    /**/ private Pane p0;
     private static final double networkDim = 800.0;
     private static final double textWidth = 350.0;
     private static final double buttonsHeight = 40.0;
@@ -67,7 +66,6 @@ public class Gui extends Application {
     private GridPane exploreBox;
     private ChoiceBox src;
     private ChoiceBox dst;
-//    private Text explorePath;
 
     private Button bSpecs;
     private Button bExplore;
@@ -78,14 +76,12 @@ public class Gui extends Application {
     private Button bExpStart;
     private boolean isExplore;
 
-    private String configurationJSON;
-    private boolean confRepeat;
     private Button bConfUpload;
 
 
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
 
         StackPane basicPane = new StackPane();
 
@@ -139,12 +135,7 @@ public class Gui extends Application {
         field2 = new Text();
         field3 = new Text();
         field4 = new Text();
-//        Text field5 = new Text();
         specs = new VBox();
-//        title.getChildren().add(field0);
-//        specs.getChildren().addAll(field1, field2, field3, field4, field5);
-//        specs.setBackground(new Background(new BackgroundFill(Color.CADETBLUE, CornerRadii.EMPTY, Insets.EMPTY)));
-//        field0.setFont(new Font());
         specs.setPadding(new Insets(HBoxPadding, HBoxPadding, HBoxPadding, HBoxPadding));
         specs.setSpacing(10);
 
@@ -154,23 +145,7 @@ public class Gui extends Application {
         tablePane.setPadding(new Insets(HBoxPadding, HBoxPadding, HBoxPadding, HBoxPadding));
 
         ScrollPane specsScroll = new ScrollPane(specs);
-//        specs.setAlignment(Pos.CENTER_LEFT);
         ScrollPane tableScroll = new ScrollPane(tablePane);
-//        tablePane.setAlignment(Pos.CENTER);
-
-
-        p0 = new Pane();
-        p0.setBackground(new Background(new BackgroundFill(Color.RED, CornerRadii.EMPTY, Insets.EMPTY)));
-        Pane p1 = new Pane();
-        p1.setBackground(new Background(new BackgroundFill(Color.RED, CornerRadii.EMPTY, Insets.EMPTY)));
-        Pane p2 = new Pane();
-        p2.setBackground(new Background(new BackgroundFill(Color.YELLOW, CornerRadii.EMPTY, Insets.EMPTY)));
-        Pane p3 = new Pane();
-        p3.setBackground(new Background(new BackgroundFill(Color.VIOLET, CornerRadii.EMPTY, Insets.EMPTY)));
-        Pane p4 = new Pane();
-        p4.setBackground(new Background(new BackgroundFill(Color.BLUE, CornerRadii.EMPTY, Insets.EMPTY)));
-        Pane p5 = new Pane();
-        p5.setBackground(new Background(new BackgroundFill(Color.GREEN, CornerRadii.EMPTY, Insets.EMPTY)));
 
         /* LAYOUT */
         s1_Background = new GridPane();
@@ -218,21 +193,17 @@ public class Gui extends Application {
         RowConstraints r1Exp = new RowConstraints();
         RowConstraints r2Exp = new RowConstraints();
         RowConstraints r3Exp = new RowConstraints();
-//        RowConstraints r4Exp = new RowConstraints();
         r1Exp.setMinHeight((networkDim - buttonsHeight) * 0.4);
         r1Exp.setMaxHeight((networkDim - buttonsHeight) * 0.4);
         r2Exp.setMinHeight((networkDim - buttonsHeight) * 0.2);
         r2Exp.setMaxHeight((networkDim - buttonsHeight) * 0.2);
         r3Exp.setMinHeight((networkDim - buttonsHeight) * 0.4);
         r3Exp.setMaxHeight((networkDim - buttonsHeight) * 0.4);
-//        r4Exp.setMinHeight((networkDim - buttonsHeight) * 0.1);
-//        r4Exp.setMaxHeight((networkDim - buttonsHeight) * 0.1);
         exploreBox.getColumnConstraints().add(colExp);
         exploreBox.getRowConstraints().addAll(r1Exp, r2Exp, r3Exp);
         Text titleExp = new Text("EXPLORE PACKETS' PATH!");
         StackPane titleExpPane = new StackPane(titleExp);
         titleExpPane.setAlignment(Pos.CENTER);
-//        titleExp.setTextAlignment(TextAlignment.CENTER);
         Text textSrc = new Text("Choose source");
         src = new ChoiceBox();
         VBox srcBox = new VBox(textSrc, src);
@@ -251,11 +222,6 @@ public class Gui extends Application {
         HBox bExpButtons = new HBox(bExpStart, bExpClean);
         bExpButtons.setAlignment(Pos.CENTER);
         bExpButtons.setSpacing(30);
-//        explorePath = new Text("");
-//        VBox expPathBox = new VBox(new Text("PATH"), explorePath);
-//        expPathBox.setAlignment(Pos.TOP_CENTER);
-//        expPathBox.setPadding(new Insets(HBoxPadding, 0, 0, 0));
-//        expPathBox.setSpacing(30);
         bExpClean.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
@@ -331,19 +297,11 @@ public class Gui extends Application {
                 network.connectionsAnchor.getChildren().add(new Link(xS,yS,xD,yD,Color.RED));
 
 
-//                explorePath.setText("GIVEN PATH");
-
 
             }
         });
         exploreBox.add(titleExpBox, 0, 0);
         exploreBox.add(bExpButtons, 0, 1);
-//        exploreBox.add(expPathBox, 0, 2);
-//        exploreBox.add(bExpStart, 0,3);
-//        exploreBox.add(p1, 0,0);
-//        exploreBox.add(p2, 0,1);
-//        exploreBox.add(p3, 0,2);
-//        exploreBox.add(p4, 0,3);
 
 
         /* NETWORK CONFIGURATION DIALOG WINDOW */
@@ -362,13 +320,7 @@ public class Gui extends Application {
 
 
         /* SCENE 0: start */
-//        HBox s0_Start_Box = new HBox();
         StackPane s0_Start_Backgroung = new StackPane(logoImage);
-//        Text s0_Start_Title = new Text("\u03C0Net");
-//        s0_Start_Box.getChildren().addAll(s0_Start_Title, logoImage);
-//        s0_Start_Box.setSpacing(10);
-//        s0_Start_Box.setAlignment(Pos.CENTER);
-//        s0_Start_Box.setPadding(new Insets(100,100,100,100));
         s0_Start_Backgroung.setMinHeight(windowHeight);
         s0_Start_Backgroung.setMaxHeight(windowHeight);
         s0_Start_Backgroung.setMinWidth(windowWidth);
@@ -380,13 +332,6 @@ public class Gui extends Application {
         network = new Network(networkDim, networkDim);
         s1_Background.add(network.netStack, 0, 0);
         s1_Background.add(configBox, 1, 0);
-
-
-        /* explore */
-//        rightSide.add(exploreBox,0,0);
-        /* specs */
-//        rightSide.add(specsBox, 0, 0); // internal grid
-
 
         /* init right side */
         rightSide.add(specsBox, 0, 0);
@@ -401,15 +346,15 @@ public class Gui extends Application {
 
 
         /* PRINT NETITEM */
-        for (int i : network.routerList.keySet()) {
-            System.out.println(network.routerList.get(i));
-        }
-        for (int i : network.switchList.keySet()) {
-            System.out.println(network.switchList.get(i));
-        }
-        for (int i = 0; i < network.hostList.size(); i++) {
-            System.out.println(network.hostList.get(i));
-        }
+//        for (int i : network.routerList.keySet()) {
+//            System.out.println(network.routerList.get(i));
+//        }
+//        for (int i : network.switchList.keySet()) {
+//            System.out.println(network.switchList.get(i));
+//        }
+//        for (int i = 0; i < network.hostList.size(); i++) {
+//            System.out.println(network.hostList.get(i));
+//        }
 
         basicPane.getChildren().add(s0_Start_Backgroung);
 
@@ -421,9 +366,7 @@ public class Gui extends Application {
         primaryStage.setMaxHeight(windowHeight);
         primaryStage.setMinWidth(windowWidth);
         primaryStage.setMaxWidth(windowWidth);
-//        System.out.println(layout.getHeight());
         primaryStage.setOnCloseRequest(event -> {
-            System.out.println("Stage is closing");
             System.exit(0);
         });
 
@@ -490,21 +433,6 @@ public class Gui extends Application {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // finto router - da sistempare per rendere api compliant
-//        Router r0 = new Router(99);
-//        Router r1 = new Router(98);
-//        List<Router> l = new ArrayList<>();
-//        l.add(r0);
-//        l.add(r1);
-
-//        try {
-//            network.routerList.clear();
-//            for(Router r : l){
-//                network.routerList.put(r.getIdR(), r); // sistemare come prende la chiave
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
 
         /* SET ROUTERS */
         for (int i : network.routerList.keySet()) {
@@ -525,11 +453,6 @@ public class Gui extends Application {
                             str.append("\t" + p.toStringRouter() + "\n");
                         }
 
-                        /* test scroll */
-//                    for (Port p: network.switchList.get(finalI).getPorts()) {
-//                        str.append("\t"+p.toString()+"\n");
-//                    }
-
                         field3.setText(str.toString());
                         specs.getChildren().addAll(field0, field1, field2, field3);
                         /* retrieve iptable */
@@ -537,7 +460,6 @@ public class Gui extends Application {
                         List<TableEntrySwitch> l = new ArrayList<>();
                         try {
                             for (TableEntryRouter e : Arrays.asList(RestAPI.getIPTable(network.routerList.get(finalI).getDpid()))) {
-//                                System.out.println(e);
                                 ip.append(e);
                                 ip.append("\n\n");
                             }
@@ -570,11 +492,6 @@ public class Gui extends Application {
                             str.append("\t" + p.toString() + "\n");
                         }
 
-                        /* test scroll */
-//                    for (Port p: network.switchList.get(finalI).getPorts()) {
-//                        str.append("\t"+p.toString()+"\n");
-//                    }
-
                         field3.setText(str.toString());
                         specs.getChildren().addAll(field0, field1, field2, field3);
 
@@ -583,7 +500,6 @@ public class Gui extends Application {
                         List<TableEntrySwitch> l = new ArrayList<>();
                         try {
                             for (TableEntrySwitch e : Arrays.asList(RestAPI.getMacTable(network.switchList.get(finalI).getDpid()))) {
-//                                System.out.println(e);
                                 mac.append("\t");
                                 mac.append(e);
                                 mac.append("\n\n");
@@ -619,7 +535,7 @@ public class Gui extends Application {
                         if (network.hostList.get(finalI).getIpv4().size() == 0) {
                             str = new StringBuilder("IPv4:");
                         } else {
-                            str = new StringBuilder("IPV4:\n");
+                            str = new StringBuilder("IPv4:\n");
                             for (String p : network.hostList.get(finalI).getIpv4()) {
                                 str.append("\t" + p + "\n");
                             }
@@ -632,7 +548,7 @@ public class Gui extends Application {
                             str = new StringBuilder("IPv6:\n");
                             for (String p : network.hostList.get(finalI).getIpv6()) {
                                 if (p.equals("::")) {
-                                    continue;
+                                    // continue
                                 } else {
                                     str.append("\t" + p + "\n");
                                 }
@@ -678,7 +594,7 @@ public class Gui extends Application {
                 } else {
                     // HERE: src=switch dst=router
                     // ignore link
-                    continue;
+                    // continue
                 }
             } else {
                 // HERE src=switch dst=switch
@@ -686,15 +602,6 @@ public class Gui extends Application {
             }
         }
 
-//        /*TEST AGGIUNGO DEI LINK*/
-//        network.routerList.get(99).addRouterLink(network.routerList.get((Integer) 98));
-//        network.routerList.get(99).addSwitchLink(network.switchList.get((Integer) 1));
-//        network.routerList.get(98).addSwitchLink(network.switchList.get((Integer) 2));
-//        network.routerList.get(98).addSwitchLink(network.switchList.get((Integer) 3));
-//        network.routerList.get(99).addSwitchLink(network.switchList.get((Integer) 4));
-//        network.routerList.get(99).addSwitchLink(network.switchList.get((Integer) 5));
-//        network.routerList.get(98).addSwitchLink(network.switchList.get((Integer) 6));
-//        network.routerList.get(98).addSwitchLink(network.switchList.get((Integer) 7));
         /* ALL LINKS ARE PROCESSED */
 
 
@@ -716,13 +623,11 @@ public class Gui extends Application {
         field0.setText("Click on an item to show its statistics!");
         tableText.setText("");
         specs.getChildren().add(field0);
-        // reset table
     }
 
     private void resetExplore() {
         src.getItems().clear();
         dst.getItems().clear();
-//        explorePath.setText("");
         src.setDisable(false);
         dst.setDisable(true);
         bExpStart.setDisable(true);
@@ -782,7 +687,7 @@ public class Gui extends Application {
     }
 
     static public void receiveUpdate() {
-        System.out.println("Update receive\n");
+//        System.out.println("Update receive\n");
         Stage refreshStage = new Stage();
         Text text = new Text("Network has been modified!\nUpdate now!");
         text.setTextAlignment(TextAlignment.CENTER);
@@ -820,7 +725,6 @@ public class Gui extends Application {
         }
 
         String fileContent = contentBuilder.toString();
-        System.out.println(fileContent);
         return fileContent;
     }
 
