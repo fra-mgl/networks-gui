@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Host extends NetItem{
 
-    static final Image icon = new Image("/media/host_edit.png");
+    static final Image icon = new Image("/base/images/host_edit.png");
 
     @Expose
     private String mac;
@@ -24,39 +24,18 @@ public class Host extends NetItem{
 
     public Host() {
         super(icon);
-//        System.out.println("Host " + this.getName() + " created.");
         ipv4 = new ArrayList<>();
         ipv6 = new ArrayList<>();
     }
 
-//    @Override
-//    public String toString() {
-//        StringBuilder out = new StringBuilder("Host{\n" +
-//                " mac='" + mac + '\'' +
-//                " switch='" + switch_l + '\'' +
-//                ",\n portArray= " + port +"\n");
-//        out.append("ipv4=\n");
-//        for(int i = 0; i < ipv4.size(); i++){
-//            out.append("\t").append(ipv4.get(i)).append("\n");
-//        }
-//        out.append("ipv6=\n");
-//        for(int i = 0; i < ipv6.size(); i++){
-//            out.append("\t").append(ipv6.get(i)).append("\n");
-//        }
-//        out.append("}");
-//        return out.toString();
-//    }
-
 
     @Override
     public String toString() {
-//        return ipv4.get(0);
         try{
             return ipv4.get(0);
         }catch(IndexOutOfBoundsException e){
             return null;
         }
-        //return mac;
     }
 
     public void setSwitch(){

@@ -26,17 +26,11 @@ public class Network {
     private double centerX;
     private double centerY;
 
-
-    // serve avere una collection di ogni elemento?
-    // sì se facciamo dispay delle singole info
-    // o anche no, gestiamo sull'immagine che accede direttamente alle properties dell'elemento
-
     public List<Host> hostList;
     public Map<Integer,Switch> switchList;
     public Map<Integer,Router> routerList;
     public List<LinkJson> linkJsonList;
     public List<Link> linkList;
-//    public List<NotHost> notHostList;
 
 
     public Network(double w, double h) {
@@ -49,7 +43,6 @@ public class Network {
         itemsAnchor = new AnchorPane();
         netStack.getChildren().addAll(graphAnchor, connectionsAnchor, itemsAnchor);
 
-//        hostRadius = width/2.0 - graphPadding;
         circleRadius = width / 2.0;
         graphStage = new Circle(circleRadius, Color.CADETBLUE);
         /* reduce a bit hostRadius to let hosts to be inside the circle */
@@ -65,7 +58,6 @@ public class Network {
 
         this.centerX = graphStage.getCenterX();
         this.centerY = graphStage.getCenterY();
-//        graphAnchor.getChildren().add(graphStage);
         graphAnchor.getChildren().addAll(graphStage, tmpCenter);
         AnchorPane.setTopAnchor(graphStage, graphStage.getCenterY() - graphStage.getRadius());
         AnchorPane.setLeftAnchor(graphStage, graphStage.getCenterX() - graphStage.getRadius());
@@ -75,12 +67,7 @@ public class Network {
         routerList = new TreeMap<>();
         linkList = new ArrayList<>();
         linkJsonList = new ArrayList<>();
-//        notHostList = new ArrayList<>();
 
-        System.out.println("W+H: " + width + " " + height);
-        System.out.println("CX+CY: " + centerX + " " + centerY);
-        System.out.println("Switch radius: " + switchRadius);
-        System.out.println("Host radius: " + hostRadius);
     }
 
 
@@ -104,6 +91,7 @@ public class Network {
         Router tmpRouter;
         int counter = 0;
 
+        /* fakeRouter is needed when the topology does not include any */
         boolean fakeRouter = false;
         if (routerList.size() == 0){
             fakeRouter = true;
@@ -199,9 +187,6 @@ public class Network {
 
 
 class Link extends Line{
-
-    private NetItem source;
-    private Network destination;
     private double anchorX;
     private double anchorY;
 

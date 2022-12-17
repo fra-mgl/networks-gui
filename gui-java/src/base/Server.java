@@ -31,7 +31,7 @@ public class Server
             ex.printStackTrace();
             return false;
         }
-        System.out.println("Server creato con successo!");
+//        System.out.println("Server creato con successo!");
         return true;
     }
 
@@ -41,21 +41,18 @@ public class Server
         {
             Sem.tWait();
             try {
-//                System.out.println("Server acquired");
-//                System.out.println("Server in attesa di richieste...");
+                /* waiting a new client connection */
                 Socket clientSocket = server.accept();
-//                System.out.println("Un client si e' connesso...");
+
+                /* new connection activated */
                 BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
                 out.write(OUTPUT_HEADERS + OUTPUT.length() + OUTPUT_END_OF_HEADERS + OUTPUT);
                 out.flush();
                 out.close();
                 clientSocket.close();
-//                    TimeUnit.SECONDS.sleep(5);
-//                System.out.println("Chiusura connessione effettuata");
+                /*connection closed */
             } catch (IOException e) {
                 e.printStackTrace();
-//                } catch (InterruptedException e) {
-//                    throw new RuntimeException(e);
             }
             Sem.sPost();
         }
@@ -63,6 +60,7 @@ public class Server
 }
 
 class Sem {
+    /* implemented to synchronize server and refresh request */
     static private Semaphore s = new Semaphore(0);;
     static private Semaphore t= new Semaphore(1);;
 
@@ -75,7 +73,7 @@ class Sem {
             s.acquire();
         } catch (InterruptedException e){
             e.printStackTrace();
-            System.err.println("Error");
+            System.err.println("sWait - Error");
         }
     }
 
@@ -88,7 +86,7 @@ class Sem {
             t.acquire();
         } catch (InterruptedException e){
             e.printStackTrace();
-            System.err.println("Error");
+            System.err.println("tWait - Error");
         }
     }
 
