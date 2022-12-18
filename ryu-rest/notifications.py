@@ -31,20 +31,26 @@ class NotificationsController(ControllerBase):
         ip_addresses = HTTPClient.get(IP_ADDRESSES_ENDPOINT, None)
         ip_tables = HTTPClient.get(IP_TABLES_ENDPOINT, None)
 
+        # First datapaths are registered and their ports are 
+        # assigned with ip addresses
         for dpid in ip_addresses:
             # The switch is registered as a L3 switch
             dp_ips = ip_addresses[dpid]
+            datapath = self.app.not_configured_datapaths[int(dpid)]
+            self.app.l3_controller.register_datapath(datapath, dp_ips)
+
+        # Then their routing tables are populated
+        for dpid in ip_addresses:
             dp_ip_table = ip_tables[dpid]
             datapath = self.app.not_configured_datapaths[int(dpid)]
-            self.app.l3_controller.register_datapath(
-            datapath, dp_ips, dp_ip_table)
+            self.app.l3_controller.set_routing_rules(datapath, dp_ip_table)
             del self.app.not_configured_datapaths[int(dpid)]
 
         # switches that did not get ip addresses assigned are
         # configured as L3 switches
         for dpid in self.app.not_configured_datapaths:
-                datapath = self.app.not_configured_datapaths[dpid]
-                self.app.l2_controller.register_datapath(datapath)
+            datapath = self.app.not_configured_datapaths[dpid]
+            self.app.l2_controller.register_datapath(datapath)
             
         self.app.not_configured_datapaths = None
         self.app.configured = True
