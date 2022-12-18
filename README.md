@@ -54,15 +54,15 @@ After that, at some point, a pop-up will appear in the app, asking you to refres
 ## Endpoints
 All the endpoints implemented as Ryu-based RestAPI:
 
+### Endpoints:
+
 * `/topology/l2switches`: list of all layer 2 OF switches.
-* `/topology/l2switches/{datapath_id}`: information about a specific layer 2 switch.
 * `/topology/l3switches`: list of all layer 3 OF switches.
-* `/topology/l3switches/{datapath_id}`: information about a specific layer 3 switch.
-* `/topology/hosts`: list of all hosts connected to the network.
-* `/topology/hosts/{datapath_id}`: list of all hosts connected to an OF switch.
-* `/topology/links/{datapath_id}`: information about links related to a specific OF switch.
+* `/topology/hosts`: list of all host connected to the network.
+* `/topology/links`: list of all links between OF switches.
 * `/mactable/{datapath_id}`: mac table of a layer 2 OF switch.
 * `/iptable/{datapath_id}`: ip routing table of a layer 3 OF switch
+* `/explore/{src_ip}/{dst_ip}`: list of OF switches that are part of the path from the source host to the destination host.
 
 ---
 
