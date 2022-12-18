@@ -1,7 +1,0 @@
-py net.addHost('H6')
-py net.addLink(S5, net.get('H6'), intfName1='S5-eth2', intfName2='H6-eth0')
-py S5.attach('S5-eth2')
-py net.get('H6').setIP('10.0.5.2')
-py net.get('H6').cmd('ifconfig H6-eth0 10.0.5.2 netmask 255.255.255.0')
-py net.get('H6').cmd('ifconfig H6-eth0 up')
-py net.get('H6').cmd('ip route add default via 10.0.5.254 dev H6-eth0')
