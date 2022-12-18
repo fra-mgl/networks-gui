@@ -138,9 +138,9 @@ func configureNetwork(dbConn *database.DbConn) func(*gin.Context) {
 		} else {
 			// A goroutine is spawned to build the ip tables for the switches
 			// and notify Ryu of the available L3 configuration
-			go func() {
-				l3configGoRoutine(dbConn)
-			}()
+			if err := l3config(dbConn); err != nil {
+				c.AbortWithError(500, err)
+			}
 
 			c.AbortWithStatus(http.StatusOK)
 		}
@@ -152,7 +152,7 @@ func configureNetwork(dbConn *database.DbConn) func(*gin.Context) {
 // among routers in the network, then it computes the routing tables and notifies
 // the controller
 
-func l3configGoRoutine(dbConn *database.DbConn) {
+func l3config(dbConn *database.DbConn) error {
 	// Simple struct that represent the expected json format
 	type portData struct {
 		DpId   string `json:"dpid" binding:"required"`
@@ -165,15 +165,15 @@ func l3configGoRoutine(dbConn *database.DbConn) {
 	httpClient := http.Client{Timeout: time.Duration(1) * time.Second}
 	res, err := httpClient.Get(RYU_LINKS_ENDPOINT)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	response, err := io.ReadAll(res.Body)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	jsonBody := make([]map[string]portData, 0)
 	if err = json.Unmarshal(response, &jsonBody); err != nil {
-		panic(err)
+		return err
 	}
 	
 	// The database records are built
@@ -181,19 +181,19 @@ func l3configGoRoutine(dbConn *database.DbConn) {
 	for _, item := range jsonBody {
 		srcDpID, err := netconf.HexStrToInt(item["src"].DpId)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		srcPort, err := netconf.HexStrToInt(item["src"].PortNo)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		dstDpID, err := netconf.HexStrToInt(item["dst"].DpId)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		dstPort, err := netconf.HexStrToInt(item["dst"].PortNo)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		newLink := database.Link{
@@ -205,16 +205,17 @@ func l3configGoRoutine(dbConn *database.DbConn) {
 		links = append(links, newLink)
 	}
 	if err = dbConn.SaveLinks(links); err != nil {
-		panic(err)
+		return err
 	}
 
 	// Now build the ip routing tables, and then notify the Ryu controller
 	err = dbConn.BuildIpTables()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	_, err = httpClient.Get(RYU_NOTIFICATION_ENDPOINT)
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
