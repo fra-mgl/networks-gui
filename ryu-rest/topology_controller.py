@@ -61,8 +61,8 @@ class TopologyController(ControllerBase):
         if not self.app.configured:
             return Response(content_type='application/json', body=json.dumps({}))
         try:
-            dpid = int(kwargs['dpid'])
-        except ValueError:
+            dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
+        except KeyError:
             return Response(status=400)
 
         if dpid not in self.app.l2_controller.datapaths:
@@ -79,8 +79,8 @@ class TopologyController(ControllerBase):
         if not self.app.configured:
             return Response(content_type='application/json', body=json.dumps({}))
         try:
-            dpid = int(kwargs['dpid'])
-        except ValueError:
+            dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
+        except KeyError:
             return Response(status=400)
 
         if dpid not in self.app.l3_controller.datapaths:

@@ -22,7 +22,7 @@ class L3Controller:
     def packet_buffers(self, dpid):
         return self.datapaths[dpid]['packet_buffers']
 
-    def register_datapath(self, datapath, ip_addresses, ip_table):
+    def register_datapath(self, datapath, ip_addresses):
         # For each known datapath, the controller keeps a data structure
         # with relevant information
         self.datapaths[datapath.id] = {
@@ -37,6 +37,7 @@ class L3Controller:
                 ip = ip_addresses[str(port.port_no)]
                 self.datapaths[datapath.id]['ports'][port.port_no] = Port(port.hw_addr, ip)
 
+    def set_routing_rules(self, datapath, ip_table):
         # Initialize datapath ip table
         _ip_table = IpTable()
         for destination, route in ip_table.items():
@@ -49,19 +50,18 @@ class L3Controller:
                 nw_addr, netmask = destination.split('/')
                 src_port = self.ports(datapath.id)[route['src_port_no']]
                 src_mac = src_port.mac
-                dst_mac = self.ports(datapath.id)[route['dst_port_no']].mac
+                dst_mac = self.ports(route['dst_dpid'])[route['dst_port_no']].mac
 
                 parser = datapath.ofproto_parser
                 match = parser.OFPMatch(eth_type=ether_types.ETH_TYPE_IP,
                                         ipv4_dst=(nw_addr, netmask_to_str(int(netmask))))
                 actions = []
                 actions.append(parser.OFPActionSetField(eth_src=src_mac))
-                actions.append(parser.OFPActionSetField(eth_dst=dst_mac))
+                actions.append(parser.OFPActionSetField(eth_dst=src_mac))
                 actions.append(parser.OFPActionOutput(route['src_port_no'], 0))
                 add_flow(datapath, 1, match, actions)
 
         self.datapaths[datapath.id]['ip_table'] = _ip_table
-
 
     def buffer_packet(self, dpid, ip, packet):
         # The packet is added in its queue. If there is no
