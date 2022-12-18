@@ -116,27 +116,47 @@ public class Network {
             }
 
             /* for each router, check linked switch and compute coords */
-            startBeta = iRouterAngle - deltaRouterAlpha/2.0; // set in the middle
-            deltaSwitchBeta = deltaRouterAlpha / (tmpRouter.getSwitchLinkNumber()*2);
-            for(int j = 0; j < tmpRouter.getSwitchLinkNumber(); j++){
-                tmpSwitch = tmpRouter.getSwitchFromLink(j);
-                jSwitchAngle = startBeta + ((2*j)+1) * deltaSwitchBeta;
-                tmpSwitch.setAngle(jSwitchAngle);
-                tmpSwitch.computeCoords(jSwitchAngle, switchRadius, centerX, centerY);
-                if(!fakeRouter) {
-                    linkList.add(new Link(tmpRouter.getCenterX(), tmpRouter.getCenterY(), tmpSwitch.getCenterX(), tmpSwitch.getCenterY()));
+            // a router is link at most to 1 switch
+            if(tmpRouter.getSwitchLinkNumber() == 1){
+                Switch tmpSwitchRoot = tmpRouter.getSwitchFromLink(0);
+                List<Switch> switchesPerRouter = new ArrayList<>();
+                switchesPerRouter.add(tmpSwitchRoot); // index:0
+                switchesPerRouter.addAll(tmpSwitchRoot.switchLinkList);
+                for (Switch s: switchList.values()) {
+                    if(s.switchLinkList.contains(tmpSwitchRoot)){
+                        switchesPerRouter.add(s);
+                    }
                 }
-                /* now this switch is linked to hosts - let's compute all coords and links */
-                startGamma = jSwitchAngle - deltaSwitchBeta; // set in the middle
-                deltaHostGamma = deltaSwitchBeta / (tmpSwitch.getHostLinkNumber());
-                for(int k = 0; k < tmpSwitch.getHostLinkNumber(); k++){
-                    tmpHost = tmpSwitch.getHostFromLink(k);
-                    kHostAngle = startGamma + ((2*k)+1) * deltaHostGamma;
-                    tmpHost.setAngle(kHostAngle);
-                    tmpHost.computeCoords(kHostAngle, hostRadius, centerX, centerY);
-                    linkList.add(new Link(tmpSwitch.getCenterX(), tmpSwitch.getCenterY(), tmpHost.getCenterX(), tmpHost.getCenterY()));
+                // all these switches are in this router's subnet
+                startBeta = iRouterAngle - deltaRouterAlpha/2.0; // set in the middle
+                deltaSwitchBeta = deltaRouterAlpha / (switchesPerRouter.size()*2);
+                // switch tmpSwitch to place it at index = size/2 -> to enhance graphical representation
+                int middleIndex = switchesPerRouter.size() / 2;
+                switchesPerRouter.set(0, switchesPerRouter.get(middleIndex));
+                switchesPerRouter.set(middleIndex, tmpSwitchRoot);
+                for(int j = 0; j < switchesPerRouter.size(); j++){
+                    tmpSwitch = switchesPerRouter.get(j);
+                    jSwitchAngle = startBeta + ((2*j)+1) * deltaSwitchBeta;
+                    tmpSwitch.setAngle(jSwitchAngle);
+                    tmpSwitch.computeCoords(jSwitchAngle, switchRadius, centerX, centerY);
+                    if(!fakeRouter && tmpSwitch.equals(tmpSwitchRoot)) {
+                        linkList.add(new Link(tmpRouter.getCenterX(), tmpRouter.getCenterY(), tmpSwitch.getCenterX(), tmpSwitch.getCenterY()));
+                    }
+                    /* now this switch is linked to hosts - let's compute all coords and links */
+                    startGamma = jSwitchAngle - deltaSwitchBeta; // set in the middle
+                    deltaHostGamma = deltaSwitchBeta / (tmpSwitch.getHostLinkNumber());
+                    for(int k = 0; k < tmpSwitch.getHostLinkNumber(); k++){
+                        tmpHost = tmpSwitch.getHostFromLink(k);
+                        kHostAngle = startGamma + ((2*k)+1) * deltaHostGamma;
+                        tmpHost.setAngle(kHostAngle);
+                        tmpHost.computeCoords(kHostAngle, hostRadius, centerX, centerY);
+                        linkList.add(new Link(tmpSwitch.getCenterX(), tmpSwitch.getCenterY(), tmpHost.getCenterX(), tmpHost.getCenterY()));
+                    }
                 }
             }
+
+
+
         }
 
         /*now we can compute links between routers - because their coords are already set*/
