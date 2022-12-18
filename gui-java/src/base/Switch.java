@@ -17,7 +17,7 @@ public class Switch extends NetItem{
     static final Image icon = new Image("/base/images/switch_edit.png");
 
     private List<Host> hostLinkList;
-    private List<Switch> switchLinkList;
+    public List<Switch> switchLinkList;
 
 
     public Switch() {

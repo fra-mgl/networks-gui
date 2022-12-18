@@ -142,6 +142,8 @@ public class RestAPI {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if(response.statusCode() != 200){
                 System.err.println("EXC - RestAPI(postNetConf) - ERROR: not 200");
+                System.err.println(response.statusCode());
+                System.err.println(response.body());
                 throw new Exception("Error - not 200");
             }
             return response.statusCode();

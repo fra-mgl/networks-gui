@@ -341,20 +341,8 @@ public class Gui extends Application {
         bExplore.setDisable(false);
 
         /* NETWORK INITIALIZATION */
-        refreshNetwork();
+        initNetwork();
 
-
-
-        /* PRINT NETITEM */
-//        for (int i : network.routerList.keySet()) {
-//            System.out.println(network.routerList.get(i));
-//        }
-//        for (int i : network.switchList.keySet()) {
-//            System.out.println(network.switchList.get(i));
-//        }
-//        for (int i = 0; i < network.hostList.size(); i++) {
-//            System.out.println(network.hostList.get(i));
-//        }
 
         basicPane.getChildren().add(s0_Start_Backgroung);
 
@@ -408,7 +396,7 @@ public class Gui extends Application {
         launch(args);
     }
 
-    public void refreshNetwork() {
+    public void initNetwork() {
 
         /* ADD ITEMS IN NETWORK */
         try {
@@ -604,9 +592,21 @@ public class Gui extends Application {
 
         /* ALL LINKS ARE PROCESSED */
 
+        /* PRINT NETITEM */
+//        for (int i : network.routerList.keySet()) {
+//            System.out.println(network.routerList.get(i));
+//        }
+//        for (int i : network.switchList.keySet()) {
+//            System.out.println(network.switchList.get(i));
+//        }
+//        for (int i = 0; i < network.hostList.size(); i++) {
+//            System.out.println(network.hostList.get(i));
+//        }
+    }
 
+    public void refreshNetwork(){
+        this.initNetwork();
         network.displayAlgorithm();
-
     }
 
     private void refreshWindow(){
