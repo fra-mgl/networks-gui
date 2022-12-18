@@ -49,7 +49,9 @@ py net.get('H6').cmd('ip route add default via 10.0.5.254 dev H6-eth0')
 
 After that, at some point, a pop-up will appear in the app, asking you to refresh network data.
 
-### Endpoints
+---
+
+## Endpoints
 All the endpoints implemented as Ryu-based RestAPI:
 
 * `/topology/l2switches`: list of all layer 2 OF switches.
