@@ -60,8 +60,8 @@ def deployNetwork():
 
     # connections switches-gateway and gateway-R4
     net.addLink(s1, r1, intfName1='S1-eth2', intfName2='R1-eth0')
-    net.addLink(s2, r1, intfName1='S2-eth1', intfName2='R1-eth1')
-    net.addLink(r1, r4, intfName1='R1-eth2', intfName2='R4-eth0')
+    net.addLink(s2, s1, intfName1='S2-eth1', intfName2='S1-eth3')
+    net.addLink(r1, r4, intfName1='R1-eth3', intfName2='R4-eth0')
 
     # SECOND SUBNETWORK
     net.addLink(h4, s3, intfName1='H4-eth0', intfName2='S3-eth0')
@@ -74,9 +74,9 @@ def deployNetwork():
 
     # connections switches-gateway and gateway-R4
     net.addLink(s3, r2, intfName1='S3-eth2', intfName2='R2-eth0')
-    net.addLink(s4, r2, intfName1='S4-eth1', intfName2='R2-eth1')
-    net.addLink(s5, r2, intfName1='S5-eth2', intfName2='R2-eth2')
-    net.addLink(r2, r4, intfName1='R2-eth3', intfName2='R4-eth1')
+    net.addLink(s4, s3, intfName1='S4-eth1', intfName2='S3-eth3')
+    net.addLink(s5, s3, intfName1='S5-eth2', intfName2='S3-eth4')
+    net.addLink(r2, r4, intfName1='R2-eth1', intfName2='R4-eth1')
 
     # THIRD SUBNETWORK
     net.addLink(h9, s6, intfName1='H9-eth0', intfName2='S6-eth0')
