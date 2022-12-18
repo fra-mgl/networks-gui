@@ -14,7 +14,7 @@ sudo python3 topology.py
 where `topology.py` is the example you chose.\
 Your password may be required (Mininet needs `sudo` privilegies to run).
 
-### Doker compose
+### Docker compose
 
 A docker compose manages all backend containers. To run it, issue this command:
 ```
