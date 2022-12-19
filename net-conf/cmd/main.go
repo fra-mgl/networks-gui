@@ -13,8 +13,8 @@ import (
 )
 
 const PORT = "4000"
-const RYU_LINKS_ENDPOINT = "http://ryu:8080/topology/links"
-const RYU_NOTIFICATION_ENDPOINT = "http://ryu:8080/notification"
+const RYU_LINKS_ENDPOINT = "http://localhost:8080/topology/links"
+const RYU_NOTIFICATION_ENDPOINT = "http://localhost:8080/notification"
 
 func main() {
 	// Get a database connection

@@ -8,10 +8,10 @@ from ryu.app.wsgi import route
 from ryu.topology.api import get_host
 
 NOTIFICATION_CONSUMER_ENDPOINT = ('127.0.0.1', 8000)
-NETCONF_BACKEND_URL = 'http://net-conf:4000/'
+NETCONF_BACKEND_URL = 'http://localhost:4000/'
 IP_ADDRESSES_ENDPOINT = NETCONF_BACKEND_URL + 'allDataPathIps'
 IP_TABLES_ENDPOINT = NETCONF_BACKEND_URL + 'allIpTables'
-CLIENT_GUI_URL = 'http://172.17.0.1:7777'  # docker0 IP address
+CLIENT_GUI_URL = 'http://localhost:7777'  # docker0 IP address
 
 # Controller that exposes an endpoint to allow the main
 # controller to receive notifications from the network
@@ -61,7 +61,7 @@ class NotificationsController(ControllerBase):
 
 def topology_watcher_thread(app):
 
-    # Every 7 seconds the hosts checks if some host have left the network
+    # Every 5 seconds the hosts checks if some host have left the network
     # or some have entered the network. If that's the case it sends a GET
     # request to the client GUI
 
@@ -70,7 +70,7 @@ def topology_watcher_thread(app):
 
         hosts_mac = {host.to_dict()['mac'] for host in get_host(app)}
         while True:
-            hub.sleep(7)
+            hub.sleep(5)
             current_hosts_mac = {host.to_dict()['mac'] for host in get_host(app)}
             if hosts_mac != hosts_mac.union(current_hosts_mac):
                 try:

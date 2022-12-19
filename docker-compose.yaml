@@ -10,23 +10,23 @@ services:
       - '5432:5432'
     volumes:
       - db:/var/lib/postgresql/data
+    network_mode: "host"
   net-conf:
     build: ./net-conf
     depends_on:
       - postgres
     environment:
-      - POSTGRES_HOST=postgres
+      - POSTGRES_HOST=localhost
       - POSTGRES_PORT=5432
       - POSTGRES_DB=net-conf
       - POSTGRES_USER=net-conf
       - POSTGRES_PASSWORD=dumb-password
-    links:
-      - postgres
     restart: always
     command: ./main
     ports:
       - "4000:4000"
     entrypoint: /main
+    network_mode: "host"
   ryu:
     build: ./ryu-rest
     ports:
@@ -34,6 +34,7 @@ services:
       - 8080:8080
     expose:
       - 7777
+    network_mode: "host"
 volumes:
   db:
     driver: local
