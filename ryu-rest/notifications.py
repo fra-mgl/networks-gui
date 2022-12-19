@@ -74,7 +74,7 @@ def topology_watcher_thread(app):
             current_hosts_mac = {host.to_dict()['mac'] for host in get_host(app)}
             if hosts_mac != hosts_mac.union(current_hosts_mac):
                 try:
-                    HTTPClient.get(CLIENT_GUI_URL, None)
+                    requests.get(url=CLIENT_GUI_URL)
                 except requests.exceptions.ConnectionError:
                     # The client is not connected
                     pass
