@@ -55,7 +55,7 @@ public class Router extends NetItem{
     public void setName(){
         try{
             int number = Integer.parseInt(dpid, 16);
-            this.name = "r"+number;
+            this.name = "R"+number;
         }
         catch (NumberFormatException ex){
             ex.printStackTrace();
