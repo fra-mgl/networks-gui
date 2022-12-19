@@ -18,8 +18,8 @@ def deployNetwork():
     r2.start( [c1] )
 
     # 2 switches
-    s1 = net.addSwitch('S1', dpid="0000000000000003")
-    s2 = net.addSwitch('S2', dpid="0000000000000004")
+    s1 = net.addSwitch('S3', dpid="0000000000000003")
+    s2 = net.addSwitch('S4', dpid="0000000000000004")
 
     s1.start( [c1] )
     s2.start( [c1] )
@@ -33,16 +33,16 @@ def deployNetwork():
     # network nodes are linked together
 
     # first subnetwork
-    net.addLink(h1, s1, intfName1='H1-eth0', intfName2='S1-eth0')
-    net.addLink(h2, s1, intfName1='H2-eth0', intfName2='S1-eth1')
+    net.addLink(h1, s1, intfName1='H1-eth0', intfName2='S3-eth0')
+    net.addLink(h2, s1, intfName1='H2-eth0', intfName2='S3-eth1')
     # THIS LINK IS ASSIGNED TO PORT 1 OF R1
-    net.addLink(s1, r1, intfName1='S1-eth2', intfName2='R1-eth0')
+    net.addLink(s1, r1, intfName1='S3-eth2', intfName2='R1-eth0')
 
     # second subnetwork
-    net.addLink(h3, s2, intfName1='H3-eth0', intfName2='S2-eth0')
-    net.addLink(h4, s2, intfName1='H4-eth0', intfName2='S2-eth1')
+    net.addLink(h3, s2, intfName1='H3-eth0', intfName2='S4-eth0')
+    net.addLink(h4, s2, intfName1='H4-eth0', intfName2='S4-eth1')
     # THIS LINK IS ASSIGNED TO PORT 1 OF R1
-    net.addLink(s2, r2, intfName1='S2-eth2', intfName2='R2-eth0')
+    net.addLink(s2, r2, intfName1='S4-eth2', intfName2='R2-eth0')
 
     # THIS LINK IS ASSIGNED TO PORT 2, FOR BOTH R1 AND R2
     net.addLink(r1, r2, intfName1='R1-eth1', intfName2='R2-eth1')

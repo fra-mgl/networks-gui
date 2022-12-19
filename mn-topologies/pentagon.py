@@ -24,11 +24,11 @@ def deployNetwork():
     r5.start( [c1] )
     
     # 5 switches
-    s1 = net.addSwitch('S1', dpid="0000000000000006")
-    s2 = net.addSwitch('S2', dpid="0000000000000007")
-    s3 = net.addSwitch('S3', dpid="0000000000000008")
-    s4 = net.addSwitch('S4', dpid="0000000000000009")
-    s5 = net.addSwitch('S5', dpid="000000000000000A")
+    s1 = net.addSwitch('S6', dpid="0000000000000006")
+    s2 = net.addSwitch('S7', dpid="0000000000000007")
+    s3 = net.addSwitch('S8', dpid="0000000000000008")
+    s4 = net.addSwitch('S9', dpid="0000000000000009")
+    s5 = net.addSwitch('S10', dpid="000000000000000A")
 
     s1.start( [c1] )
     s2.start( [c1] )
@@ -45,20 +45,20 @@ def deployNetwork():
 
     # network nodes are linked together
 
-    net.addLink(h1, s1, intfName1='H1-eth0', intfName2='S1-eth0')
-    net.addLink(s1, r1, intfName1='S1-eth1', intfName2='R1-eth0')
+    net.addLink(h1, s1, intfName1='H1-eth0', intfName2='S6-eth0')
+    net.addLink(s1, r1, intfName1='S6-eth1', intfName2='R1-eth0')
 
-    net.addLink(h2, s2, intfName1='H2-eth0', intfName2='S2-eth0')
-    net.addLink(s2, r2, intfName1='S2-eth1', intfName2='R2-eth0')
+    net.addLink(h2, s2, intfName1='H2-eth0', intfName2='S7-eth0')
+    net.addLink(s2, r2, intfName1='S7-eth1', intfName2='R2-eth0')
 
-    net.addLink(h3, s3, intfName1='H3-eth0', intfName2='S3-eth0')
-    net.addLink(s3, r3, intfName1='S3-eth1', intfName2='R3-eth0')
+    net.addLink(h3, s3, intfName1='H3-eth0', intfName2='S8-eth0')
+    net.addLink(s3, r3, intfName1='S8-eth1', intfName2='R3-eth0')
 
-    net.addLink(h4, s4, intfName1='H4-eth0', intfName2='S4-eth0')
-    net.addLink(s4, r4, intfName1='S4-eth1', intfName2='R4-eth0')
+    net.addLink(h4, s4, intfName1='H4-eth0', intfName2='S9-eth0')
+    net.addLink(s4, r4, intfName1='S9-eth1', intfName2='R4-eth0')
 
-    net.addLink(h5, s5, intfName1='H5-eth0', intfName2='S5-eth0')
-    net.addLink(s5, r5, intfName1='S5-eth1', intfName2='R5-eth0')
+    net.addLink(h5, s5, intfName1='H5-eth0', intfName2='S10-eth0')
+    net.addLink(s5, r5, intfName1='S10-eth1', intfName2='R5-eth0')
     
     net.addLink(r5, r4, intfName1='R5-eth1', intfName2='R4-eth1')
     net.addLink(r4, r3, intfName1='R4-eth2', intfName2='R3-eth1')
