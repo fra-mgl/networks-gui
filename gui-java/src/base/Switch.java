@@ -79,7 +79,7 @@ public class Switch extends NetItem{
     public void setName(){
         try{
             int number = Integer.parseInt(dpid, 16);
-            this.name = "s"+number;
+            this.name = "S"+number;
         }
         catch (NumberFormatException ex){
             ex.printStackTrace();
