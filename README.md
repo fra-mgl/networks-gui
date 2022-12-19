@@ -20,7 +20,7 @@ A docker compose manages all backend containers. To run it, issue this command:
 ```
 docker compose run --build
 ```
-
+You need Docker and Docker Compose installed on your host (click [here](https://www.docker.com) to get more info).
 
 ### Graphical interface
 
