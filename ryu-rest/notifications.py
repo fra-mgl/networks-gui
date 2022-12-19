@@ -11,7 +11,7 @@ NOTIFICATION_CONSUMER_ENDPOINT = ('127.0.0.1', 8000)
 NETCONF_BACKEND_URL = 'http://net-conf:4000/'
 IP_ADDRESSES_ENDPOINT = NETCONF_BACKEND_URL + 'allDataPathIps'
 IP_TABLES_ENDPOINT = NETCONF_BACKEND_URL + 'allIpTables'
-CLIENT_GUI_URL = 'http://localhost:7777'
+CLIENT_GUI_URL = 'http://172.17.0.1:7777'  # docker0 IP address
 
 # Controller that exposes an endpoint to allow the main
 # controller to receive notifications from the network
