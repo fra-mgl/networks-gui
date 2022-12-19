@@ -32,6 +32,8 @@ java -jar piNet.jar
 The app will ask you to provide a JSON file. Use the file with the same name as the topology you chose.\
 The JSON file provides information regarding all routers in the network.
 
+You may need to install the Java Runtime Environment (version 19). To do that, download it from [here](https://jdk.java.net/19/), extract it into a known path and add the path of the `bin` folder to the shell configuration file (e.g. if you are using bash, add `export PATH=$PATH:<your-jdk-path>/jdk-19.0.1/bin` to your `.bashrc` file).
+
 ---
 
 ## Add host to Mininet
