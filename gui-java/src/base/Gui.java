@@ -46,6 +46,7 @@ public class Gui extends Application {
     final Image logo = new Image("/base/images/piNet_full.png");
     private ImageView giovanninoImage;
     private ImageView logoImage;
+    static private boolean ready = false;
 
 
     private Network network;
@@ -340,9 +341,6 @@ public class Gui extends Application {
         bSpecs.setDisable(true);
         bExplore.setDisable(false);
 
-        /* NETWORK INITIALIZATION */
-        initNetwork();
-
 
         basicPane.getChildren().add(s0_Start_Backgroung);
 
@@ -368,6 +366,8 @@ public class Gui extends Application {
                 Platform.runLater(()->{
                             basicPane.getChildren().clear();
                             basicPane.getChildren().add(s1_Background);
+                            /* NETWORK INITIALIZATION */
+                            initNetwork();
                         }
                 );
             }
@@ -392,7 +392,6 @@ public class Gui extends Application {
         });
         serverThread.start();
         sentinel.start();
-
         launch(args);
     }
 
@@ -688,29 +687,31 @@ public class Gui extends Application {
 
     static public void receiveUpdate() {
 //        System.out.println("Update receive\n");
-        Stage refreshStage = new Stage();
-        Text text = new Text("Network has been modified!\nUpdate now!");
-        text.setTextAlignment(TextAlignment.CENTER);
-        Button bRef = new Button("Refresh!");
-        VBox refresh = new VBox(text, bRef);
-        refresh.setSpacing(50);
-        refresh.setAlignment(Pos.CENTER);
-        bRef.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                bRefresh.fireEvent(new ActionEvent());
-                refreshStage.close();
-            }
-        });
+        if(Gui.ready == true) {
+            Stage refreshStage = new Stage();
+            Text text = new Text("Network has been modified!\nUpdate now!");
+            text.setTextAlignment(TextAlignment.CENTER);
+            Button bRef = new Button("Refresh!");
+            VBox refresh = new VBox(text, bRef);
+            refresh.setSpacing(50);
+            refresh.setAlignment(Pos.CENTER);
+            bRef.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent actionEvent) {
+                    bRefresh.fireEvent(new ActionEvent());
+                    refreshStage.close();
+                }
+            });
 
-        refreshStage.setTitle("Update");
-        refreshStage.setScene(new Scene(refresh));
-        refreshStage.setMinHeight(300);
-        refreshStage.setMaxHeight(300);
-        refreshStage.setMinWidth(300);
-        refreshStage.setMaxWidth(300);
-        refreshStage.initStyle(StageStyle.UNDECORATED);
-        refreshStage.show();
+            refreshStage.setTitle("Update");
+            refreshStage.setScene(new Scene(refresh));
+            refreshStage.setMinHeight(300);
+            refreshStage.setMaxHeight(300);
+            refreshStage.setMinWidth(300);
+            refreshStage.setMaxWidth(300);
+            refreshStage.initStyle(StageStyle.UNDECORATED);
+            refreshStage.show();
+        }
     }
 
     static private String openAndReadFile(File f){
@@ -773,7 +774,6 @@ public class Gui extends Application {
         if (valid){
             // network configuration is valid
             configText.setText("Your configuration is valid!\n\nYour topology will be\ndisplayed in a moment!");
-
         }else{
             // network configuration is NOT valid
             configText.setText("Your configuration is not valid.\nPlease upload a new file.");
@@ -792,6 +792,7 @@ public class Gui extends Application {
                                     s1_Background.getChildren().remove(configBox);
                                     s1_Background.add(rightSide, 1, 0);
                                     refreshNetwork();
+                                    Gui.ready = true;
                                 });
                             }else{
                                 Platform.runLater(()->{
