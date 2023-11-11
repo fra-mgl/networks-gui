@@ -1,4 +1,6 @@
-# networks-gui
+# $` \pi `$ Net
+A microservice-based control plane app for SDN with a graphical tool to display network topologies.
+
 Final project for Networking 2 course (University of Trento)
 
 ## Launch the application
